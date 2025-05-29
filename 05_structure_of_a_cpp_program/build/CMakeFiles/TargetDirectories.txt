@@ -1,0 +1,3 @@
+/home/oben/cpp_exercises/05_structure_of_a_cpp_program/build/CMakeFiles/args.dir
+/home/oben/cpp_exercises/05_structure_of_a_cpp_program/build/CMakeFiles/edit_cache.dir
+/home/oben/cpp_exercises/05_structure_of_a_cpp_program/build/CMakeFiles/rebuild_cache.dir
