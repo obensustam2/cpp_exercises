@@ -69,28 +69,28 @@ include CMakeFiles/carpet_cleaning_service.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/carpet_cleaning_service.dir/flags.make
 
-CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o: CMakeFiles/carpet_cleaning_service.dir/flags.make
-CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o: ../carpet_cleaning_service.cpp
-CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o: CMakeFiles/carpet_cleaning_service.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o -MF CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o.d -o CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o -c /home/oben/cpp_exercises/06_variables_and_constants/carpet_cleaning_service.cpp
+CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o: CMakeFiles/carpet_cleaning_service.dir/flags.make
+CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o: ../src/carpet_cleaning_service.cpp
+CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o: CMakeFiles/carpet_cleaning_service.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o -MF CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o.d -o CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o -c /home/oben/cpp_exercises/06_variables_and_constants/src/carpet_cleaning_service.cpp
 
-CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/oben/cpp_exercises/06_variables_and_constants/carpet_cleaning_service.cpp > CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.i
+CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/oben/cpp_exercises/06_variables_and_constants/src/carpet_cleaning_service.cpp > CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.i
 
-CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/oben/cpp_exercises/06_variables_and_constants/carpet_cleaning_service.cpp -o CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.s
+CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/oben/cpp_exercises/06_variables_and_constants/src/carpet_cleaning_service.cpp -o CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.s
 
 # Object files for target carpet_cleaning_service
 carpet_cleaning_service_OBJECTS = \
-"CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o"
+"CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o"
 
 # External object files for target carpet_cleaning_service
 carpet_cleaning_service_EXTERNAL_OBJECTS =
 
-carpet_cleaning_service: CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o
+carpet_cleaning_service: CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o
 carpet_cleaning_service: CMakeFiles/carpet_cleaning_service.dir/build.make
 carpet_cleaning_service: CMakeFiles/carpet_cleaning_service.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable carpet_cleaning_service"

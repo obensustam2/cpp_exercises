@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/oben/cpp_exercises/06_variables_and_constants/long_char.cpp" "CMakeFiles/long_char.dir/long_char.cpp.o" "gcc" "CMakeFiles/long_char.dir/long_char.cpp.o.d"
+  "/home/oben/cpp_exercises/06_variables_and_constants/src/long_char.cpp" "CMakeFiles/long_char.dir/src/long_char.cpp.o" "gcc" "CMakeFiles/long_char.dir/src/long_char.cpp.o.d"
   )
 
 # Targets to which this target links.

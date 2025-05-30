@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o"
-  "CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o.d"
+  "CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o"
+  "CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o.d"
   "carpet_cleaning_service"
   "carpet_cleaning_service.pdb"
 )

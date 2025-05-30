@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/long_char.dir/long_char.cpp.o"
-  "CMakeFiles/long_char.dir/long_char.cpp.o.d"
+  "CMakeFiles/long_char.dir/src/long_char.cpp.o"
+  "CMakeFiles/long_char.dir/src/long_char.cpp.o.d"
   "long_char"
   "long_char.pdb"
 )

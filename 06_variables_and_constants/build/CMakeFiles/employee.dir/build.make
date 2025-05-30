@@ -69,28 +69,28 @@ include CMakeFiles/employee.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/employee.dir/flags.make
 
-CMakeFiles/employee.dir/employee.cpp.o: CMakeFiles/employee.dir/flags.make
-CMakeFiles/employee.dir/employee.cpp.o: ../employee.cpp
-CMakeFiles/employee.dir/employee.cpp.o: CMakeFiles/employee.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/employee.dir/employee.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/employee.dir/employee.cpp.o -MF CMakeFiles/employee.dir/employee.cpp.o.d -o CMakeFiles/employee.dir/employee.cpp.o -c /home/oben/cpp_exercises/06_variables_and_constants/employee.cpp
+CMakeFiles/employee.dir/src/employee.cpp.o: CMakeFiles/employee.dir/flags.make
+CMakeFiles/employee.dir/src/employee.cpp.o: ../src/employee.cpp
+CMakeFiles/employee.dir/src/employee.cpp.o: CMakeFiles/employee.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/employee.dir/src/employee.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/employee.dir/src/employee.cpp.o -MF CMakeFiles/employee.dir/src/employee.cpp.o.d -o CMakeFiles/employee.dir/src/employee.cpp.o -c /home/oben/cpp_exercises/06_variables_and_constants/src/employee.cpp
 
-CMakeFiles/employee.dir/employee.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/employee.dir/employee.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/oben/cpp_exercises/06_variables_and_constants/employee.cpp > CMakeFiles/employee.dir/employee.cpp.i
+CMakeFiles/employee.dir/src/employee.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/employee.dir/src/employee.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/oben/cpp_exercises/06_variables_and_constants/src/employee.cpp > CMakeFiles/employee.dir/src/employee.cpp.i
 
-CMakeFiles/employee.dir/employee.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/employee.dir/employee.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/oben/cpp_exercises/06_variables_and_constants/employee.cpp -o CMakeFiles/employee.dir/employee.cpp.s
+CMakeFiles/employee.dir/src/employee.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/employee.dir/src/employee.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/oben/cpp_exercises/06_variables_and_constants/src/employee.cpp -o CMakeFiles/employee.dir/src/employee.cpp.s
 
 # Object files for target employee
 employee_OBJECTS = \
-"CMakeFiles/employee.dir/employee.cpp.o"
+"CMakeFiles/employee.dir/src/employee.cpp.o"
 
 # External object files for target employee
 employee_EXTERNAL_OBJECTS =
 
-employee: CMakeFiles/employee.dir/employee.cpp.o
+employee: CMakeFiles/employee.dir/src/employee.cpp.o
 employee: CMakeFiles/employee.dir/build.make
 employee: CMakeFiles/employee.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable employee"

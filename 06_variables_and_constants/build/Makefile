@@ -181,125 +181,125 @@ carpet_cleaning_service/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/carpet_cleaning_service.dir/build.make CMakeFiles/carpet_cleaning_service.dir/build
 .PHONY : carpet_cleaning_service/fast
 
-carpet_cleaning_service.o: carpet_cleaning_service.cpp.o
-.PHONY : carpet_cleaning_service.o
+src/carpet_cleaning_service.o: src/carpet_cleaning_service.cpp.o
+.PHONY : src/carpet_cleaning_service.o
 
 # target to build an object file
-carpet_cleaning_service.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/carpet_cleaning_service.dir/build.make CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.o
-.PHONY : carpet_cleaning_service.cpp.o
+src/carpet_cleaning_service.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/carpet_cleaning_service.dir/build.make CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.o
+.PHONY : src/carpet_cleaning_service.cpp.o
 
-carpet_cleaning_service.i: carpet_cleaning_service.cpp.i
-.PHONY : carpet_cleaning_service.i
+src/carpet_cleaning_service.i: src/carpet_cleaning_service.cpp.i
+.PHONY : src/carpet_cleaning_service.i
 
 # target to preprocess a source file
-carpet_cleaning_service.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/carpet_cleaning_service.dir/build.make CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.i
-.PHONY : carpet_cleaning_service.cpp.i
+src/carpet_cleaning_service.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/carpet_cleaning_service.dir/build.make CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.i
+.PHONY : src/carpet_cleaning_service.cpp.i
 
-carpet_cleaning_service.s: carpet_cleaning_service.cpp.s
-.PHONY : carpet_cleaning_service.s
+src/carpet_cleaning_service.s: src/carpet_cleaning_service.cpp.s
+.PHONY : src/carpet_cleaning_service.s
 
 # target to generate assembly for a file
-carpet_cleaning_service.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/carpet_cleaning_service.dir/build.make CMakeFiles/carpet_cleaning_service.dir/carpet_cleaning_service.cpp.s
-.PHONY : carpet_cleaning_service.cpp.s
+src/carpet_cleaning_service.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/carpet_cleaning_service.dir/build.make CMakeFiles/carpet_cleaning_service.dir/src/carpet_cleaning_service.cpp.s
+.PHONY : src/carpet_cleaning_service.cpp.s
 
-employee.o: employee.cpp.o
-.PHONY : employee.o
+src/employee.o: src/employee.cpp.o
+.PHONY : src/employee.o
 
 # target to build an object file
-employee.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/employee.dir/build.make CMakeFiles/employee.dir/employee.cpp.o
-.PHONY : employee.cpp.o
+src/employee.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/employee.dir/build.make CMakeFiles/employee.dir/src/employee.cpp.o
+.PHONY : src/employee.cpp.o
 
-employee.i: employee.cpp.i
-.PHONY : employee.i
+src/employee.i: src/employee.cpp.i
+.PHONY : src/employee.i
 
 # target to preprocess a source file
-employee.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/employee.dir/build.make CMakeFiles/employee.dir/employee.cpp.i
-.PHONY : employee.cpp.i
+src/employee.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/employee.dir/build.make CMakeFiles/employee.dir/src/employee.cpp.i
+.PHONY : src/employee.cpp.i
 
-employee.s: employee.cpp.s
-.PHONY : employee.s
+src/employee.s: src/employee.cpp.s
+.PHONY : src/employee.s
 
 # target to generate assembly for a file
-employee.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/employee.dir/build.make CMakeFiles/employee.dir/employee.cpp.s
-.PHONY : employee.cpp.s
+src/employee.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/employee.dir/build.make CMakeFiles/employee.dir/src/employee.cpp.s
+.PHONY : src/employee.cpp.s
 
-long_char.o: long_char.cpp.o
-.PHONY : long_char.o
+src/long_char.o: src/long_char.cpp.o
+.PHONY : src/long_char.o
 
 # target to build an object file
-long_char.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/long_char.dir/build.make CMakeFiles/long_char.dir/long_char.cpp.o
-.PHONY : long_char.cpp.o
+src/long_char.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/long_char.dir/build.make CMakeFiles/long_char.dir/src/long_char.cpp.o
+.PHONY : src/long_char.cpp.o
 
-long_char.i: long_char.cpp.i
-.PHONY : long_char.i
+src/long_char.i: src/long_char.cpp.i
+.PHONY : src/long_char.i
 
 # target to preprocess a source file
-long_char.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/long_char.dir/build.make CMakeFiles/long_char.dir/long_char.cpp.i
-.PHONY : long_char.cpp.i
+src/long_char.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/long_char.dir/build.make CMakeFiles/long_char.dir/src/long_char.cpp.i
+.PHONY : src/long_char.cpp.i
 
-long_char.s: long_char.cpp.s
-.PHONY : long_char.s
+src/long_char.s: src/long_char.cpp.s
+.PHONY : src/long_char.s
 
 # target to generate assembly for a file
-long_char.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/long_char.dir/build.make CMakeFiles/long_char.dir/long_char.cpp.s
-.PHONY : long_char.cpp.s
+src/long_char.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/long_char.dir/build.make CMakeFiles/long_char.dir/src/long_char.cpp.s
+.PHONY : src/long_char.cpp.s
 
-multiplication.o: multiplication.cpp.o
-.PHONY : multiplication.o
+src/multiplication.o: src/multiplication.cpp.o
+.PHONY : src/multiplication.o
 
 # target to build an object file
-multiplication.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/multiplication.dir/build.make CMakeFiles/multiplication.dir/multiplication.cpp.o
-.PHONY : multiplication.cpp.o
+src/multiplication.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/multiplication.dir/build.make CMakeFiles/multiplication.dir/src/multiplication.cpp.o
+.PHONY : src/multiplication.cpp.o
 
-multiplication.i: multiplication.cpp.i
-.PHONY : multiplication.i
+src/multiplication.i: src/multiplication.cpp.i
+.PHONY : src/multiplication.i
 
 # target to preprocess a source file
-multiplication.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/multiplication.dir/build.make CMakeFiles/multiplication.dir/multiplication.cpp.i
-.PHONY : multiplication.cpp.i
+src/multiplication.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/multiplication.dir/build.make CMakeFiles/multiplication.dir/src/multiplication.cpp.i
+.PHONY : src/multiplication.cpp.i
 
-multiplication.s: multiplication.cpp.s
-.PHONY : multiplication.s
+src/multiplication.s: src/multiplication.cpp.s
+.PHONY : src/multiplication.s
 
 # target to generate assembly for a file
-multiplication.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/multiplication.dir/build.make CMakeFiles/multiplication.dir/multiplication.cpp.s
-.PHONY : multiplication.cpp.s
+src/multiplication.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/multiplication.dir/build.make CMakeFiles/multiplication.dir/src/multiplication.cpp.s
+.PHONY : src/multiplication.cpp.s
 
-sizeof.o: sizeof.cpp.o
-.PHONY : sizeof.o
+src/sizeof.o: src/sizeof.cpp.o
+.PHONY : src/sizeof.o
 
 # target to build an object file
-sizeof.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sizeof.dir/build.make CMakeFiles/sizeof.dir/sizeof.cpp.o
-.PHONY : sizeof.cpp.o
+src/sizeof.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sizeof.dir/build.make CMakeFiles/sizeof.dir/src/sizeof.cpp.o
+.PHONY : src/sizeof.cpp.o
 
-sizeof.i: sizeof.cpp.i
-.PHONY : sizeof.i
+src/sizeof.i: src/sizeof.cpp.i
+.PHONY : src/sizeof.i
 
 # target to preprocess a source file
-sizeof.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sizeof.dir/build.make CMakeFiles/sizeof.dir/sizeof.cpp.i
-.PHONY : sizeof.cpp.i
+src/sizeof.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sizeof.dir/build.make CMakeFiles/sizeof.dir/src/sizeof.cpp.i
+.PHONY : src/sizeof.cpp.i
 
-sizeof.s: sizeof.cpp.s
-.PHONY : sizeof.s
+src/sizeof.s: src/sizeof.cpp.s
+.PHONY : src/sizeof.s
 
 # target to generate assembly for a file
-sizeof.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/sizeof.dir/build.make CMakeFiles/sizeof.dir/sizeof.cpp.s
-.PHONY : sizeof.cpp.s
+src/sizeof.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/sizeof.dir/build.make CMakeFiles/sizeof.dir/src/sizeof.cpp.s
+.PHONY : src/sizeof.cpp.s
 
 # Help Target
 help:
@@ -314,21 +314,21 @@ help:
 	@echo "... long_char"
 	@echo "... multiplication"
 	@echo "... sizeof"
-	@echo "... carpet_cleaning_service.o"
-	@echo "... carpet_cleaning_service.i"
-	@echo "... carpet_cleaning_service.s"
-	@echo "... employee.o"
-	@echo "... employee.i"
-	@echo "... employee.s"
-	@echo "... long_char.o"
-	@echo "... long_char.i"
-	@echo "... long_char.s"
-	@echo "... multiplication.o"
-	@echo "... multiplication.i"
-	@echo "... multiplication.s"
-	@echo "... sizeof.o"
-	@echo "... sizeof.i"
-	@echo "... sizeof.s"
+	@echo "... src/carpet_cleaning_service.o"
+	@echo "... src/carpet_cleaning_service.i"
+	@echo "... src/carpet_cleaning_service.s"
+	@echo "... src/employee.o"
+	@echo "... src/employee.i"
+	@echo "... src/employee.s"
+	@echo "... src/long_char.o"
+	@echo "... src/long_char.i"
+	@echo "... src/long_char.s"
+	@echo "... src/multiplication.o"
+	@echo "... src/multiplication.i"
+	@echo "... src/multiplication.s"
+	@echo "... src/sizeof.o"
+	@echo "... src/sizeof.i"
+	@echo "... src/sizeof.s"
 .PHONY : help
 
 

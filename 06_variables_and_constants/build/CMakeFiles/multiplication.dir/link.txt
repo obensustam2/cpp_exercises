@@ -1,1 +1,1 @@
-/usr/bin/c++ CMakeFiles/multiplication.dir/multiplication.cpp.o -o multiplication 
+/usr/bin/c++ CMakeFiles/multiplication.dir/src/multiplication.cpp.o -o multiplication 

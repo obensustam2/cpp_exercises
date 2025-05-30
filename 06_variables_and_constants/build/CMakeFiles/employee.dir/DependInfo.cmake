@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/oben/cpp_exercises/06_variables_and_constants/employee.cpp" "CMakeFiles/employee.dir/employee.cpp.o" "gcc" "CMakeFiles/employee.dir/employee.cpp.o.d"
+  "/home/oben/cpp_exercises/06_variables_and_constants/src/employee.cpp" "CMakeFiles/employee.dir/src/employee.cpp.o" "gcc" "CMakeFiles/employee.dir/src/employee.cpp.o.d"
   )
 
 # Targets to which this target links.

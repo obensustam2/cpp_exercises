@@ -69,28 +69,28 @@ include CMakeFiles/long_char.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/long_char.dir/flags.make
 
-CMakeFiles/long_char.dir/long_char.cpp.o: CMakeFiles/long_char.dir/flags.make
-CMakeFiles/long_char.dir/long_char.cpp.o: ../long_char.cpp
-CMakeFiles/long_char.dir/long_char.cpp.o: CMakeFiles/long_char.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/long_char.dir/long_char.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/long_char.dir/long_char.cpp.o -MF CMakeFiles/long_char.dir/long_char.cpp.o.d -o CMakeFiles/long_char.dir/long_char.cpp.o -c /home/oben/cpp_exercises/06_variables_and_constants/long_char.cpp
+CMakeFiles/long_char.dir/src/long_char.cpp.o: CMakeFiles/long_char.dir/flags.make
+CMakeFiles/long_char.dir/src/long_char.cpp.o: ../src/long_char.cpp
+CMakeFiles/long_char.dir/src/long_char.cpp.o: CMakeFiles/long_char.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/long_char.dir/src/long_char.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/long_char.dir/src/long_char.cpp.o -MF CMakeFiles/long_char.dir/src/long_char.cpp.o.d -o CMakeFiles/long_char.dir/src/long_char.cpp.o -c /home/oben/cpp_exercises/06_variables_and_constants/src/long_char.cpp
 
-CMakeFiles/long_char.dir/long_char.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/long_char.dir/long_char.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/oben/cpp_exercises/06_variables_and_constants/long_char.cpp > CMakeFiles/long_char.dir/long_char.cpp.i
+CMakeFiles/long_char.dir/src/long_char.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/long_char.dir/src/long_char.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/oben/cpp_exercises/06_variables_and_constants/src/long_char.cpp > CMakeFiles/long_char.dir/src/long_char.cpp.i
 
-CMakeFiles/long_char.dir/long_char.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/long_char.dir/long_char.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/oben/cpp_exercises/06_variables_and_constants/long_char.cpp -o CMakeFiles/long_char.dir/long_char.cpp.s
+CMakeFiles/long_char.dir/src/long_char.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/long_char.dir/src/long_char.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/oben/cpp_exercises/06_variables_and_constants/src/long_char.cpp -o CMakeFiles/long_char.dir/src/long_char.cpp.s
 
 # Object files for target long_char
 long_char_OBJECTS = \
-"CMakeFiles/long_char.dir/long_char.cpp.o"
+"CMakeFiles/long_char.dir/src/long_char.cpp.o"
 
 # External object files for target long_char
 long_char_EXTERNAL_OBJECTS =
 
-long_char: CMakeFiles/long_char.dir/long_char.cpp.o
+long_char: CMakeFiles/long_char.dir/src/long_char.cpp.o
 long_char: CMakeFiles/long_char.dir/build.make
 long_char: CMakeFiles/long_char.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable long_char"

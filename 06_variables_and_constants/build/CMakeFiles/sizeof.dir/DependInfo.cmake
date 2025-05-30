@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/oben/cpp_exercises/06_variables_and_constants/sizeof.cpp" "CMakeFiles/sizeof.dir/sizeof.cpp.o" "gcc" "CMakeFiles/sizeof.dir/sizeof.cpp.o.d"
+  "/home/oben/cpp_exercises/06_variables_and_constants/src/sizeof.cpp" "CMakeFiles/sizeof.dir/src/sizeof.cpp.o" "gcc" "CMakeFiles/sizeof.dir/src/sizeof.cpp.o.d"
   )
 
 # Targets to which this target links.

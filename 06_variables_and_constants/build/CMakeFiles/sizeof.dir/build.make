@@ -69,28 +69,28 @@ include CMakeFiles/sizeof.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/sizeof.dir/flags.make
 
-CMakeFiles/sizeof.dir/sizeof.cpp.o: CMakeFiles/sizeof.dir/flags.make
-CMakeFiles/sizeof.dir/sizeof.cpp.o: ../sizeof.cpp
-CMakeFiles/sizeof.dir/sizeof.cpp.o: CMakeFiles/sizeof.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/sizeof.dir/sizeof.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sizeof.dir/sizeof.cpp.o -MF CMakeFiles/sizeof.dir/sizeof.cpp.o.d -o CMakeFiles/sizeof.dir/sizeof.cpp.o -c /home/oben/cpp_exercises/06_variables_and_constants/sizeof.cpp
+CMakeFiles/sizeof.dir/src/sizeof.cpp.o: CMakeFiles/sizeof.dir/flags.make
+CMakeFiles/sizeof.dir/src/sizeof.cpp.o: ../src/sizeof.cpp
+CMakeFiles/sizeof.dir/src/sizeof.cpp.o: CMakeFiles/sizeof.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/sizeof.dir/src/sizeof.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/sizeof.dir/src/sizeof.cpp.o -MF CMakeFiles/sizeof.dir/src/sizeof.cpp.o.d -o CMakeFiles/sizeof.dir/src/sizeof.cpp.o -c /home/oben/cpp_exercises/06_variables_and_constants/src/sizeof.cpp
 
-CMakeFiles/sizeof.dir/sizeof.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sizeof.dir/sizeof.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/oben/cpp_exercises/06_variables_and_constants/sizeof.cpp > CMakeFiles/sizeof.dir/sizeof.cpp.i
+CMakeFiles/sizeof.dir/src/sizeof.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sizeof.dir/src/sizeof.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/oben/cpp_exercises/06_variables_and_constants/src/sizeof.cpp > CMakeFiles/sizeof.dir/src/sizeof.cpp.i
 
-CMakeFiles/sizeof.dir/sizeof.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sizeof.dir/sizeof.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/oben/cpp_exercises/06_variables_and_constants/sizeof.cpp -o CMakeFiles/sizeof.dir/sizeof.cpp.s
+CMakeFiles/sizeof.dir/src/sizeof.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sizeof.dir/src/sizeof.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/oben/cpp_exercises/06_variables_and_constants/src/sizeof.cpp -o CMakeFiles/sizeof.dir/src/sizeof.cpp.s
 
 # Object files for target sizeof
 sizeof_OBJECTS = \
-"CMakeFiles/sizeof.dir/sizeof.cpp.o"
+"CMakeFiles/sizeof.dir/src/sizeof.cpp.o"
 
 # External object files for target sizeof
 sizeof_EXTERNAL_OBJECTS =
 
-sizeof: CMakeFiles/sizeof.dir/sizeof.cpp.o
+sizeof: CMakeFiles/sizeof.dir/src/sizeof.cpp.o
 sizeof: CMakeFiles/sizeof.dir/build.make
 sizeof: CMakeFiles/sizeof.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable sizeof"

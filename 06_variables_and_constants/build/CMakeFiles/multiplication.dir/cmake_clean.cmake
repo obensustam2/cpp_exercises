@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/multiplication.dir/multiplication.cpp.o"
-  "CMakeFiles/multiplication.dir/multiplication.cpp.o.d"
+  "CMakeFiles/multiplication.dir/src/multiplication.cpp.o"
+  "CMakeFiles/multiplication.dir/src/multiplication.cpp.o.d"
   "multiplication"
   "multiplication.pdb"
 )

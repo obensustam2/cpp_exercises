@@ -69,28 +69,28 @@ include CMakeFiles/multiplication.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/multiplication.dir/flags.make
 
-CMakeFiles/multiplication.dir/multiplication.cpp.o: CMakeFiles/multiplication.dir/flags.make
-CMakeFiles/multiplication.dir/multiplication.cpp.o: ../multiplication.cpp
-CMakeFiles/multiplication.dir/multiplication.cpp.o: CMakeFiles/multiplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/multiplication.dir/multiplication.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/multiplication.dir/multiplication.cpp.o -MF CMakeFiles/multiplication.dir/multiplication.cpp.o.d -o CMakeFiles/multiplication.dir/multiplication.cpp.o -c /home/oben/cpp_exercises/06_variables_and_constants/multiplication.cpp
+CMakeFiles/multiplication.dir/src/multiplication.cpp.o: CMakeFiles/multiplication.dir/flags.make
+CMakeFiles/multiplication.dir/src/multiplication.cpp.o: ../src/multiplication.cpp
+CMakeFiles/multiplication.dir/src/multiplication.cpp.o: CMakeFiles/multiplication.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/multiplication.dir/src/multiplication.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/multiplication.dir/src/multiplication.cpp.o -MF CMakeFiles/multiplication.dir/src/multiplication.cpp.o.d -o CMakeFiles/multiplication.dir/src/multiplication.cpp.o -c /home/oben/cpp_exercises/06_variables_and_constants/src/multiplication.cpp
 
-CMakeFiles/multiplication.dir/multiplication.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/multiplication.dir/multiplication.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/oben/cpp_exercises/06_variables_and_constants/multiplication.cpp > CMakeFiles/multiplication.dir/multiplication.cpp.i
+CMakeFiles/multiplication.dir/src/multiplication.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/multiplication.dir/src/multiplication.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/oben/cpp_exercises/06_variables_and_constants/src/multiplication.cpp > CMakeFiles/multiplication.dir/src/multiplication.cpp.i
 
-CMakeFiles/multiplication.dir/multiplication.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/multiplication.dir/multiplication.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/oben/cpp_exercises/06_variables_and_constants/multiplication.cpp -o CMakeFiles/multiplication.dir/multiplication.cpp.s
+CMakeFiles/multiplication.dir/src/multiplication.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/multiplication.dir/src/multiplication.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/oben/cpp_exercises/06_variables_and_constants/src/multiplication.cpp -o CMakeFiles/multiplication.dir/src/multiplication.cpp.s
 
 # Object files for target multiplication
 multiplication_OBJECTS = \
-"CMakeFiles/multiplication.dir/multiplication.cpp.o"
+"CMakeFiles/multiplication.dir/src/multiplication.cpp.o"
 
 # External object files for target multiplication
 multiplication_EXTERNAL_OBJECTS =
 
-multiplication: CMakeFiles/multiplication.dir/multiplication.cpp.o
+multiplication: CMakeFiles/multiplication.dir/src/multiplication.cpp.o
 multiplication: CMakeFiles/multiplication.dir/build.make
 multiplication: CMakeFiles/multiplication.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable multiplication"

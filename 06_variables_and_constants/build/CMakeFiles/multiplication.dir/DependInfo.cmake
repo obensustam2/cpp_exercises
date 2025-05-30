@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/oben/cpp_exercises/06_variables_and_constants/multiplication.cpp" "CMakeFiles/multiplication.dir/multiplication.cpp.o" "gcc" "CMakeFiles/multiplication.dir/multiplication.cpp.o.d"
+  "/home/oben/cpp_exercises/06_variables_and_constants/src/multiplication.cpp" "CMakeFiles/multiplication.dir/src/multiplication.cpp.o" "gcc" "CMakeFiles/multiplication.dir/src/multiplication.cpp.o.d"
   )
 
 # Targets to which this target links.
