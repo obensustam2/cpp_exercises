@@ -35,6 +35,7 @@ The preprocessor runs before actual compilation. It handles all lines starting w
 A variable is just a name (or label) for a location in your computer's memory where a value is stored.
 ```
 int age = 25;
+size_t position; // unsigned int or unsigned long 
 ```
 The computer reserves a spot in memory big enough to store an int (usually 4 bytes).
 - It puts the value 25 into that memory.
@@ -493,6 +494,70 @@ int main (){
     }
 
     std::cout << std::endl;
+    return 0;
+}
+```
+
+### C++ Strings
+```
+std::string a = "Apple";
+std::string b = "Banana";
+std::string c = "apple"
+
+std::cout << (a < b); // true
+std::cout << (c < a); // false
+```
+
+#### Functions
+```
+#include <iostream>
+#include <string>
+
+int main(){
+
+    std::string s1 = "Apple";
+    std::string s2 = "Kanana";
+
+    s2.at(0) = 'B';
+    std::cout << s2; // "Banana"
+
+    std::cout << std::boolalpha;
+    std::cout << (s1 < s2); // true ('A' comes before 'B' in the ASCII table)
+
+    std::string s3 =  s1 + " and " + s2 + " juice"; // "Apple and Panana juice"
+    
+    std::string my_text = "My name is Oben";
+    std::cout << my_text.size() << std::endl;   // 15
+    std::cout << my_text.length() << std::endl; // 15
+
+    s1 = "Apple";
+    for (int i = 0; i < s1.length(); ++i) 
+        std::cout << s1.at(i);     
+    std::cout << std::endl; // "Apple"
+  
+    s1 = "This is a test";
+    std::cout << s1.substr(0,4) << std::endl;  // "This"
+    std::cout << s1.substr(5,2) << std::endl;  // "is"
+    std::cout << s1.substr(10,4) << std::endl; // "test"
+
+    s1.erase(0,5);    
+    std::cout << s1 << std::endl; // "is a test"   
+
+    std::string full_name;
+    std::cout << "Enter your full name: ";
+    std::getline(std::cin, full_name);
+    std::cout << full_name << std::endl ; // "Oben Sustam"
+
+    s1 = "The secret word is Boo";
+    std::string word;
+    std::cout << "Enter the word to find: ";
+    std::cin >> word;
+    int position = s1.find(word);
+    if (position < s1.length()) 
+        std::cout << "Found " << word << " at position: " << position << std::endl;
+    else
+        std::cout << "Sorry, " << word <<  " not found" << std::endl;
+        
     return 0;
 }
 ```
