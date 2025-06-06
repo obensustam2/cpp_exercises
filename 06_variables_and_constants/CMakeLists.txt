@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(06_variables_and_constants)
 
-add_executable(multiplication src/multiplication.cpp)
-add_executable(employee src/employee.cpp)
-add_executable(long_char src/long_char.cpp)
-add_executable(sizeof src/sizeof.cpp)
-add_executable(carpet_cleaning_service src/carpet_cleaning_service.cpp)
+add_executable(00_multiplication src/00_multiplication.cpp)
+add_executable(01_employee src/01_employee.cpp)
+add_executable(02_long_char src/02_long_char.cpp)
+add_executable(03_sizeof src/03_sizeof.cpp)
+add_executable(04_carpet_cleaning_service src/04_carpet_cleaning_service.cpp)

@@ -1,3 +1,0 @@
-/home/oben/cpp_exercises/04_getting_started/build/CMakeFiles/main.dir
-/home/oben/cpp_exercises/04_getting_started/build/CMakeFiles/edit_cache.dir
-/home/oben/cpp_exercises/04_getting_started/build/CMakeFiles/rebuild_cache.dir

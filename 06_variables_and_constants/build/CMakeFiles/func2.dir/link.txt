@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/func2.dir/func2.cpp.o -o func2 

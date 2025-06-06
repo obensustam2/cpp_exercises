@@ -1,0 +1,19 @@
+
+cmake_minimum_required(VERSION 3.10)
+
+project(09_controlling_program_flow)
+
+add_executable(00_if_statements src/00_if_statements.cpp)
+add_executable(01_if_else_statement src/01_if_else_statement.cpp)
+add_executable(02_nested_if_statement src/02_nested_if_statement.cpp)
+add_executable(03_shipping_cost_calculator src/03_shipping_cost_calculator.cpp)
+add_executable(04_switch_case_statement src/04_switch_case_statement.cpp)
+add_executable(05_switch_case_enum src/05_switch_case_enum.cpp)
+add_executable(06_ternary_operator src/06_ternary_operator.cpp)
+add_executable(07_for_loop src/07_for_loop.cpp)
+add_executable(08_range_based_for_loop src/08_range_based_for_loop.cpp)
+add_executable(09_while_loop src/09_while_loop.cpp)
+add_executable(10_do_while_loop src/10_do_while_loop.cpp)
+add_executable(11_break_and_continue src/11_break_and_continue.cpp)
+add_executable(12_nested_loop src/12_nested_loop.cpp)
+add_executable(13_section_challenge src/13_section_challenge.cpp)
