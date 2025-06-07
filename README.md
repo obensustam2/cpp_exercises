@@ -29,6 +29,9 @@ The preprocessor runs before actual compilation. It handles all lines starting w
 #include <vector>
 #include <string>
 #include <iomanip>
+#include <cmath>
+#include <ctime>
+#include <cstdlib>
 ```
 
 ### Variable
@@ -500,16 +503,6 @@ int main (){
 
 ### C++ Strings
 ```
-std::string a = "Apple";
-std::string b = "Banana";
-std::string c = "apple"
-
-std::cout << (a < b); // true
-std::cout << (c < a); // false
-```
-
-#### Functions
-```
 #include <iostream>
 #include <string>
 
@@ -524,13 +517,12 @@ int main(){
     std::cout << std::boolalpha;
     std::cout << (s1 < s2); // true ('A' comes before 'B' in the ASCII table)
 
-    std::string s3 =  s1 + " and " + s2 + " juice"; // "Apple and Panana juice"
+    std::string s3 =  s1 + " and " + s2 + " juice"; // "Apple and Banana juice"
     
     std::string my_text = "My name is Oben";
     std::cout << my_text.size() << std::endl;   // 15
     std::cout << my_text.length() << std::endl; // 15
 
-    s1 = "Apple";
     for (int i = 0; i < s1.length(); ++i) 
         std::cout << s1.at(i);     
     std::cout << std::endl; // "Apple"
@@ -547,6 +539,8 @@ int main(){
     std::cout << "Enter your full name: ";
     std::getline(std::cin, full_name);
     std::cout << full_name << std::endl ; // "Oben Sustam"
+    std::cin >> full_name;
+    std::cout << full_name << std::endl; // "Oben"
 
     s1 = "The secret word is Boo";
     std::string word;
@@ -559,5 +553,329 @@ int main(){
         std::cout << "Sorry, " << word <<  " not found" << std::endl;
         
     return 0;
+}
+```
+
+### Functions
+#### Random number generation
+```
+#include <iostream>
+#include <ctime> // time
+#include <cstdlib> // random
+
+int main() {
+
+    // Random number generation
+    int random_number;
+    int count = 10;
+    int min = 1;
+    int max = 6;
+
+    // seed the random generator, if not you will get the same sequence random numbers
+    std::cout << "RAND_MAX on my system is: " << RAND_MAX << std::endl;
+    srand(time(nullptr));
+    
+    for (int i=0; i<count; i++){
+        random_number = rand() % (max - min + 1) + min;
+        std::cout << random_number << std::endl;
+    }
+
+    return 0;
+}
+```
+
+#### Nearest integer floating-point operations
+```
+#include <iostream>
+#inclue <cmath>
+
+int main(){
+    double num = 31.7;
+    std::cout << "The ceil of " << num << " is " << ceil(num) << std::endl;   // 32
+    std::cout << "The floor of " << num << " is " << floor(num) << std::endl; // 31
+    std::cout << "The round of " << num << " is " << round(num) << std::endl; // 32
+    return 0;
+}
+```
+
+#### Power functions
+```
+#include <iostream>
+#inclue <cmath>
+
+int main(){
+
+    std::cout << "Enter a double number: ";
+    std::cin >> num;
+
+    std::cout << "The square root of " << num << " is " << sqrt(num) << std::endl;
+    std::cout << "The cubed root of " << num << " is " << cbrt(num) << std::endl;
+
+    double power;
+    std::cout << "Enter a power: ";
+    std::cin >> power;
+    std::cout << num << " power " << power << " is " << pow(num, power) << std::endl;
+    return 0;
+}
+```
+
+#### Trigonometric functions
+```
+#include <iostream>
+#inclue <cmath>
+
+int main(){
+    double num = 30;
+    std::cout << "The sine of " << num << " is " << sin(num*(M_PI/180)) << std::endl;
+    std::cout << "The cosine of " << num << " is " << cos(num*(M_PI/180)) << std::endl;
+
+    return 0;
+}
+```
+
+#### Function Prototypes
+```
+#include <iostream>
+#include <cmath>
+
+double area_circle(double);
+double volume_cylinder(double, double);
+
+int main() {
+    double radius, height;
+    std::cin >> radius >> height;
+    double my_volume = volume_cylinder(radius, height);
+    std::cout << my_volume << std::endl;
+    return 0;
+}
+
+double area_circle(double r){
+    double area = M_PI * pow(r,2);
+    return area;
+}
+
+double volume_cylinder(double radius, double height){
+    double volume = area_circle(radius) * height;
+    return volume;
+}
+```
+
+#### Default arguments
+Put the default arguments in prototypes
+```
+#include <iostream>
+#include <iomanip>
+
+double calc_cost(double base_cost, double tax_rate = 0.4, double shipping = 0.0);
+
+int main(){
+    double cost = 0.0;
+    cost = calc_cost(100.0, 0.08, 4.25);
+    std::cout << std::fixed << std::setprecision(3);
+    std::cout << "Cost is: " << cost << std::endl; // 112.250
+    cost = calc_cost(100.0);
+    std::cout << "Cost is: " << cost << std::endl; // 140.000
+    return 0;
+}
+
+double calc_cost(double base_cost, double tax_rate, double shipping){
+    return base_cost += (base_cost*tax_rate) + shipping;
+}
+```
+
+#### Overloading Functions (Polymorphism)
+```
+#include <iostream>
+#include <string>
+#include <vector>
+
+void print(int);
+void print(double);
+void print(std::string);
+void print(std::string, std::string);
+void print(std::vector <std::string>);
+
+
+int main(){
+    print(10);
+    print(10.3);
+    print('a');
+    print("Oben"); // C-style string is converted to C++ string
+    print({"Hello", "my", "name", "is", "Oben"});
+
+    return 0;
+}
+
+
+void print(int num){
+    std::cout << "Printing int: " << num << std::endl;
+}
+
+void print(double num){
+    std::cout << "Printing double: " << num << std::endl;
+}
+
+void print(std::string text){
+    std::cout << "Printing string: " << text << std::endl;
+}
+
+void print(std::string text, std::string text2){
+    std::cout << "Printing 2 string: " << text << " " << text2 << std::endl;
+}
+
+void print(std::vector <std::string> text_vec){
+    std::cout << "Printing vector: ";
+    for(std::string text : text_vec){
+        std::cout << text << " ";
+    }
+    std::cout << std::endl;
+}
+```
+
+Output
+```
+Printing int: 10
+Printing double: 10.3
+Printing int: 97
+Printing string: Oben
+Printing vector: Hello my name is Oben 
+```
+
+#### Pass by Value vs Pass by Reference
+| Feature                         | **Pass by Value**                                                         | **Pass by Reference**                                                                |
+| ------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Definition**                  | A copy of the argument is passed to the function.                         | A reference (alias) to the original argument is passed.                              |
+| **Modification of Argument**    | Changes made inside the function **do not** affect the original variable. | Changes made inside the function **affect** the original variable.                   |
+| **Memory Usage**                | More memory (copy is made).                                               | Less memory (no copy, uses the original variable).                                   |
+| **Performance**                 | Slower for large objects (due to copying).                                | Faster for large objects (no copying).                                               |
+| **Syntax Example**              | `void foo(int x);`                                                        | `void foo(int& x);`                                                                  |
+| **Safe from Side Effects?**     | ✅ Yes (original data is safe)                                             | ❌ No (can accidentally modify original data)                                         |
+| **Typical Use Cases**           | Use when you **don't want** the function to modify the original data.     | Use when you **want** the function to modify the original data, or to avoid copying. |
+| **Can be used with Constants?** | Yes                                                                       | Yes (use `const` reference to prevent modification)                                  |
+| **Example Call**                | `foo(num);` (copies `num`)                                                | `foo(num);` (references `num`)                                                       |
+
+
+#### Const usage for printing with reference inputs
+```
+#include <iostream>
+#include <string>
+#include <typeinfo>
+using namespace std;
+
+
+void print_guest_list(const std::string &g1, const std::string &g2, const std::string &g3);
+void clear_guest_list(std::string &g1, std::string &g2, std::string &g3);
+
+
+int main() {
+
+    string guest_1 {"Larry"};
+    string guest_2 {"Moe"};
+    string guest_3 {"Curly"};
+    
+    print_guest_list(guest_1, guest_2, guest_3);
+    clear_guest_list(guest_1, guest_2, guest_3);
+    print_guest_list(guest_1, guest_2, guest_3);
+    
+    return 0;
+}
+
+
+void print_guest_list(const std::string &g1, const std::string &g2, const std::string &g3) {
+    
+    cout << g1 << endl;
+    cout << g2 << endl;
+    cout << g3 << endl;
+}
+
+
+void clear_guest_list(std::string &g1, std::string &g2, std::string &g3) {
+    g1 = " ";    
+    g2 = " "; 
+    g3 = " "; 
+}
+```
+
+#### Local Global - Scope Rules
+| Concept          | Explanation                                                                                                     |
+| ---------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Scope**        | A variable is only accessible within the block it is declared in and its inner blocks.                          |
+| **Shadowing**    | A variable in an inner scope can have the same name as one in an outer scope, temporarily hiding the outer one. |
+| **Lifetime**     | Inner `num` (value 200) only exists within its block. Once the block ends, it's destroyed.                      |
+| **Outer Access** | Inner blocks can access variables from outer blocks unless they’re shadowed.                                    |
+
+```
+#include <iostream>
+
+int num = 300;
+
+int main() {
+    
+    int num = 100;  
+    int num1 = 500; 
+    
+    std::cout << "Local num is : " << num << " in main" << std::endl; // 100
+    
+    {   
+        int num = 200;  
+        std::cout << "Local num is: " << num << " in inner block in main" << std::endl; // 200
+        std::cout << "Inner block in main can see out - num1 is: " << num1 << std::endl; // 500
+    }
+    
+    std::cout << "Local num is : " << num << " in main" << std::endl; // 100
+
+    return 0;
+}
+```
+
+#### static variable
+```
+void static_local_example() {
+    static int num = 5000;      // local to static_local_example static - retains it value between calls
+    std::cout << "\nLocal static  num is: " << num << " in static_local_example - start" << std::endl;
+    num += 1000;
+    std::cout << "Local static  num is: " << num << " in static_local_example - end" << std::endl;
+}
+
+int main() {
+    static_local_example();
+    static_local_example();
+    static_local_example();
+    return 0;
+}
+```
+
+```
+Local static num is: 5000 in static_local_example - start
+Local static num is: 6000 in static_local_example - end
+
+Local static num is: 6000 in static_local_example - start
+Local static num is: 7000 in static_local_example - end
+
+Local static num is: 7000 in static_local_example - start
+Local static num is: 8000 in static_local_example - end
+```
+
+#### Function Calls - Memory Stack - Recursive Function
+<img src="00_docs/images/memory_stack.png" alt="Memory Stack" width="240"/>
+```
+#include <iostream>
+
+unsigned long long factorial(unsigned long long val);
+
+int main (){
+    unsigned long long input;
+    std::cout << "Enter factorial input: ";
+    std::cin >> input;
+    int result = factorial(input);
+    std::cout << input << "! = " << result << std::endl;
+    return 0;
+}
+
+unsigned long long factorial(unsigned long long val){
+    if(val == 1){
+        return 1;
+    }
+    return val * factorial(val-1);
 }
 ```

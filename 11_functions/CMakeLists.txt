@@ -1,0 +1,14 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(11_functions)
+
+add_executable(00_std_libraries src/00_std_libraries.cpp)
+add_executable(01_function_definiton src/01_function_definiton.cpp)
+add_executable(02_function_prototypes src/02_function_prototypes.cpp)
+add_executable(03_pass_by_value src/03_pass_by_value.cpp)
+add_executable(04_default_arguments src/04_default_arguments.cpp)
+add_executable(05_overloading_functions src/05_overloading_functions.cpp)
+add_executable(06_pass_by_reference src/06_pass_by_reference.cpp)
+add_executable(07_pass_by_reference2 src/07_pass_by_reference2.cpp)
+add_executable(08_scope_rules src/08_scope_rules.cpp)
+add_executable(09_recursive_function src/09_recursive_function.cpp)
