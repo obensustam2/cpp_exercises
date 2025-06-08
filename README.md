@@ -740,6 +740,26 @@ Printing int: 97
 Printing string: Oben
 Printing vector: Hello my name is Oben 
 ```
+#### Pass by Reference
+```
+void double_data2(int &val){
+    val *= 2;
+}
+
+void trial2(){
+    int value2 = 10;
+    std::cout << "Value: " << value2 << std::endl; // 10
+    double_data2(value2);
+    std::cout << "Value: " << value2 << std::endl; // 20
+    double_data2(value2);
+    std::cout << "Value: " << value2 << std::endl; // 40
+}
+
+int main(){
+    trial2();
+    return 0;
+}
+```
 
 #### Pass by Value vs Pass by Reference
 | Feature                         | **Pass by Value**                                                         | **Pass by Reference**                                                                |
@@ -857,7 +877,9 @@ Local static num is: 8000 in static_local_example - end
 ```
 
 #### Function Calls - Memory Stack - Recursive Function
+
 <img src="00_docs/images/memory_stack.png" alt="Memory Stack" width="240"/>
+
 ```
 #include <iostream>
 
@@ -879,3 +901,296 @@ unsigned long long factorial(unsigned long long val){
     return val * factorial(val-1);
 }
 ```
+
+### Pointers and References
+
+**Properties**
+- Pointer size is independent from which variable address it points.
+
+#### Simple Pointers
+
+<img src="00_docs/images/pointer.png" alt="Pointer" width="240"/>
+
+```
+#include <iostream>
+#include <vector>
+#include <string>
+
+int main() {
+    int num = 10;
+    std::cout << "Value of num is " << num << std::endl;  
+    std::cout << "Size of num is " << sizeof(num) << " bytes" << std::endl;    
+    std::cout << "Address of num is " << &num << std::endl;
+
+    int *p;
+    std::cout << "\nValue of p is " << p << std::endl;  // Garbage
+    std::cout << "Size of p is " << sizeof(p) << " bytes" << std::endl;    
+    std::cout << "Address of p is " << &p << std::endl; 
+
+    p = nullptr ;
+    std::cout << "New value of p is " << p << std::endl; 
+
+
+    int *p1 = nullptr;
+    double *p2 = nullptr;
+    unsigned long long *p3 = nullptr;
+    std::vector <std::string> *p4 = nullptr;
+    std::string *p5 = nullptr;
+    
+    std::cout << "\nSize of p1 is " << sizeof(p1) << std::endl;
+    std::cout << "Size of p2 is " << sizeof(p2) << std::endl;
+    std::cout << "Size of p3 is " << sizeof(p3) << std::endl;
+    std::cout << "Size of p4 is " << sizeof(p4) << std::endl;
+    std::cout << "Size of p5 is " << sizeof(p5) << std::endl;
+
+
+    int score = 10;
+    int *score_ptr = nullptr;
+    score_ptr = &score;
+    std::cout << "\nValue of score is   " << score << std::endl;
+    std::cout << "Address of score is   " << score_ptr << std::endl;
+    std::cout << "Value of score_ptr is " << score_ptr << std::endl;
+
+    return 0;
+}
+```
+
+```
+Value of num is 10
+Size of num is 4 bytes
+Address of num is 0x7fff6360f448
+
+Value of p is 0x7b2ee8628e88
+Size of p is 8 bytes
+Address of p is 0x7fff6360f450
+New value of p is 0
+
+Size of p1 is 8
+Size of p2 is 8
+Size of p3 is 8
+Size of p4 is 8
+Size of p5 is 8
+
+Value of score is   10
+Address of score is   0x7fff6360f44c
+Value of score_ptr is 0x7fff6360f44c
+```
+
+#### Dereference Pointers
+
+<img src="00_docs/images/dereference_pointers.png" width="480"/>
+
+```
+int main() {
+    int score = 100;
+    int *score_ptr = &score;
+    std::cout << *score_ptr << std::endl; // 100
+
+    *score_ptr = 200;
+    std::cout << *score_ptr << std::endl; // 200
+    std::cout << score << std::endl; // 200
+
+    return 0;
+}
+```
+
+#### Dynamic Memory
+```
+#include <iostream>
+
+int main(){
+    int *int_ptr = nullptr;
+    int_ptr = new int;
+    std::cout << int_ptr << std::endl; // Heap address
+    delete int_ptr;
+
+    return 0;
+}
+```
+
+| Feature               | **Stack Overflow**                                      | **Memory Leak**                                  |
+| --------------------- | ------------------------------------------------------- | ------------------------------------------------ |
+| 📍 **Where**          | Stack (fixed-size, function call memory)                | Heap (dynamic memory you manage)                 |
+| ⚙️ **Cause**          | Too many nested function calls or large local variables | Not freeing heap memory (`new` without `delete`) |
+| 📉 **How it grows**   | Very quickly — usually instantly                        | Slowly over time                                 |
+| 💥 **Crash behavior** | Immediate crash (`stack overflow`)                      | Slows down, then crashes (`out of memory`)       |
+| 🔧 **Fix**            | Reduce recursion or local variable size                 | Use `delete` or smart pointers                   |
+
+#### Pointer Arithmetic 
+```
+int main(){
+    std::string s1 = "Frank";
+    std::string s2 = "Frank";
+    std::string s3 = "James";
+    std::string *p1 = &s1;
+    std::string *p2 = &s2;
+    std::string *p3 = &s1;
+    std::cout << std::boolalpha;
+    std::cout << "\n" << p1 << " == " << p2 << ": " << (p1==p2) << std::endl;
+    std::cout << p1 << " == " << p3 << ": " << (p1==p3) << std::endl;
+    std::cout << *p1 << " == " << *p2 << ": " << (*p1==*p2) << std::endl;
+    std::cout << *p1 << " == " << *p3 << ": " << (*p1==*p3) << std::endl;
+    p3 = &s3 ;
+    std::cout << *p1 << " == " << *p3 << ": " << (*p1==*p3) << std::endl;
+
+    return 0;
+}
+```
+
+```
+0x7ffd1ef50cb0 == 0x7ffd1ef50cd0: false
+0x7ffd1ef50cb0 == 0x7ffd1ef50cb0: true
+Frank == Frank: true
+Frank == Frank: true
+Frank == James: false
+```
+
+#### Pass by Reference with Pointers
+- void swap(int *a, int *b){ **---------->** int *a is equal to memory address
+- *a = *b; **---------------------------->** *a is equal to value of the variable at that address
+
+```
+#include <iostream>
+
+void swap(int *a, int *b){
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+int main(){
+    int x = 100;
+    int y = 200;
+    std::cout << "X: " << x << " Y: " << y << std::endl; 
+    swap(&x, &y);
+    std::cout << "X: " << x << " Y: " << y << std::endl;
+    return 0;
+}
+```
+
+```
+X: 100 Y: 200
+X: 200 Y: 100
+```
+
+```
+void display(const std::vector <std::string> *const v){
+    // (*v).at(0) = "Oben"; // Compile error (const std::vector <std::string>)
+    for (std::string s : *v){
+        std::cout << s << " ";
+    }
+    std::cout << std::endl;
+    // v = null_ptr // Compile error (*const v)
+}
+
+void example2(){
+    std::vector <std::string> stooges = {"Larry", "Moe", "Curly"};
+    display(&stooges);
+}
+
+
+int main(){
+    // example1();
+    example2();
+
+    return 0;
+}
+```
+
+
+#### Some Pointer Problems
+##### Uninitialized Pointer
+Wrong
+```
+#include <iostream>
+
+void bad_example() {
+    int *ptr;           // ❌ uninitialized pointer — points to random memory
+    *ptr = 42;          // ❌ undefined behavior: writing to an unknown address
+    std::cout << *ptr << std::endl;
+}
+```
+
+Correct 
+```
+#include <iostream>
+
+void good_example() {
+    int value = 0;
+    int *ptr = &value;  // ✅ initialized to point to valid memory
+    *ptr = 42;
+    std::cout << *ptr << std::endl;  // prints 42
+}
+```
+
+Dynamic Correct
+```
+void good_heap_example() {
+    int *ptr = new int;  // ✅ memory on heap
+    *ptr = 42;
+    std::cout << *ptr << std::endl;
+    delete ptr;          // ✅ clean up
+}
+```
+
+###### Memory Leak
+Wrong
+```
+void memory_leak_example() {
+    int *ptr = new int(42);  // heap allocation
+
+    ptr = new int(99);       // ❌ old pointer is overwritten!
+
+    // No delete for the first allocation → memory leak!
+    delete ptr;              // only frees the second allocation
+}
+```
+
+Correct
+```
+void no_memory_leak() {
+    int *ptr = new int(42);
+    delete ptr;              // ✅ clean up before reassigning
+
+    ptr = new int(99);
+    delete ptr;              // ✅ clean up again
+}
+```
+
+#### Reference
+```
+int main(){
+    int num = 100;
+    int &ref = num;
+    std::cout << num << std::endl;
+    std::cout << ref << std::endl;
+    std::cout << &ref << std::endl;
+    num = 500;
+    std::cout << num << std::endl;
+    std::cout << ref << std::endl;
+    std::cout << &ref << std::endl;
+    ref = -300;
+    std::cout << num << std::endl;
+    std::cout << ref << std::endl;
+    std::cout << &ref << std::endl;    
+    return 0;
+}
+```
+
+```
+100
+100
+0x7ffe0551263c
+500
+500
+0x7ffe0551263c
+-300
+-300
+0x7ffe0551263c
+```
+
+#### lvalue and rvalue
+| Term       | Meaning                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------- |
+| **lvalue** | **Left value**: has a **persistent memory address**, can appear on the left or right of `=` |
+| **rvalue** | **Right value**: a **temporary value**, can only appear on the right of `=`                 |
