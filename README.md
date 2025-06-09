@@ -1194,3 +1194,155 @@ int main(){
 | ---------- | ------------------------------------------------------------------------------------------- |
 | **lvalue** | **Left value**: has a **persistent memory address**, can appear on the left or right of `=` |
 | **rvalue** | **Right value**: a **temporary value**, can only appear on the right of `=`                 |
+
+
+### Classes and Objects
+#### Accessing class members
+```
+#include <iostream>
+#include <string>
+#include <vector>
+
+
+class Player{
+public:
+    // attributes
+    std::string name;
+    int health;
+    int experience;
+
+    // methods
+    void talk(std::string text_to_say){ std::cout << name << " says " << text_to_say << std::endl;}
+    bool is_dead();
+};
+
+
+class Account{
+public:
+    // attributes
+    std::string name;
+    double balance;
+
+    // methods
+    bool deposit(double bal){ balance += bal;  std::cout << "In deposit" << std::endl; return true;}
+    bool withdraw(double bal){ balance -= bal; std::cout << "In withdraw" << std::endl; return true;}
+};
+
+
+int main (){
+    Player frank;
+    frank.name = "Frank";
+    frank.health = 100;
+    frank.experience = 12;
+    frank.talk("Hi");
+
+    Player *enemy = new Player;
+    enemy->name = "Enemy";
+    enemy->health = 100;
+    enemy->talk("I will destroy you");
+
+    Account n26;
+    n26.balance = 1000;
+    n26.deposit(500);
+    std::cout << n26.balance << std::endl;
+
+
+    return 0;
+}
+```
+
+#### Implementing Member Methods 
+```
+#include <iostream>
+#include <string>
+#include <vector>
+
+
+
+class Account{
+private:
+    // attributes
+    std::string name;
+    double balance;
+
+public:
+    // methods declared inline
+    void set_balance(double bal){
+        balance = bal;
+    }
+
+    double get_balance(){
+        return balance;
+    }
+
+    // methods will be declared outside the class declaration
+    void set_name(std::string name);
+    std::string get_name();
+    bool deposit(double amount);
+    bool withdraw(double amount);
+};
+
+
+void Account::set_name(std::string n){
+    name = n;
+}
+
+std::string Account::get_name(){
+    return name;
+}
+
+bool Account::deposit(double amount){
+    balance += amount;
+    return true;
+}
+
+bool Account::withdraw(double amount){
+    if (balance-amount >= 0){
+        balance -= amount;
+        return true;
+    }
+    else {
+        return false;
+    }
+
+}
+
+
+
+int main (){
+
+    Account n26;
+    n26.set_name("Oben Main Account");
+    n26.set_balance(1000.0);
+
+    if (n26.deposit(200.0)){
+        std::cout << "Deposit OK" << std::endl;
+    }
+    else{
+        std::cout << "Deposit not allowed" << std::endl;
+    }
+
+    if (n26.withdraw(500.0)){
+        std::cout << "Withdraw OK" << std::endl;
+    }
+    else{
+        std::cout << "Not sufficient funds" << std::endl;
+    }
+
+    if (n26.withdraw(1500.0)){
+        std::cout << "Withdraw OK" << std::endl;
+    }
+    else{
+        std::cout << "Not sufficient funds" << std::endl;
+    }
+
+
+    return 0;
+}
+```
+
+```
+Deposit OK
+Withdraw OK
+Not sufficient funds
+```
