@@ -1,8 +1,8 @@
 #ifndef _ACCOUNT_H_
 #define _ACCOUNT_H_
 
-#include <string>
 #include <iostream>
+#include <string>
 
 class Account{
 private:
@@ -10,12 +10,14 @@ private:
     double balance;
 
 public:
-    void set_balance(double bal);
-    double get_balance();
-    void set_name(std::string name);
     std::string get_name();
-    bool deposit(double amount);
-    bool withdraw(double amount);
+    double get_balance();
+    void set_name(std::string);
+    void set_balance(double);
+    bool deposit(double);
+    bool withdraw(double);
+    
+    
 };
 
 

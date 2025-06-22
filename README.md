@@ -1346,3 +1346,171 @@ Deposit OK
 Withdraw OK
 Not sufficient funds
 ```
+
+#### Implementing Methods with Header File (.h)
+account.h
+```
+#ifndef _ACCOUNT_H_
+#define _ACCOUNT_H_
+
+#include <iostream>
+#include <string>
+
+class Account{
+private:
+    std::string name;
+    double balance;
+
+public:
+    std::string get_name();
+    double get_balance();
+    void set_name(std::string);
+    void set_balance(double);
+    bool deposit(double);
+    bool withdraw(double);
+    
+    
+};
+
+
+#endif // _ACCOUNT_H_
+```
+
+04_account.cpp
+```
+#include "account.h"
+
+void Account::set_name(std::string n){
+    name = n;
+}
+
+std::string Account::get_name(){
+    return name;
+}
+
+bool Account::deposit(double dep){
+    balance += dep;
+    return true;
+}
+
+bool Account::withdraw(double with){
+    if(balance-with >= 0){
+        balance -= with;
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
+
+void Account::set_balance(double bal){
+    balance = bal;
+}
+
+double Account::get_balance(){
+    return balance;
+}
+```
+
+04_main.cpp
+```
+#include "account.h"
+
+int main(){
+    Account n26;
+    n26.set_name("Oben Sustam");
+    n26.set_balance(1000);
+    std::cout << "Username: " << n26.get_name() << std::endl;
+    std::cout << "Balance: " << n26.get_balance() << std::endl;
+    n26.deposit(500);
+    std::cout << "Balance after deposit: " << n26.get_balance() << std::endl;
+
+    if(n26.withdraw(200)){
+        std::cout << "Balance after withdraw: " << n26.get_balance() << std::endl;
+    }
+    else{
+        std::cout << "Not enough money" << std::endl;
+    }
+
+    if(n26.withdraw(2200)){
+        std::cout << "Balance after withdraw: " << n26.get_balance() << std::endl;
+    }
+    else{
+        std::cout << "Not enough money" << std::endl;
+    }
+
+    return 0;
+}
+```
+
+#### Constructors and Deconstructors
+```
+#include <iostream>
+#include <string>
+
+class Player{
+private:
+    std::string name;
+    int health;
+    int xp;
+
+public:
+    void set_name(std::string new_name){
+        name = new_name;
+    }
+
+    std::string get_name(){
+        return name;
+    }
+
+    Player(){ // Default constructor
+        std::cout << "No args constructor is called for " << name << std::endl;
+    }
+
+    Player(std::string init_name){
+        name = init_name;
+        std::cout << "String arg constructor is called for " << name << std::endl;
+    }
+
+    Player(std::string init_name, int init_health, int init_xp){
+        name = init_name;
+        health = init_health;
+        xp = init_xp;
+        std::cout << "Three args constructor is called for " << name << std::endl;
+    }
+
+    ~Player(){
+        std::cout <<   "Deconstructor called for " << name << std::endl;
+    }
+};
+
+
+int main(){
+    Player oben("Oben");
+    Player orbay("Orbay", 100, 10);
+    Player orcun;
+    orcun.set_name("Orcun");
+
+    Player *tenzile = new Player("Tenzile");
+    Player *orhan = new Player;
+    orhan->set_name("Orhan");
+    
+    delete tenzile;
+    delete orhan;
+
+
+    return 0;
+}
+```
+```
+String arg constructor is called for Oben
+Three args constructor is called for Orbay
+No args constructor is called for 
+String arg constructor is called for Tenzile
+No args constructor is called for 
+Deconstructor called for Tenzile
+Deconstructor called for Orhan
+Deconstructor called for Orcun
+Deconstructor called for Orbay
+Deconstructor called for Oben
+```

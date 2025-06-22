@@ -8,20 +8,19 @@ std::string Account::get_name(){
     return name;
 }
 
-bool Account::deposit(double amount){
-    balance += amount;
+bool Account::deposit(double dep){
+    balance += dep;
     return true;
 }
 
-bool Account::withdraw(double amount){
-    if (balance-amount >= 0){
-        balance -= amount;
-        return true;
+bool Account::withdraw(double with){
+    if(balance-with >= 0){
+        balance -= with;
+        return 1;
     }
-    else {
-        return false;
+    else{
+        return 0;
     }
-
 }
 
 void Account::set_balance(double bal){
