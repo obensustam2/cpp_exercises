@@ -17,7 +17,7 @@ public:
     }
 
     Player(){
-        std::cout << "No args constructor is called for " << name << std::endl;
+        std::cout << "No args constructor is called" << name << std::endl;
     }
 
     Player(std::string init_name){
@@ -33,7 +33,7 @@ public:
     }
 
     ~Player(){
-        std::cout <<   "Deconstructor called for " << name << std::endl;
+        std::cout << "Deconstructor called for " << name << std::endl;
     }
 };
 

@@ -20,7 +20,8 @@ public:
         return xp;
     }
 
-    Player(std::string name_val = "None", int health_val = 13, int xp_val = 56) : name(name_val), health(health_val), xp(xp_val){
+    Player(std::string name_val = "None", int health_val = 13, int xp_val = 56) : 
+        name(name_val), health(health_val), xp(xp_val){
     }
 };
 

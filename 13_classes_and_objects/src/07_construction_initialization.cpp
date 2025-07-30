@@ -22,13 +22,16 @@ public:
     Player(std::string name_val, int health_val, int xp_val);
 };
 
-Player::Player() : name("Oben"), health(99), xp(29) {
+Player::Player() : 
+    name("Oben"), health(99), xp(29) {
 }
 
-Player::Player(std::string name_val) : name(name_val), health(80), xp(22){
+Player::Player(std::string name_val) : 
+    name(name_val), health(80), xp(22){
 }
 
-Player::Player(std::string name_val, int health_val, int xp_val) : name(name_val), health(health_val), xp(xp_val) {
+Player::Player(std::string name_val, int health_val, int xp_val) : 
+    name(name_val), health(health_val), xp(xp_val) {
 }
 
 int main(){

@@ -30,7 +30,8 @@ Player::Player(std::string name_val) : Player(name_val, 100, 22) {
     std::cout << "One arg constructor" << std::endl;
 }
 
-Player::Player(std::string name_val, int health_val, int xp_val) : name(name_val), health(health_val), xp(xp_val) {
+Player::Player(std::string name_val, int health_val, int xp_val) : 
+    name(name_val), health(health_val), xp(xp_val) {
     std::cout << "\nThree args constructor" << std::endl;
 }
 
