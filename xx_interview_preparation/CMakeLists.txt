@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.10)
+
+project(xx_interview_preparation)
+
+include_directories(include)
+
+add_executable(00_pointer_intro src/00_pointer_intro.cpp)
+add_executable(01_pass_by_ref_val_point src/01_pass_by_ref_val_point.cpp)
+add_executable(02_stack_vs_heap src/02_stack_vs_heap.cpp)
+add_executable(03_vector_example src/03_vector_example.cpp)
+add_executable(04_smart_pointers_unique src/04_smart_pointers_unique.cpp)
+add_executable(05_smart_pointers_shared src/05_smart_pointers_shared.cpp)
+# add_executable(06_smart_pointers_weak src/06_smart_pointers_weak.cpp)

@@ -1,4 +1,92 @@
-# BUILD
+# C++ Learning Handbook
+
+# Table of Contents
+
+1. [Build](#1-build)
+
+2. [Getting Started](#2-getting-started)  
+    2.1. [Preprocessor](#21-preprocessor)  
+    2.2. [Standard Template Library vs Standard Library](#22-standard-template-library-vs-standard-library)  
+    2.3. [Standard Library Headers](#23-standard-library-headers)  
+    2.4. [Variable](#24-variable)  
+    2.5. [Namespace](#25-namespace)  
+    2.6. [Arguments](#26-arguments)  
+    2.7. [User Input](#27-user-input)  
+    2.8. [Constant Variable](#28-constant-variable)  
+    2.9. [Byte Size](#29-byte-size)  
+    2.10. [Long Variable](#210-long-variable)
+
+3. [Arrays and Vectors](#3-arrays-and-vectors)  
+    3.1. [Arrays](#31-arrays)  
+    3.2. [Vectors](#32-vectors)
+
+4. [Statements and Operators](#statements-and-operators)  
+    4.1. [Operator](#operator)  
+    4.2. [static_cast](#static_cast)  
+    4.3. [Comparision](#comparision)  
+    4.4. [Compound Assignment](#compound-assignment)  
+    4.5. [Operator Precedence](#operator-precedence)  
+    4.6. [Enumerator](#enumerator)  
+    4.7. [Precision Set](#precision-set)
+
+5. [Controlling Program Flow](#controlling-program-flow)  
+    5.1. [If-Else](#if-else)  
+    5.2. [Switch-Case](#switch-case)  
+    5.3. [Ternary Operator](#ternary-operator-conditional-operator)  
+    5.4. [For Loop](#for-loop)  
+    5.5. [Range Based For Loop](#range-based-for-loop)  
+    5.6. [While Loop](#while-loop)  
+    5.7. [Do While Loop](#do-while-loop)  
+    5.8. [Continue and Break](#continue-and-break)  
+    5.9. [Infinite Loops](#infinite-loops)  
+    5.10. [Nested Loops](#nested-loops)
+
+6. [Characters and Strings](#characters-and-strings)  
+    6.1. [C++ Strings](#c-strings)
+
+7. [Functions](#functions)  
+    7.1. [Random number generation](#random-number-generation)  
+    7.2. [Nearest integer floating-point operations](#nearest-integer-floating-point-operations)  
+    7.3. [Power functions](#power-functions)  
+    7.4. [Trigonometric functions](#trigonometric-functions)  
+    7.5. [Function Prototypes](#function-prototypes)  
+    7.6. [Default arguments](#default-arguments)  
+    7.7. [Overloading Functions (Polymorphism)](#overloading-functions-polymorphism)  
+    7.8. [Pass by Reference](#pass-by-reference)  
+    7.9. [Pass by Value vs Pass by Reference](#pass-by-value-vs-pass-by-reference)  
+    7.10. [Const usage for printing with reference inputs](#const-usage-for-printing-with-reference-inputs)  
+    7.11. [Local Global - Scope Rules](#local-global---scope-rules)  
+    7.12. [static variable](#static-variable)  
+    7.13. [Function Calls - Memory Stack - Recursive Function](#function-calls---memory-stack---recursive-function)
+
+8. [Pointers and References](#pointers-and-references)  
+    8.1. [Simple Pointers](#simple-pointers)  
+    8.2. [Dereference Pointers](#dereference-pointers)  
+    8.3. [Dynamic Memory](#dynamic-memory)  
+    8.4. [Pointer Arithmetic](#pointer-arithmetic)  
+    8.5. [Pass by Pointer](#pass-by-pointer)  
+    8.6. [Some Pointer Problems](#some-pointer-problems)  
+    8.7. [Reference](#reference)  
+    8.8. [lvalue and rvalue](#lvalue-and-rvalue)
+
+9. [Classes and Objects](#classes-and-objects)  
+    9.1. [Accessing class members](#accessing-class-members)  
+    9.2. [Implementing Member Methods](#implementing-member-methods)  
+    9.3. [Implementing Methods with Header File (.h)](#implementing-methods-with-header-file-h)  
+    9.4. [Constructors and Deconstructors](#constructors-and-deconstructors)  
+    9.5. [Constructor Initialization](#constructor-initialization)  
+    9.6. [Delegating Constructor](#delegating-constructor)  
+    9.7. [Default Constructor Parameters](#default-constructor-parameters)  
+    9.8. [Copy Constructor](#copy-constructor)  
+    9.9. [Deep Copy](#deep-copy)  
+    9.10. [Move Constructor](#move-constructor)  
+    9.11. [Const with Classes](#const-with-classes)  
+    9.12. [Static Class Members](#static-class-members)  
+    9.13. [Struct](#struct)  
+    9.14. [Movie Section Challenge](#movie-section-challenge)
+
+
+# Build
 ```
 touch CMakeLists.txt
 mkdir build
@@ -8,8 +96,8 @@ make
 ./my_program
 ```
 
-## NOTES
-### Preprocessor
+# Getting Started
+## Preprocessor
 The preprocessor runs before actual compilation. It handles all lines starting with #, like:
 ```
 #include <iostream>  // includes the standard I/O library
@@ -17,13 +105,13 @@ The preprocessor runs before actual compilation. It handles all lines starting w
 #ifdef DEBUG         // conditional compilation
 ```
 
-### Standard Template Library vs Standard Library 
+## Standard Template Library vs Standard Library 
 | Term                     | Contains                      | Examples                                          |
 | ------------------------ | ----------------------------- | ------------------------------------------------- |
 | **STL**                  | Templates for data structures | `vector`, `map`, `sort`, `iterator`               |
 | **C++ Standard Library** | STL + many other libraries    | `string`, `iostream`, `thread`, `regex`, `memory` |
 
-### Standard Library Headers
+## Standard Library Headers
 ```
 #include <iostream>
 #include <vector>
@@ -34,7 +122,7 @@ The preprocessor runs before actual compilation. It handles all lines starting w
 #include <cstdlib>
 ```
 
-### Variable
+## Variable
 A variable is just a name (or label) for a location in your computer's memory where a value is stored.
 ```
 int age = 25;
@@ -45,15 +133,15 @@ The computer reserves a spot in memory big enough to store an int (usually 4 byt
 - It gives that memory location a name — in this case, age.
 - So when you use age, you're referring to that memory location.
 
-### Namespace
+## Namespace
 All ROS 2 C++ functionality is grouped under the **rclcpp** namespace. This keeps the API structured and makes it clear where functions and classes come from.
 ```
 rclcpp::shutdown();
 ```
 rclcpp::shutdown() clearly tells the compiler "use ROS 2’s shutdown"
 
-### Arguments
-```
+## Arguments
+```cpp
 int main(int num_args, char *args[]){
     std::cout << "Number of arguments: " << num_args << "\n";
     std::cout << "5th argument is: " << args[4] << "\n";
@@ -61,31 +149,32 @@ int main(int num_args, char *args[]){
 }
 ```
 
-### User Input
-```
+## User Input
+```cpp
 int num_rooms = 0;
 std::cout << "How many rooms do you want to be cleaned? ";
 std::cin >> num_rooms;
 ```
 
-### Constant Variable
-```
+## Constant Variable
+```cpp
 const double tax_rate = 0.06;
 ```
 
-### Byte Size
-```
+## Byte Size
+```cpp
 sizeof(char)
 ```
 
-### Long Variable
-```
+## Long Variable
+```cpp
 long double large_amount = 2.7e120;
 ```
 
-### Arrays
+# Arrays and Vectors
+## Arrays
 1-D Array
-```
+```cpp
 int my_array [5] = {1,2,3,4,5};
 std::cout << my_array[0] << std::endl;
 ```
@@ -95,8 +184,8 @@ Multi-D Array
 <img src="00_docs/images/multi_dim_arrays.png" alt="2D Array" width="360"/>
 
 
-### Vectors
-```
+## Vectors
+```cpp
 #include <iostream>
 #include <vector>
 
@@ -126,10 +215,11 @@ int main()
 }  
 ```
 
-### Operator
+# Statements and Operators
+## Operator
 - Operator = The symbol that performs an action
 - Operand = The value or variable the operator acts on
-```
+```cpp
 int a = 10;
 int b = 5;
 int c = a + b;
@@ -138,15 +228,15 @@ int c = a + b;
 - a and b are the operands
 - The operator + adds the two operands
 
-### static_cast
-```
+## static_cast
+```cpp
 std::cout << "Precise average is: " << static_cast<double>(total) / count << std::endl;
 ```
 
-### Comparision
+## Comparision
 11.99999999999999999999999 and 12.0 could be equal for C++ code so be careful with the library usage
 
-### Compound Assignment
+## Compound Assignment
 | Operator | Meaning                | Equivalent To         |         |     |
 | -------- | ---------------------- | --------------------- | ------- | --- |
 | `+=`     | Add and assign         | `x = x + y`           |         |     |
@@ -161,14 +251,14 @@ std::cout << "Precise average is: " << static_cast<double>(total) / count << std
 | `>>=`    | Right shift and assign | `x = x >> y`          |         |     |
 
 
-```
+```cpp
 int x = 10;
 x += 5;   // x = 15
 x *= 2;   // x = 30
 x -= 3;   // x = 27
 ```
 
-### Operator Precedence
+## Operator Precedence
 | Precedence  | Operator(s)             | Type                  | Associativity |            |               |
 | ----------- | ----------------------- | --------------------- | ------------- | ---------- | ------------- |
 | 1 (Highest) | `()` `[]` `->` `.`      | Function call, member | Left to right |            |               |
@@ -183,8 +273,8 @@ x -= 3;   // x = 27
 | 10 (Low)    | `,`                     | Comma                 | Left to right |            |               |
 
 
-### Enumerator
-```
+## Enumerator
+```cpp
 enum Color {
     red, green, blue
 };
@@ -192,8 +282,8 @@ enum Color {
 Color screen_color = green;
 ```
 
-### Precision Set
-```
+## Precision Set
+```cpp
 #include <iomanip>
 
 if (temperatures.size() != 0){
@@ -202,8 +292,9 @@ if (temperatures.size() != 0){
 }
 ```
 
-### If-Else
-```
+# Controlling Program Flow
+## If-Else
+```cpp
 if (score >= 90)
 {
     letter_grade = 'A';
@@ -223,12 +314,12 @@ else{
 }
 ```
 
-### Switch-Case
+## Switch-Case
 In C++, you cannot use switch with double or std::string directly. The switch statement only works with integral or enumeration types, such as:
 - int
 - char
 - enum
-```
+```cpp
 int day;
 
 std::cout << "Enter a number (1-7): ";
@@ -261,8 +352,8 @@ switch (day) {
 }
 ```
 
-### Ternary Operator (Conditional Operator)
-```
+## Ternary Operator (Conditional Operator)
+```cpp
 int num1, num2, bigger, smaller;
 std::cout << "Enter two integers seperated by space: ";
 std::cin >> num1 >> num2;
@@ -275,7 +366,7 @@ if (num1 != num2) {
 }
 ```
 
-```
+```cpp
     for (int i = 1; i <=100; i++)
     {
         std::cout << i;
@@ -283,8 +374,8 @@ if (num1 != num2) {
     }
 ```
 
-### For Loop
-```
+## For Loop
+```cpp
 #include <iostream>
 #include <vector>
 
@@ -317,10 +408,10 @@ int main() {
 }
 ```
 
-### Range Based For Loop
+## Range Based For Loop
 The term range refers to a collection of elements you can iterate over — like arrays, vectors, lists, maps, and any container that provides begin() and end() functions (which define a range of iterators).
 
-```
+```cpp
 #include <iostream>
 #include <vector>
 
@@ -337,8 +428,8 @@ int main() {
 }
 ```
 
-### While Loop
-```
+## While Loop
+```cpp
 #include <iostream>
 
 int main() {
@@ -362,9 +453,9 @@ int main() {
 }
 ```
 
-### Do While Loop
+## Do While Loop
 If you know that you must perform at least one iteration of the loop, then you should consider the do while loop over while loop.
-```
+```cpp
 #include <iostream>
 
 int main() {
@@ -405,11 +496,11 @@ int main() {
 }
 ```
 
-### Continue and Break
-#### Continue
+## Continue and Break
+### Continue
 When a continue statement is executed in the loop, no further statements in the body of the loop or executed and control immediately goes directly to the beginning of the loop for the next iteration. So you can think of this as skip processing in the rest of this iteration and go to the beginning of the loop.
 
-#### Break
+### Break
 When the brake statement is executed in the loop, no further statements in the body are executed and the loop is terminated. So controllers transfer to the statement immediately following the loop.
 
 ```cpp
@@ -441,30 +532,30 @@ int main() {
 3
 ```
 
-### Infinite Loops
+## Infinite Loops
 For Loop
-```
+```cpp
     for(;;){
         std::cout << "This will print forver" << std::endl;
     }
 ```
 
 While Loop
-```
+```cpp
     while(true){
         std::cout << "This will print forver" << std::endl;
     }
 ```
 
 Do-While Loop
-```
+```cpp
     do{
         std::cout << "This will print forver" << std::endl;
     } while(true);
 ```
 
-### Nested Loops
-```
+## Nested Loops
+```cpp
 #include <iostream>
 #include <vector>
 
@@ -501,8 +592,9 @@ int main (){
 }
 ```
 
-### C++ Strings
-```
+# Characters and Strings
+## C++ Strings
+```cpp
 #include <iostream>
 #include <string>
 
@@ -556,9 +648,9 @@ int main(){
 }
 ```
 
-### Functions
-#### Random number generation
-```
+# Functions
+## Random number generation
+```cpp
 #include <iostream>
 #include <ctime> // time
 #include <cstdlib> // random
@@ -584,8 +676,8 @@ int main() {
 }
 ```
 
-#### Nearest integer floating-point operations
-```
+## Nearest integer floating-point operations
+```cpp
 #include <iostream>
 #inclue <cmath>
 
@@ -598,8 +690,8 @@ int main(){
 }
 ```
 
-#### Power functions
-```
+## Power functions
+```cpp
 #include <iostream>
 #inclue <cmath>
 
@@ -619,8 +711,8 @@ int main(){
 }
 ```
 
-#### Trigonometric functions
-```
+## Trigonometric functions
+```cpp
 #include <iostream>
 #inclue <cmath>
 
@@ -633,8 +725,8 @@ int main(){
 }
 ```
 
-#### Function Prototypes
-```
+## Function Prototypes
+```cpp
 #include <iostream>
 #include <cmath>
 
@@ -660,9 +752,9 @@ double volume_cylinder(double radius, double height){
 }
 ```
 
-#### Default arguments
+## Default arguments
 Put the default arguments in prototypes
-```
+```cpp
 #include <iostream>
 #include <iomanip>
 
@@ -683,7 +775,7 @@ double calc_cost(double base_cost, double tax_rate, double shipping){
 }
 ```
 
-#### Overloading Functions (Polymorphism)
+## Overloading Functions (Polymorphism)
 ```cpp
 #include <iostream>
 #include <string>
@@ -743,7 +835,7 @@ Printing vector: Hello my name is Oben
 
 
 
-#### Pass by Reference
+## Pass by Reference
 ```cpp
 void double_data2(int &val){
     val *= 2;
@@ -769,7 +861,7 @@ Value: 20
 Value: 40
 ```
 
-#### Pass by Value vs Pass by Reference
+## Pass by Value vs Pass by Reference
 | Feature                         | **Pass by Value**                                                         | **Pass by Reference**                                                                |
 | ------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | **Definition**                  | A copy of the argument is passed to the function.                         | A reference (alias) to the original argument is passed.                              |
@@ -783,17 +875,15 @@ Value: 40
 | **Example Call**                | `foo(num);` (copies `num`)                                                | `foo(num);` (references `num`)                                                       |
 
 
-#### Const usage for printing with reference inputs
+## Const usage for printing with reference inputs
 ```cpp
 #include <iostream>
 #include <string>
 #include <typeinfo>
 using namespace std;
 
-
 void print_guest_list(const std::string &g1, const std::string &g2, const std::string &g3);
 void clear_guest_list(std::string &g1, std::string &g2, std::string &g3);
-
 
 int main() {
 
@@ -824,7 +914,7 @@ void clear_guest_list(std::string &g1, std::string &g2, std::string &g3) {
 }
 ```
 
-#### Local Global - Scope Rules
+## Local Global - Scope Rules
 | Concept          | Explanation                                                                                                     |
 | ---------------- | --------------------------------------------------------------------------------------------------------------- |
 | **Scope**        | A variable is only accessible within the block it is declared in and its inner blocks.                          |
@@ -856,7 +946,7 @@ int main() {
 }
 ```
 
-#### static variable
+## static variable
 ```cpp
 void static_local_example() {
     static int num = 5000;      // local to static_local_example static - retains it value between calls
@@ -884,8 +974,7 @@ Local static num is: 7000 in static_local_example - start
 Local static num is: 8000 in static_local_example - end
 ```
 
-#### Function Calls - Memory Stack - Recursive Function
-
+## Function Calls - Memory Stack - Recursive Function
 <img src="00_docs/images/memory_stack.png" alt="Memory Stack" width="240"/>
 
 ```cpp
@@ -910,14 +999,29 @@ unsigned long long factorial(unsigned long long val){
 }
 ```
 
-### Pointers and References
+# Pointers and References
+
+## Stack vs Heap Memory
+
+| Feature              | **Stack**                                                                 | **Heap**                                                                 |
+|-----------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| **Size limit**        | Small & fixed (e.g., ~8 MB per thread on Linux)                          | Large & flexible (limited by system RAM, often GBs)                      |
+| **Lifetime**          | Automatic: variables destroyed when scope ends                           | Manual: memory stays until `delete` or smart pointer frees it             |
+| **Speed**             | Very fast (simple push/pop operations)                                   | Slower (requires OS bookkeeping and possible fragmentation)               |
+| **Allocation**        | Done automatically by compiler                                           | Done manually with `new`, `malloc`, or containers like `std::vector`      |
+| **Deallocation**      | Automatic when scope ends                                                | Manual (`delete` / `delete[]`), or automatic with smart pointers/RAII     |
+| **Typical usage**     | Local variables, function parameters, small temporary objects            | Large data, dynamic arrays, objects needing custom lifetime               |
+| **Errors**            | Stack overflow (too much usage)                                          | Memory leak (forgetting to free), dangling pointers, fragmentation        |
+| **Example**           | `int x = 10;`                                                           | `int* p = new int(10); delete p;`                                        |
+| **Analogy**           | Lunch tray (items stacked & removed in order)                           | Warehouse (flexible storage, but must clean up yourself)                  |
+
 
 **Properties**
 - Pointer size is independent from which variable address it points.
 
-#### Simple Pointers
+## Simple Pointers
 
-<img src="00_docs/images/pointer.png" alt="Pointer" width="240"/>
+<img src="00_docs/images/pointer.png" alt="Pointer" width="720"/>
 
 ```cpp
 #include <iostream>
@@ -942,7 +1046,7 @@ Value of the score_ptr is 0x7ffcb29541cc
 Value pointed to score_ptr is 10
 ```
 
-#### Dereference Pointers
+## Dereference Pointers
 Accessing the actual value stored at the memory address the pointer holds
 
 <img src="00_docs/images/dereference_pointers.png" width="480"/>
@@ -978,7 +1082,7 @@ Dereferencing the pointer: 500
 Score value: 500
 ```
 
-#### Dynamic Memory
+## Dynamic Memory
 ```cpp
 #include <iostream>
 
@@ -992,8 +1096,7 @@ int main(){
 }
 ```
 
-
-#### Pointer Arithmetic 
+## Pointer Arithmetic 
 ```cpp
 int main(){
     std::string s1 = "Frank";
@@ -1022,7 +1125,7 @@ Frank == James: false
 Frank == James: false
 ```
 
-#### Pass by Pointer
+## Pass by Pointer
 ```cpp
 #include <iostream>
 
@@ -1049,66 +1152,38 @@ After: number = 52
 ```
 
 
-#### Some Pointer Problems
-##### Uninitialized Pointer
-Wrong
+## Some Pointer Problems
+
+### Stack Overflow
+**int** stores 4 bytes. BigStackArray has 4m elements -> 4.000.000 x 4 = 16.000.000 Byte = 16 MB. Which is higher than stack memory size (8 MB). Code will give error.
 ```cpp
 #include <iostream>
 
-void bad_example() {
-    int *ptr;           // ❌ uninitialized pointer — points to random memory
-    *ptr = 42;          // ❌ undefined behavior: writing to an unknown address
-    std::cout << *ptr << std::endl;
+int main(){
+
+    // stack memory
+    int bigStackArray[4000000]; 
+    bigStackArray[0] = 0;
+    std::cout << "First Element: " << bigStackArray[0] << std::endl; 
 }
 ```
 
-Correct 
+### Memory Leak
+Creating 16MB array in each loop will exceed the 9GB available system RAM and system will crash
 ```cpp
 #include <iostream>
 
-void good_example() {
-    int value = 0;
-    int *ptr = &value;  // ✅ initialized to point to valid memory
-    *ptr = 42;
-    std::cout << *ptr << std::endl;  // prints 42
+int main(){
+
+    while(true){
+        new int[4000000];
+    }
+
+    return 0;
 }
 ```
 
-Dynamic Correct
-```cpp
-void good_heap_example() {
-    int *ptr = new int;  // ✅ memory on heap
-    *ptr = 42;
-    std::cout << *ptr << std::endl;
-    delete ptr;          // ✅ clean up
-}
-```
-
-###### Memory Leak
-Wrong
-```cpp
-void memory_leak_example() {
-    int *ptr = new int(42);  // heap allocation
-
-    ptr = new int(99);       // ❌ old pointer is overwritten!
-
-    // No delete for the first allocation → memory leak!
-    delete ptr;              // only frees the second allocation
-}
-```
-
-Correct
-```cpp
-void no_memory_leak() {
-    int *ptr = new int(42);
-    delete ptr;              // ✅ clean up before reassigning
-
-    ptr = new int(99);
-    delete ptr;              // ✅ clean up again
-}
-```
-
-#### Reference
+## Reference
 ```cpp
 int main(){
     int num = 100;
@@ -1140,15 +1215,18 @@ int main(){
 0x7ffe0551263c
 ```
 
-#### lvalue and rvalue
-| Term       | Meaning                                                                                     |
-| ---------- | ------------------------------------------------------------------------------------------- |
-| **lvalue** | **Left value**: has a **persistent memory address**, can appear on the left or right of `=` |
-| **rvalue** | **Right value**: a **temporary value**, can only appear on the right of `=`                 |
+## lvalue and rvalue
+## lvalue and rvalue
+
+| Term       | Meaning                                                                                                    | Examples                               |
+| ---------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| **lvalue** | An object that has an identifiable location in memory (can appear on the left-hand side of assignment).    | variables (`x`), dereferenced pointers (`*p`) |
+| **rvalue** | A temporary value or literal without a persistent memory address (usually on the right-hand side of `=`).  | `5`, `x+1`, return value of a function |
 
 
-### Classes and Objects
-#### Accessing class members
+
+# Classes and Objects
+## Accessing class members
 ```cpp
 #include <iostream>
 #include <string>
@@ -1202,7 +1280,7 @@ int main (){
 }
 ```
 
-#### Implementing Member Methods 
+## Implementing Member Methods 
 ```cpp
 #include <iostream>
 #include <string>
@@ -1298,8 +1376,8 @@ Withdraw OK
 Not sufficient funds
 ```
 
-#### Implementing Methods with Header File (.h)
-account.h
+## Implementing Methods with Header File (.h)
+**account.h**
 ```cpp
 #ifndef _ACCOUNT_H_
 #define _ACCOUNT_H_
@@ -1327,7 +1405,7 @@ public:
 #endif // _ACCOUNT_H_
 ```
 
-04_account.cpp
+**04_account.cpp**
 ```cpp
 #include "account.h"
 
@@ -1363,7 +1441,7 @@ double Account::get_balance(){
 }
 ```
 
-04_main.cpp
+**04_main.cpp**
 ```cpp
 #include "account.h"
 
@@ -1394,7 +1472,7 @@ int main(){
 }
 ```
 
-#### Constructors and Deconstructors
+## Constructors and Deconstructors
 ```cpp
 #include <iostream>
 #include <string>
@@ -1465,6 +1543,7 @@ Deconstructor called for Orcun
 Deconstructor called for Orbay
 Deconstructor called for Oben
 ```
+
 | Feature             | `Player oben("Oben")` | `Player *tenzile = new Player("Tenzile")` |
 | ------------------- | --------------------- | ----------------------------------------- |
 | Memory location     | Stack                 | Heap                                      |
@@ -1472,6 +1551,7 @@ Deconstructor called for Oben
 | Destructor call     | Automatic             | Manual (`delete tenzile;`)                |
 | Access method       | `.`                   | `->`                                      |
 | Risk of memory leak | No                    | Yes, if `delete` is not called            |
+
 ```cpp
 void example() {
     int a = 5;              // Stack (static) allocation
@@ -1483,7 +1563,7 @@ void example() {
 }
 ```
 
-#### Constructor Initialization
+## Constructor Initialization
 ```cpp
 #include <iostream>
 #include <string>
@@ -1540,7 +1620,7 @@ int main(){
 ```
 
 
-#### Delegating Constructor 
+## Delegating Constructor 
 ```cpp
 Player() : Player("None", 13, 56) {}                          // 👈 Delegator
 Player(std::string name_val) : Player(name_val, 13, 56) {}   // 👈 Delegator
@@ -1552,7 +1632,7 @@ Player(std::string name_val, int health_val, int xp_val)
 
 
 
-#### Default Constructor Parameters 
+## Default Constructor Parameters 
 No need to define multiple constructor
 ```cpp
 #include <iostream>
@@ -1611,7 +1691,7 @@ int main(){
 }
 ```
 
-#### Copy Constructor
+## Copy Constructor
 | **Aspect**                            | **Shallow Copy**                                       | **Deep Copy**                                  |
 | ------------------------------------- | ------------------------------------------------------ | ---------------------------------------------- |
 | **Definition**                        | Copies outer structure, not internal dynamic memory    | Copies both structure and internal data        |
@@ -1627,7 +1707,7 @@ int main(){
 | **Ideal when**                        | You want to share resources carefully                  | You want complete independence between objects |
 
 
-#### Deep Copy
+## Deep Copy
 ```cpp
 #include <iostream>
 
@@ -1694,7 +1774,7 @@ Destructor freed memory at 0x5839828b72e0
 Destructor freed memory at 0x5839828b6eb0
 ```
 
-#### Move Constructor
+## Move Constructor
 To efficiently transfer ownership of resources (like heap memory) from one object to another, without copying.
 
 | Benefit                   | Explanation                                                |
@@ -1785,7 +1865,7 @@ Destructor: deleting 10
 Destructor: deleting 10
 ```
 
-#### Const with Classes
+## Const with Classes
 - Object properties won't be changed
 
 ```cpp
@@ -1829,7 +1909,7 @@ int main (){
 300
 ```
 
-#### Static Class Members
+## Static Class Members
 The purpose of declaring:
 
 ```cpp
@@ -1850,7 +1930,7 @@ Because it accesses the static variable num_players, which belongs to the class,
 | 🔐 **Static methods can only access static members** | If `get_num_players()` were **not** static, you’d need to create an object just to access a shared class variable, which makes no sense.                            |
 
 
-##### player.h
+**player.h**
 ```cpp
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
@@ -1881,7 +1961,7 @@ public:
 #endif // _PLAYER_H_
 ```
 
-##### 15_static_class_members.cpp
+**15_static_class_members.cpp**
 ```cpp
 #include "player.h"
 
@@ -1921,7 +2001,7 @@ int Player::get_num_players(){
 }
 ```
 
-##### 15_main.cpp
+**15_main.cpp**
 ```cpp
 #include "player.h"
 
@@ -1975,7 +2055,7 @@ Destructor for: Oben
 Destructor for: Oben
 ```
 
-#### Struct
+## Struct
 | Feature                 | `class`   | `struct` |
 | ----------------------- | --------- | -------- |
 | **Default access**      | `private` | `public` |
@@ -2010,8 +2090,8 @@ Logging Severity: 2, Text: Hello World
 ```
 
 
-#### Movie Section Challenge
-##### movie.h
+## Movie Section Challenge
+**movie.h**
 ```cpp
 #ifndef _MOVIE_
 #define _MOVIE_
@@ -2037,7 +2117,7 @@ public:
 #endif // _MOVIE_
 ```
 
-##### movie.cpp
+**movie.cpp**
 ```cpp
 #include "17_movie.h"
 
@@ -2063,7 +2143,7 @@ Movie::Movie(std::string default_name, std::string default_rating, int default_w
 }
 ```
 
-##### movies.h
+**movies.h**
 ```cpp
 #ifndef _MOVIES_
 #define _MOVIES_
@@ -2085,7 +2165,7 @@ public:
 #endif // _MOVIES_
 ```
 
-##### movies.cpp
+**movies.cpp**
 ```cpp
 #include "17_movies.h"
 
@@ -2129,7 +2209,7 @@ void Movies::increase_watched(std::string movie_name){
 }
 ```
 
-##### main.cpp
+**main.cpp**
 ```cpp
 
 #include "17_movies.h"
@@ -2183,7 +2263,7 @@ int main(){
 }
 ```
 
-##### Output
+**Output**
 ```
  
 Sorry, no movies to display
@@ -2220,3 +2300,5 @@ Ice Age, PG, 13
 XXX movie doesn't exist
 
 ```
+
+# Operator Overloading
