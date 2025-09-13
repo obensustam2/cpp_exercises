@@ -183,8 +183,21 @@ Multi-D Array
 
 <img src="00_docs/images/multi_dim_arrays.png" alt="2D Array" width="360"/>
 
-
 ## Vectors
+std::vector<T> stores its elements in a contiguous dynamic array on the heap.
+
+Internally, it uses raw pointers to manage this array.
+
+```cpp
+template<typename T>
+class Vector {
+    T* data_;      // raw pointer to heap memory
+    size_t size_;
+    size_t capacity_;
+};
+```
+When you push_back(), it may allocate a new array, copy/move the elements, and delete the old array.
+
 ```cpp
 #include <iostream>
 #include <vector>
@@ -1154,7 +1167,7 @@ After: number = 52
 
 ## Some Pointer Problems
 
-### Stack Overflow
+### Stack Overflow (Stack Memory)
 **int** stores 4 bytes. BigStackArray has 4m elements -> 4.000.000 x 4 = 16.000.000 Byte = 16 MB. Which is higher than stack memory size (8 MB). Code will give error.
 ```cpp
 #include <iostream>
@@ -1168,7 +1181,7 @@ int main(){
 }
 ```
 
-### Memory Leak
+### Memory Leak (Heap Memory)
 Creating 16MB array in each loop will exceed the 9GB available system RAM and system will crash
 ```cpp
 #include <iostream>
@@ -1178,6 +1191,84 @@ int main(){
     while(true){
         new int[4000000];
     }
+
+    return 0;
+}
+```
+
+### Double Delete Problem - Shallow Copy Constructor (Heap Memory)
+When c1 is destroyed → delete[] model; frees the heap memory.
+
+But c2.model still contains the same address (dangling pointer now).
+
+Then when c2 is destroyed → delete[] model; tries to free the same memory again → ❌ double delete → undefined behavior (often a crash).
+```
+Stack:                        Heap:
++------+                      +-----------+
+| c1   | --model------------->| "BMW\0"   |
++------+                      +-----------+
+| c2   | --model--------------^  (same block)
++------+
+
+
+Stack:                        Heap:
++------+                      +-----------+
+| c1   | X (being destroyed)  |  FREED    |
++------+                      +-----------+
+| c2   | --model------------->|  (dangling pointer!)
++------+
+
+
+Stack:                        Heap:
++------+                      +-----------+
+| c2   | X (being destroyed)  |  FREED    |
++------+                      +-----------+
+```
+
+```cpp
+#include <iostream>
+#include <cstring>
+
+class Car{
+private:
+    char *model_;
+    int year_;
+
+public:
+    Car(const char *model, int year) : year_(year){
+        model_ = new char[strlen(model) + 1];
+        strcpy(model_, model);
+        std::cout << "Car created: " << model_ << std::endl;
+    }
+
+    // Shallow Copy
+    Car(const Car &other) : model_(other.model_), year_(other.year_){
+        std::cout << "Shallow copy car created: " << model_ << std::endl;
+    }
+
+    ~Car(){
+        std::cout << "Deleting car: " << model_ << std::endl;
+        delete[] model_;
+    }
+
+    void set_year(int new_year){
+        year_ = new_year;
+    }
+
+    void print() { 
+        std::cout << "Model: " << model_ << ", Year: " << year_ << std::endl; 
+    } 
+};
+
+
+int main(){
+    Car c1("Audi", 1996);
+
+    Car c2 = c1;
+    c2.set_year(2000);
+
+    c1.print();
+    c2.print();
 
     return 0;
 }
@@ -1710,68 +1801,53 @@ int main(){
 ## Deep Copy
 ```cpp
 #include <iostream>
+#include <cstring>
 
-class Deep{
+class Car{
 private:
-    int *data;
+    char *model_;
+    int year_;
 
 public:
-    void set_data(int val){
-        *data = val;
+    Car(const char *model, int year) : year_(year){
+        model_ = new char[strlen(model) + 1];
+        strcpy(model_, model);
+        std::cout << "Car created: " << model_ << std::endl;
     }
 
-    void show_data(){
-        std::cout << "Value: " << *data << ", Address: " << data << std::endl;
+    // Deep Copy
+    Car(const Car &other) : year_(other.year_){
+        model_ = new char[strlen(other.model_) + 1];
+        strcpy(model_, other.model_);  
+        std::cout << "Deep copy car created: " << model_ << std::endl;
     }
 
-    Deep(int val) {
-        data = new int(val);
-        std::cout << "Constructor is called" << std::endl;
+    ~Car(){
+        std::cout << "Deleting car: " << model_ << std::endl;
+        delete[] model_;
     }
 
-    // Deep copy constructor
-    Deep(const Deep &source){
-        data = new int(*source.data);
-        std::cout << "Deep copy constructor is called" << std::endl;
+    void set_year(int new_year){
+        year_ = new_year;
     }
 
-    ~Deep(){
-        delete data;
-        std::cout << "Destructor freed memory at " << data << std::endl;
-    }
+    void print() { 
+        std::cout << "Model: " << model_ << ", Year: " << year_ << std::endl; 
+    } 
 };
 
+
 int main(){
-    Deep obj1(42);
-    Deep obj2(obj1);
+    Car c1("Audi", 1996);
 
-    obj1.show_data();  
-    obj2.show_data(); 
-    
-    obj2.set_data(99);  
+    Car c2 = c1;
+    c2.set_year(2000);
 
-    obj1.show_data();  
-    obj2.show_data(); 
+    c1.print();
+    c2.print();
 
     return 0;
 }
-```
-
-Result
-
-```sh
-Constructor is called
-
-Deep copy constructor is called
-
-Value: 42, Address: 0x5839828b6eb0
-Value: 42, Address: 0x5839828b72e0
-
-Value: 42, Address: 0x5839828b6eb0
-Value: 99, Address: 0x5839828b72e0
-
-Destructor freed memory at 0x5839828b72e0
-Destructor freed memory at 0x5839828b6eb0
 ```
 
 ## Move Constructor
@@ -2301,4 +2377,346 @@ XXX movie doesn't exist
 
 ```
 
-# Operator Overloading
+# Smart Pointers 
+
+## `std::unique_ptr`
+- Exclusive ownership (only one pointer can own the resource).
+- Lightweight and fast (no reference counting).
+- Best default choice for heap allocation.
+
+## `std::shared_ptr`
+- Shared ownership (multiple pointers can manage the same resource).
+- Uses reference counting → automatic cleanup when last owner dies.
+- Slightly slower due to atomic reference count operations.
+- Useful when ownership is genuinely shared (e.g., graph structures).
+
+## `std::weak_ptr`
+- Non-owning reference to a `shared_ptr` resource.
+- Prevents circular references (e.g., parent ↔ child).
+- Can check validity before access (`lock()`).
+
+---
+
+## Rule of Thumb
+- Start with stack allocation whenever possible.
+- Use `unique_ptr` for heap allocation when ownership is clear.
+- Use `shared_ptr` only if ownership must be shared.
+- Use `weak_ptr` to break cycles with `shared_ptr`.
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+class Car{
+private:
+    std::string name_;
+
+public:
+    Car(std::string name) : name_(name){
+        std::cout << "Car object created: " << name_ << std::endl;
+    } 
+
+    Car(Car &copy_car) : name_(copy_car.name_){
+        std::cout << "Copy car object created: " << name_ << std::endl;
+    } 
+
+    ~Car(){
+        std::cout << "Car object deleted: " << name_ << std::endl;
+    }
+
+    void set_name(std::string new_name){
+       name_ = new_name; 
+    }
+
+    std::string get_name(){
+        return name_;
+    }
+};
+
+
+int main(){
+    // Unique Pointer
+    std::unique_ptr<Car> my_car_ptr = std::make_unique<Car>("Audi");
+    my_car_ptr->set_name("Audi RS");
+    std::cout << "My car is called: " << my_car_ptr->get_name() << std::endl;
+
+    std::unique_ptr<Car> copy_c1_ptr = std::move(my_car_ptr);
+    copy_c1_ptr->set_name("Audi R3");
+    std::cout << "Copy car is called: " << copy_c1_ptr->get_name() << std::endl;
+    
+    // Shared Pointer
+    std::shared_ptr<Car> shared_car_ptr1 = std::make_shared<Car>("Volkswagen");
+    shared_car_ptr1->set_name("Golf 5");
+    std::cout << "My car is called: " << shared_car_ptr1->get_name() << std::endl;
+
+    std::shared_ptr<Car> shared_car_ptr2 = shared_car_ptr1;
+    std::cout << "My car is called: " << shared_car_ptr2->get_name() << std::endl;
+
+    std::shared_ptr<Car> shared_car_ptr3 = std::make_shared<Car>("Porsche");
+
+    std::shared_ptr<Car> shared_car_ptr4 = shared_car_ptr1;
+
+    std::cout << "Shared pointer counter: " << shared_car_ptr2.use_count() << std::endl; // 3
+
+    
+    return 0;
+}
+```
+
+```
+Car object created: Audi
+My car is called: Audi RS
+Copy car is called: Audi R3
+Car object created: Volkswagen
+My car is called: Golf 5
+My car is called: Golf 5
+Car object created: Porsche
+Shared pointer counter: 3
+Car object deleted: Porsche
+Car object deleted: Golf 5
+Car object deleted: Audi R3
+```
+
+
+# Threads
+important terms are **join** **detach** **mutex**
+
+| Feature                     | `join()`                          | `detach()`                      |
+|-----------------------------|----------------------------------|--------------------------------|
+| Wait for thread             | ✅ Yes (blocks until thread ends) | ❌ No (runs independently)     |
+| Safe to access results      | ✅ Yes                            | ❌ No                          |
+| Thread cleanup              | Automatic after thread finishes   | Automatic after thread finishes|
+| Use case                    | Coordinated work / dependencies   | Background / fire-and-forget  |
+| Thread ownership            | Thread remains joinable           | Thread is detached (no ownership) |
+| Consequence if thread object is destroyed without join/detach | ❌ `std::terminate()` | ❌ Undefined behavior if accessing out-of-scope data |
+
+
+```cpp
+#include <iostream>
+#include <thread>
+#include <chrono>
+#include <mutex>
+
+
+std::mutex mtx1, mtx2;
+int counter = 0;
+
+
+void increment1(int id){
+    for(int i=0; i<5; i++){
+        std::lock_guard<std::mutex> lock(mtx1); // locks the mutex
+        counter++; // safe access
+        std::cout << "Thread " << id << " incremented counter to " << counter << "\n";
+    }
+} // lock goes out of scope here → mutex is automatically unlocked
+
+void increment2(int id){
+    for(int i=0; i<5; i++){
+        std::lock_guard<std::mutex> lock(mtx2);
+        counter += 5;
+        std::cout << "Thread " << id << " incremented counter to " << counter << "\n";
+    }
+}
+
+
+int main(){
+    std::cout << "Main ID: " << std::this_thread::get_id() << std::endl;
+    
+    std::thread t1(increment1, 1);
+    std::thread t2(increment2, 2);
+
+    t1.join();
+    t2.join();
+
+    std::cout << "Final counter: " << counter << "\n";
+
+    return 0;
+}
+```
+
+```sh
+oben@oben-ABRA-A5-V13-2:~/cpp_exercises/xx_interview_preparation/build$ ./13_thread_mutex 
+Main ID: 129642844219200
+Thread Thread 2 incremented counter to 6
+Thread 2 incremented counter to 11
+Thread 2 incremented counter to 16
+Thread 2 incremented counter to 21
+Thread 2 incremented counter to 26
+1 incremented counter to 26
+Thread 1 incremented counter to 27
+Thread 1 incremented counter to 28
+Thread 1 incremented counter to 29
+Thread 1 incremented counter to 30
+Final counter: 30
+oben@oben-ABRA-A5-V13-2:~/cpp_exercises/xx_interview_preparation/build$ ./13_thread_mutex 
+Main ID: 136471178823488
+Thread 1 incremented counter to 1
+Thread 1 incremented counter to 2
+Thread 1 incremented counter to 3
+Thread 1 incremented counter to 4
+Thread 1 incremented counter to 5
+Thread 2 incremented counter to 10
+Thread 2 incremented counter to 15
+Thread 2 incremented counter to 20
+Thread 2 incremented counter to 25
+Thread 2 incremented counter to 30
+Final counter: 30
+```
+
+# this Pointer
+**this** is always a pointer to the object itself, but it does not know whether the object is on the stack or heap.
+
+Its type is always ClassName* (a raw pointer).
+
+| Expression | Type                           | Holds                        | How to Access Members              | Typical Use Case                                                           |
+| ---------- | ------------------------------ | ---------------------------- | ---------------------------------- | -------------------------------------------------------------------------- |
+| `this`     | `Robot*` (pointer to object)   | Memory address of the object | `this->member`                     | Passing pointer to functions, accessing members via pointer                |
+| `*this`    | `Robot&` (reference to object) | The object itself (alias)    | `(*this).member` or `this->member` | Returning the object for method chaining, working directly with the object |
+
+
+```cpp
+#include <iostream>
+#include <string>
+
+class Robot{
+private:
+    std::string name;
+    int id;
+    
+public:
+    // Constructor with name conflict
+    Robot(const std::string &name, int id){
+        this->name = name; // resolves conflict with parameter
+        this->id = id;
+    }
+
+    // Method that returns the current object for chaining
+    Robot& setName(const std::string &newName){
+        this->name = newName;
+        return *this; // returning current object
+    }
+
+     // Pass current object to another function
+    void sendToFunction(){
+        displayRobot(this); // passing this pointer
+    }
+
+    // Static function to display robot info from pointer
+    static void displayRobot(Robot *r_ptr){
+        std::cout << "Display: Robot " << r_ptr->name << " with ID " << r_ptr->id << std::endl;
+    }
+};
+
+
+int main(){
+    Robot r("Alpha", 1);
+
+    r.setName("Beta").setName("Gamma");
+
+    r.sendToFunction();
+
+    return 0;
+}
+```
+
+Sketch
+```sh
++--------------------------+
+| Robot object 'r'         |  <-- created on stack in main()
++--------------------------+
+| name : "Gamma"           |
+| id   : 1                 |
++--------------------------+
+          ^
+          |
+        this pointer inside member functions
+        (type: Robot*)
+
+---------------------------------------------------
+Inside setName("Beta"):
+this -> points to 'r'
+*this -> reference to 'r' (Robot&)
+return *this -> allows chaining
+---------------------------------------------------
+
+Inside setName("Gamma"):
+this -> points to 'r'
+*this -> reference to 'r'
+return *this -> continues chaining
+---------------------------------------------------
+
+Inside sendToFunction():
+this -> points to 'r'
+displayRobot(this) -> passes pointer
+
+Inside displayRobot(Robot* r_ptr):
+r_ptr -> points to 'r'
+r_ptr->name accesses "Gamma"
+r_ptr->id accesses 1
+```
+
+Output
+```sh
+Display: Robot Gamma with ID 1
+```
+
+# Lambda Expressions
+a lambda expression is essentially an anonymous function you can define inline without giving it a name. It's often used for short, local operations, such as sorting, filtering, or passing functions to algorithms.
+
+```sh
+auto FUNCTION_NAME = [capture](parameters){
+    // function body
+};
+```
+
+- auto tells the compiler: “Deduce the type of this lambda for me.”. Its type is unique and known only to the compiler (you cannot write it explicitly).
+
+- [capture]: captures variables from the surrounding scope.
+
+- (parameters): the function arguments, like in a normal function.
+
+- function body: what the lambda does.
+
+```cpp
+#include <iostream>
+#include <string>
+
+
+int main(){
+
+    // Simple Lambda
+    auto greet = [](){
+        std::cout << "Hello Lambda!" << std::endl;
+    };
+    greet();
+    greet();
+
+
+    // Lambda with parameters
+    auto add = [](int a, int b){
+        return a+b;
+    };
+    std::cout << "Add: " << add(3,4) << std::endl; 
+
+
+    // Lambda with capturing variables
+    int x = 10;
+    int y = 5;
+    auto sum = [x,y](){
+        return x+y;
+    };
+    std::cout << "Sum: " << sum() << std::endl; 
+
+
+    // Lambda with auto parameter
+    auto print = [](auto val){
+        std::cout << val << std::endl;
+    };
+    print("Oben");
+    print(29);
+
+
+    return 0;
+}
+```
