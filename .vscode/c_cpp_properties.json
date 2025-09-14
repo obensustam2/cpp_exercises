@@ -6,7 +6,9 @@
         "${workspaceFolder}/**",
         "/usr/include/c++/11",
         "/usr/include/x86_64-linux-gnu/c++/11",
-        "/usr/include"
+        "/usr/include",
+        "/opt/ros/humble/include/**",
+        "/opt/ros/humble/include"
       ],
       "compilerPath": "/usr/bin/g++",
       "cStandard": "c11",

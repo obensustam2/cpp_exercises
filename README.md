@@ -1,90 +1,22 @@
 # C++ Learning Handbook
 
-# Table of Contents
+# RAII
+Resource Acquisition Is Initialization or RAII, is a C++ programming technique[1][2] which binds the life cycle of a resource that must be acquired before use (allocated heap memory, thread of execution, open socket, open file, locked mutex, disk space, database connection—anything that exists in limited supply) to the lifetime of an object.
 
-1. [Build](#1-build)
+RAII guarantees that the resource is available to any function that may access the object (resource availability is a class invariant, eliminating redundant runtime tests). It also guarantees that all resources are released when the lifetime of their controlling object ends, in reverse order of acquisition. Likewise, if resource acquisition fails (the constructor exits with an exception), all resources acquired by every fully-constructed member and base subobject are released in reverse order of initialization. This leverages the core language features (object lifetime, scope exit, order of initialization and stack unwinding) to eliminate resource leaks and guarantee exception safety. Another name for this technique is Scope-Bound Resource Management (SBRM), after the basic use case where the lifetime of an RAII object ends due to scope exit.
 
-2. [Getting Started](#2-getting-started)  
-    2.1. [Preprocessor](#21-preprocessor)  
-    2.2. [Standard Template Library vs Standard Library](#22-standard-template-library-vs-standard-library)  
-    2.3. [Standard Library Headers](#23-standard-library-headers)  
-    2.4. [Variable](#24-variable)  
-    2.5. [Namespace](#25-namespace)  
-    2.6. [Arguments](#26-arguments)  
-    2.7. [User Input](#27-user-input)  
-    2.8. [Constant Variable](#28-constant-variable)  
-    2.9. [Byte Size](#29-byte-size)  
-    2.10. [Long Variable](#210-long-variable)
+RAII can be summarized as follows:
 
-3. [Arrays and Vectors](#3-arrays-and-vectors)  
-    3.1. [Arrays](#31-arrays)  
-    3.2. [Vectors](#32-vectors)
+encapsulate each resource into a class, where
+the constructor acquires the resource and establishes all class invariants or throws an exception if that cannot be done,
+the destructor releases the resource and never throws exceptions;
+always use the resource via an instance of a RAII-class that either
+has automatic storage duration or temporary lifetime itself, or
+has lifetime that is bounded by the lifetime of an automatic or temporary object.
+Move semantics enable the transfer of resources and ownership between objects, inside and outside containers, and across threads, while ensuring resource safety.
 
-4. [Statements and Operators](#statements-and-operators)  
-    4.1. [Operator](#operator)  
-    4.2. [static_cast](#static_cast)  
-    4.3. [Comparision](#comparision)  
-    4.4. [Compound Assignment](#compound-assignment)  
-    4.5. [Operator Precedence](#operator-precedence)  
-    4.6. [Enumerator](#enumerator)  
-    4.7. [Precision Set](#precision-set)
-
-5. [Controlling Program Flow](#controlling-program-flow)  
-    5.1. [If-Else](#if-else)  
-    5.2. [Switch-Case](#switch-case)  
-    5.3. [Ternary Operator](#ternary-operator-conditional-operator)  
-    5.4. [For Loop](#for-loop)  
-    5.5. [Range Based For Loop](#range-based-for-loop)  
-    5.6. [While Loop](#while-loop)  
-    5.7. [Do While Loop](#do-while-loop)  
-    5.8. [Continue and Break](#continue-and-break)  
-    5.9. [Infinite Loops](#infinite-loops)  
-    5.10. [Nested Loops](#nested-loops)
-
-6. [Characters and Strings](#characters-and-strings)  
-    6.1. [C++ Strings](#c-strings)
-
-7. [Functions](#functions)  
-    7.1. [Random number generation](#random-number-generation)  
-    7.2. [Nearest integer floating-point operations](#nearest-integer-floating-point-operations)  
-    7.3. [Power functions](#power-functions)  
-    7.4. [Trigonometric functions](#trigonometric-functions)  
-    7.5. [Function Prototypes](#function-prototypes)  
-    7.6. [Default arguments](#default-arguments)  
-    7.7. [Overloading Functions (Polymorphism)](#overloading-functions-polymorphism)  
-    7.8. [Pass by Reference](#pass-by-reference)  
-    7.9. [Pass by Value vs Pass by Reference](#pass-by-value-vs-pass-by-reference)  
-    7.10. [Const usage for printing with reference inputs](#const-usage-for-printing-with-reference-inputs)  
-    7.11. [Local Global - Scope Rules](#local-global---scope-rules)  
-    7.12. [static variable](#static-variable)  
-    7.13. [Function Calls - Memory Stack - Recursive Function](#function-calls---memory-stack---recursive-function)
-
-8. [Pointers and References](#pointers-and-references)  
-    8.1. [Simple Pointers](#simple-pointers)  
-    8.2. [Dereference Pointers](#dereference-pointers)  
-    8.3. [Dynamic Memory](#dynamic-memory)  
-    8.4. [Pointer Arithmetic](#pointer-arithmetic)  
-    8.5. [Pass by Pointer](#pass-by-pointer)  
-    8.6. [Some Pointer Problems](#some-pointer-problems)  
-    8.7. [Reference](#reference)  
-    8.8. [lvalue and rvalue](#lvalue-and-rvalue)
-
-9. [Classes and Objects](#classes-and-objects)  
-    9.1. [Accessing class members](#accessing-class-members)  
-    9.2. [Implementing Member Methods](#implementing-member-methods)  
-    9.3. [Implementing Methods with Header File (.h)](#implementing-methods-with-header-file-h)  
-    9.4. [Constructors and Deconstructors](#constructors-and-deconstructors)  
-    9.5. [Constructor Initialization](#constructor-initialization)  
-    9.6. [Delegating Constructor](#delegating-constructor)  
-    9.7. [Default Constructor Parameters](#default-constructor-parameters)  
-    9.8. [Copy Constructor](#copy-constructor)  
-    9.9. [Deep Copy](#deep-copy)  
-    9.10. [Move Constructor](#move-constructor)  
-    9.11. [Const with Classes](#const-with-classes)  
-    9.12. [Static Class Members](#static-class-members)  
-    9.13. [Struct](#struct)  
-    9.14. [Movie Section Challenge](#movie-section-challenge)
-
+(since C++11)
+Classes with open()/close(), lock()/unlock(), or init()/copyFrom()/destroy() member functions are typical examples of non-RAII classes:
 
 # Build
 ```
@@ -788,63 +720,7 @@ double calc_cost(double base_cost, double tax_rate, double shipping){
 }
 ```
 
-## Overloading Functions (Polymorphism)
-```cpp
-#include <iostream>
-#include <string>
-#include <vector>
 
-void print(int);
-void print(double);
-void print(std::string);
-void print(std::string, std::string);
-void print(std::vector <std::string>);
-
-
-int main(){
-    print(10);
-    print(10.3);
-    print('a');
-    print("Oben"); // C-style string is converted to C++ string
-    print({"Hello", "my", "name", "is", "Oben"});
-
-    return 0;
-}
-
-
-void print(int num){
-    std::cout << "Printing int: " << num << std::endl;
-}
-
-void print(double num){
-    std::cout << "Printing double: " << num << std::endl;
-}
-
-void print(std::string text){
-    std::cout << "Printing string: " << text << std::endl;
-}
-
-void print(std::string text, std::string text2){
-    std::cout << "Printing 2 string: " << text << " " << text2 << std::endl;
-}
-
-void print(std::vector <std::string> text_vec){
-    std::cout << "Printing vector: ";
-    for(std::string text : text_vec){
-        std::cout << text << " ";
-    }
-    std::cout << std::endl;
-}
-```
-
-Output
-```sh
-Printing int: 10
-Printing double: 10.3
-Printing int: 97
-Printing string: Oben
-Printing vector: Hello my name is Oben 
-```
 
 
 
@@ -2564,6 +2440,47 @@ Thread 2 incremented counter to 30
 Final counter: 30
 ```
 
+Unlock Version
+```cpp
+std::mutex mtx;
+int counter = 0;
+
+void increment_manual(int id) {
+    for(int i = 0; i < 5; i++) {
+        mtx.lock();  // manually lock the mutex
+        counter++;   // critical section
+        std::cout << "Thread " << id << " incremented counter to " << counter << "\n";
+        mtx.unlock(); // manually unlock the mutex
+    }
+}
+```
+
+Atomic Version
+```cpp
+std::atomic<int> counter(0); // atomic counter
+
+void increment1(int id){
+    for(int i=0; i<5; i++){
+        counter++; // atomic increment
+        std::cout << "Thread " << id << " incremented counter to " << counter.load() << "\n";
+    }
+}
+```
+
+## atomic vs mutex
+| Feature             | `std::atomic`                                                                                | `std::mutex`                                                                        |
+| ------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Purpose**         | Provides lock-free atomic operations on a single variable                                    | Provides mutual exclusion for critical sections (any block of code)                 |
+| **Scope**           | Works only for the variable it wraps                                                         | Can protect **multiple variables** or a whole code section                          |
+| **Locking**         | No explicit locking; atomic operations happen in hardware                                    | Explicit locking (`lock()`) and unlocking (`unlock()`), or `std::lock_guard`        |
+| **Performance**     | Usually faster because lock-free (depends on hardware)                                       | Can be slower due to OS-level locking and context switching                         |
+| **Use cases**       | Counters, flags, shared state of a single variable                                           | Complex operations, multiple variables, critical sections, or non-atomic operations |
+| **Complexity**      | Simple API (`load`, `store`, `fetch_add`, etc.)                                              | More general, requires careful lock management to avoid deadlocks                   |
+| **Deadlocks**       | Impossible                                                                                   | Possible if multiple mutexes are locked in the wrong order                          |
+| **Memory ordering** | Supports fine-grained memory ordering (`memory_order_relaxed`, `memory_order_seq_cst`, etc.) | Mutex automatically provides sequential consistency                                 |
+
+
+
 # this Pointer
 **this** is always a pointer to the object itself, but it does not know whether the object is on the stack or heap.
 
@@ -2719,4 +2636,163 @@ int main(){
 
     return 0;
 }
+```
+
+# Inheritance & Virtual Functions (Polymorphism)
+```cpp
+#include <iostream>
+#include <string>
+#include <memory>
+
+class Animal{
+protected:
+    std::string name_;
+
+public:
+    Animal(std::string name) : name_(name){
+    }
+
+    void eat(){
+        std::cout << name_ << " is eating." << std::endl;
+    }
+
+    // virtual enables polymorphism
+    virtual void sleep(){
+        std::cout << name_ << " is sleeping." << std::endl;
+    }
+};
+
+class Dog : public Animal{
+public:
+    Dog(std::string dog_name) : Animal(dog_name){
+    }
+
+    void bark(){
+        std::cout << name_ << " is barking." << std::endl;
+    }
+
+    // override the base version
+    void sleep() override{
+        std::cout << name_ << " is snoring while sleeping." << std::endl;
+    }
+};
+
+
+int main(){
+
+    // stack object
+    Dog d1("Boncuk");
+    d1.eat();
+    d1.bark();
+    d1.sleep();
+
+    // stack object
+    Animal a1("Kertenkele");
+    a1.sleep(); 
+
+    // stack pointer
+    Dog d2("Cesur");
+    Dog *d2_ptr = &d2;
+    d2_ptr->sleep();
+
+    // raw heap pointer
+    Animal *a2 = new Animal("Sincap");
+    a2->sleep();
+    delete a2;
+
+    // smart pointer (heap)
+    std::unique_ptr<Animal> a3 = std::make_unique<Animal>("Fare");
+    a3->sleep();
+
+    return 0;
+}
+```
+
+Memory Layout
+```sh
+STACK (automatic variables)
++-------------------------------+
+| d1 : Dog("Boncuk")            | <-- Dog object (includes Animal::name_="Boncuk")
++-------------------------------+
+| a1 : Animal("Kertenkele")     | <-- Animal object
++-------------------------------+
+| d2 : Dog("Cesur")             | <-- Dog object (Animal::name_="Cesur")
++-------------------------------+
+| d2_ptr : pointer -> &d2       | <-- stack pointer pointing to d2
++-------------------------------+
+| a2 : pointer -> Heap("Sincap")| <-- raw pointer on stack
++-------------------------------+
+| a3 : unique_ptr -> Heap("Fare")| <-- smart pointer on stack
++-------------------------------+
+```
+
+```sh
+HEAP (dynamic memory)
++-------------------------------+
+| Animal("Sincap")              | <-- pointed by a2 (raw heap pointer)
++-------------------------------+
+| Animal("Fare")                | <-- pointed by a3 (smart pointer)
++-------------------------------+
+```
+
+
+# Templates
+Templates avoid code duplication.
+
+They are resolved at compile time, which means the compiler generates a specific function/class for each type used.
+
+```cpp
+#include <iostream>
+#include <string>
+
+template<typename T>
+void print(T value){
+    std::cout << value << std::endl;
+}
+
+template<typename T1, typename T2>
+void sum(T1 num1, T2 num2){
+    std::cout << "Sum: " << num1 + num2 << std::endl;
+}
+
+
+template<typename type, int size>
+class Array{
+private:
+    type arr[size];
+public:
+    int getSize(){
+        return size;
+    }
+};
+
+
+
+int main(){
+
+    // Testing of template function      
+    print("Hello");
+    print(23);
+    print(55.57);
+
+    sum(10,3);
+    sum(10.4, 5.44);
+
+
+    // Testing of template class
+    Array<float, 7> array;
+    std::cout << array.getSize() << std::endl;
+
+    return 0;
+}
+```
+
+Output
+```sh
+Hello
+23
+55.57
+Sum: 13
+Sum: 15.84
+7
 ```

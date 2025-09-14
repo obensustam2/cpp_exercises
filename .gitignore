@@ -10,3 +10,6 @@
 /13_classes_and_objects/build/
 /14_operator_overloading/build/
 /xx_interview_preparation/build/
+/ros_ws/build
+/ros_ws/install
+/ros_ws/log
