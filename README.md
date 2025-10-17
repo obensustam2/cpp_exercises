@@ -28,6 +28,27 @@ make
 ./my_program
 ```
 
+# Compilation vs Linking
+| Step            | Input                  | What happens                                                                                                                                                       | Output              | Happens where                 |
+| --------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- | ----------------------------- |
+| **Compilation** | `.cpp` files           | Each `.cpp` file is compiled separately into **machine code**, but not yet complete (no connections between files).                                                | `.o` (object) files | Inside `build/CMakeFiles/...` |
+| **Linking**     | `.o` files + libraries | All object files (and libraries) are **combined** into one final program. The linker **resolves all symbol references** (functions, variables, etc.) across files. | final executable    | `build/`                      |
+## Linking 
+Every function or global variable name (like `foo`, `bar`, `std::cout`) becomes a **symbol** inside object files.
+
+There are two types:
+
+- **Defined symbols**: functions/variables you define yourself  
+  → e.g., `void greet() {}`
+
+- **Undefined symbols**: references to something defined elsewhere  
+  → e.g., `greet();` in another file
+
+The linker’s job is to:
+
+> Match every **undefined symbol** with its corresponding **defined symbol** across all object files and libraries.
+
+
 # Getting Started
 ## Preprocessor
 The preprocessor runs before actual compilation. It handles all lines starting with #, like:
@@ -36,6 +57,13 @@ The preprocessor runs before actual compilation. It handles all lines starting w
 #define PI 3.14159   // defines a constant
 #ifdef DEBUG         // conditional compilation
 ```
+
+## Header Files Preprocessor
+| Method                       | Standard?                   | Works everywhere? | Simplicity       | Typical use           |
+| ---------------------------- | --------------------------- | ----------------- | ---------------- | --------------------- |
+| `#ifndef / #define / #endif` | ✅ Yes                       | ✅ 100%            | Slightly verbose | Old & modern projects |
+| `#pragma once`               | ❌ No (but widely supported) | ✅ 99%             | Very simple      | Modern C++ projects   |
+
 
 ## Standard Template Library vs Standard Library 
 | Term                     | Contains                      | Examples                                          |
@@ -102,6 +130,13 @@ sizeof(char)
 ```cpp
 long double large_amount = 2.7e120;
 ```
+
+## Signed vs Unsigned
+| Type                    | Bit width | Range                           |
+| ----------------------- | --------- | ------------------------------- |
+| `int` (signed 32-bit)   | 32        | −2,147,483,648 → +2,147,483,647 |
+| `unsigned int` (32-bit) | 32        | 0 → 4,294,967,295               |
+
 
 # Arrays and Vectors
 ## Arrays
@@ -835,34 +870,6 @@ int main() {
 }
 ```
 
-## static variable
-```cpp
-void static_local_example() {
-    static int num = 5000;      // local to static_local_example static - retains it value between calls
-    std::cout << "\nLocal static  num is: " << num << " in static_local_example - start" << std::endl;
-    num += 1000;
-    std::cout << "Local static  num is: " << num << " in static_local_example - end" << std::endl;
-}
-
-int main() {
-    static_local_example();
-    static_local_example();
-    static_local_example();
-    return 0;
-}
-```
-
-```sh
-Local static num is: 5000 in static_local_example - start
-Local static num is: 6000 in static_local_example - end
-
-Local static num is: 6000 in static_local_example - start
-Local static num is: 7000 in static_local_example - end
-
-Local static num is: 7000 in static_local_example - start
-Local static num is: 8000 in static_local_example - end
-```
-
 ## Function Calls - Memory Stack - Recursive Function
 <img src="00_docs/images/memory_stack.png" alt="Memory Stack" width="240"/>
 
@@ -1072,83 +1079,6 @@ int main(){
 }
 ```
 
-### Double Delete Problem - Shallow Copy Constructor (Heap Memory)
-When c1 is destroyed → delete[] model; frees the heap memory.
-
-But c2.model still contains the same address (dangling pointer now).
-
-Then when c2 is destroyed → delete[] model; tries to free the same memory again → ❌ double delete → undefined behavior (often a crash).
-```
-Stack:                        Heap:
-+------+                      +-----------+
-| c1   | --model------------->| "BMW\0"   |
-+------+                      +-----------+
-| c2   | --model--------------^  (same block)
-+------+
-
-
-Stack:                        Heap:
-+------+                      +-----------+
-| c1   | X (being destroyed)  |  FREED    |
-+------+                      +-----------+
-| c2   | --model------------->|  (dangling pointer!)
-+------+
-
-
-Stack:                        Heap:
-+------+                      +-----------+
-| c2   | X (being destroyed)  |  FREED    |
-+------+                      +-----------+
-```
-
-```cpp
-#include <iostream>
-#include <cstring>
-
-class Car{
-private:
-    char *model_;
-    int year_;
-
-public:
-    Car(const char *model, int year) : year_(year){
-        model_ = new char[strlen(model) + 1];
-        strcpy(model_, model);
-        std::cout << "Car created: " << model_ << std::endl;
-    }
-
-    // Shallow Copy
-    Car(const Car &other) : model_(other.model_), year_(other.year_){
-        std::cout << "Shallow copy car created: " << model_ << std::endl;
-    }
-
-    ~Car(){
-        std::cout << "Deleting car: " << model_ << std::endl;
-        delete[] model_;
-    }
-
-    void set_year(int new_year){
-        year_ = new_year;
-    }
-
-    void print() { 
-        std::cout << "Model: " << model_ << ", Year: " << year_ << std::endl; 
-    } 
-};
-
-
-int main(){
-    Car c1("Audi", 1996);
-
-    Car c2 = c1;
-    c2.set_year(2000);
-
-    c1.print();
-    c2.print();
-
-    return 0;
-}
-```
 
 ## Reference
 ```cpp
@@ -1726,6 +1656,85 @@ int main(){
 }
 ```
 
+## Shallow Copy
+```cpp
+#include <iostream>
+#include <cstring>
+
+class Car{
+private:
+    char *model_;
+    int year_;
+
+public:
+    Car(const char *model, int year) : year_(year){
+        model_ = new char[strlen(model) + 1];
+        strcpy(model_, model);
+        std::cout << "Car created: " << model_ << std::endl;
+    }
+
+    // Shallow Copy
+    Car(const Car &other) : model_(other.model_), year_(other.year_){
+        std::cout << "Shallow copy car created: " << model_ << std::endl;
+    }
+
+    ~Car(){
+        std::cout << "Deleting car: " << model_ << std::endl;
+        delete[] model_;
+    }
+
+    void set_year(int new_year){
+        year_ = new_year;
+    }
+
+    void print() { 
+        std::cout << "Model: " << model_ << ", Year: " << year_ << std::endl; 
+    } 
+};
+
+
+int main(){
+    Car c1("Audi", 1996);
+
+    Car c2 = c1;
+    c2.set_year(2000);
+
+    c1.print();
+    c2.print();
+
+    return 0;
+}
+```
+
+When c1 is destroyed → delete[] model; frees the heap memory.
+
+But c2.model still contains the same address (dangling pointer now).
+
+Then when c2 is destroyed → delete[] model; tries to free the same memory again → ❌ double delete → undefined behavior (often a crash).
+```
+Stack:                        Heap:
++------+                      +-----------+
+| c1   | --model------------->| "BMW\0"   |
++------+                      +-----------+
+| c2   | --model--------------^  (same block)
++------+
+
+
+Stack:                        Heap:
++------+                      +-----------+
+| c1   | X (being destroyed)  |  FREED    |
++------+                      +-----------+
+| c2   | --model------------->|  (dangling pointer!)
++------+
+
+
+Stack:                        Heap:
++------+                      +-----------+
+| c2   | X (being destroyed)  |  FREED    |
++------+                      +-----------+
+```
+
+
 ## Move Constructor
 To efficiently transfer ownership of resources (like heap memory) from one object to another, without copying.
 
@@ -2253,7 +2262,38 @@ XXX movie doesn't exist
 
 ```
 
+# Enums
+An **enum** (short for *enumeration*) is a user-defined type that assigns names to a set of integer constants.  
+It makes code more readable and easier to maintain.
+
+```cpp
+#include <iostream>
+using namespace std;
+
+enum Direction {
+    North,   // 0
+    East,    // 1
+    South,   // 2
+    West     // 3
+};
+
+int main() {
+    Direction dir = South;
+
+    if (dir == South)
+        cout << "Going South!" << endl;
+
+    cout << "Direction value: " << dir << endl; 
+}
+```
+
+```sh
+Going South
+Direction Value: 2
+```
+
 # Smart Pointers 
+Some important terms are **std::move(unique_ptr)** **shared_ptr.use_count()** 
 
 ## `std::unique_ptr`
 - Exclusive ownership (only one pointer can own the resource).
@@ -2356,7 +2396,7 @@ Car object deleted: Audi R3
 
 
 # Threads
-important terms are **join** **detach** **mutex**
+## join vs detach
 
 | Feature                     | `join()`                          | `detach()`                      |
 |-----------------------------|----------------------------------|--------------------------------|
@@ -2367,6 +2407,23 @@ important terms are **join** **detach** **mutex**
 | Thread ownership            | Thread remains joinable           | Thread is detached (no ownership) |
 | Consequence if thread object is destroyed without join/detach | ❌ `std::terminate()` | ❌ Undefined behavior if accessing out-of-scope data |
 
+## atomic vs mutex
+| Feature             | `std::atomic`                                                                                | `std::mutex`                                                                        |
+| ------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Purpose**         | Provides lock-free atomic operations on a single variable                                    | Provides mutual exclusion for critical sections (any block of code)                 |
+| **Scope**           | Works only for the variable it wraps                                                         | Can protect **multiple variables** or a whole code section                          |
+| **Locking**         | No explicit locking; atomic operations happen in hardware                                    | Explicit locking (`lock()`) and unlocking (`unlock()`), or `std::lock_guard`        |
+| **Performance**     | Usually faster because lock-free (depends on hardware)                                       | Can be slower due to OS-level locking and context switching                         |
+| **Use cases**       | Counters, flags, shared state of a single variable                                           | Complex operations, multiple variables, critical sections, or non-atomic operations |
+| **Complexity**      | Simple API (`load`, `store`, `fetch_add`, etc.)                                              | More general, requires careful lock management to avoid deadlocks                   |
+| **Deadlocks**       | Impossible                                                                                   | Possible if multiple mutexes are locked in the wrong order                          |
+| **Memory ordering** | Supports fine-grained memory ordering (`memory_order_relaxed`, `memory_order_seq_cst`, etc.) | Mutex automatically provides sequential consistency                                 |
+
+
+## Join
+Do I need the thread’s work to finish before continuing?
+- If yes → join soon after creation.
+- If no, it’s background work → join when shutting down.
 
 ```cpp
 #include <iostream>
@@ -2467,19 +2524,35 @@ void increment1(int id){
 }
 ```
 
-## atomic vs mutex
-| Feature             | `std::atomic`                                                                                | `std::mutex`                                                                        |
-| ------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| **Purpose**         | Provides lock-free atomic operations on a single variable                                    | Provides mutual exclusion for critical sections (any block of code)                 |
-| **Scope**           | Works only for the variable it wraps                                                         | Can protect **multiple variables** or a whole code section                          |
-| **Locking**         | No explicit locking; atomic operations happen in hardware                                    | Explicit locking (`lock()`) and unlocking (`unlock()`), or `std::lock_guard`        |
-| **Performance**     | Usually faster because lock-free (depends on hardware)                                       | Can be slower due to OS-level locking and context switching                         |
-| **Use cases**       | Counters, flags, shared state of a single variable                                           | Complex operations, multiple variables, critical sections, or non-atomic operations |
-| **Complexity**      | Simple API (`load`, `store`, `fetch_add`, etc.)                                              | More general, requires careful lock management to avoid deadlocks                   |
-| **Deadlocks**       | Impossible                                                                                   | Possible if multiple mutexes are locked in the wrong order                          |
-| **Memory ordering** | Supports fine-grained memory ordering (`memory_order_relaxed`, `memory_order_seq_cst`, etc.) | Mutex automatically provides sequential consistency                                 |
+## Detach
+```cpp
+#include <iostream>
+#include <thread>
+#include <chrono>
 
 
+void backgroundTask(){
+    std::cout << "backgroundTask ID: " << std::this_thread::get_id() << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    std::cout << "backgroundTask finished" << std::endl;
+}
+
+int main(){
+    std::cout << "Main ID: " << std::this_thread::get_id() << std::endl;
+    
+    std::thread baby_thread(backgroundTask);
+    baby_thread.detach();
+
+    for(int i=0;i<5;i++){
+        std::cout << "I don't wait the backgroundTask completion to run" << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+
+    std::cout << "Exiting the program." << std::endl;
+
+    return 0;
+}
+```
 
 # this Pointer
 **this** is always a pointer to the object itself, but it does not know whether the object is on the stack or heap.
@@ -2638,7 +2711,120 @@ int main(){
 }
 ```
 
-# Inheritance & Virtual Functions (Polymorphism)
+# Polymorphism
+Polymorphism literally means “many forms.”
+In programming, it means the same function, operator, or method name can behave differently depending on the type of object or data it’s working with.
+
+**Why It Exists?**
+
+It allows you to write flexible and reusable code — you don’t have to know the exact type of object in advance, yet the correct behavior will still happen automatically.
+
+**Two Main Types**
+| Type                          | Also called            | Achieved by                                           | When it happens        |
+| ----------------------------- | ---------------------- | ----------------------------------------------------- | ---------------------- |
+| **Compile-time polymorphism** | *Static polymorphism*  | Function overloading, operator overloading, templates | During compilation     |
+| **Runtime polymorphism**      | *Dynamic polymorphism* | Virtual functions and inheritance                     | While the program runs |
+
+## 1. Compile-time Polymorphism
+The function that will be called is known at compile time.
+```cpp
+#include <iostream>
+void print(int x) { std::cout << "Integer: " << x << "\n"; }
+void print(double x) { std::cout << "Double: " << x << "\n"; }
+
+int main() {
+    print(5);     // Calls print(int)
+    print(5.5);   // Calls print(double)
+}
+```
+Same function name (print), different behavior depending on parameter type.
+
+
+## 2. Runtime/Dynamic Polymorphism
+The function that will be called is determined at runtime — usually using virtual functions in a base class and overriding them in derived classes.
+
+```cpp
+#include <iostream>
+
+class Animal {
+public:
+    virtual void speak() { std::cout << "Some sound\n"; }
+};
+
+class Dog : public Animal {
+public:
+    void speak() override { std::cout << "Woof!\n"; }
+};
+
+class Cat : public Animal {
+public:
+    void speak() override { std::cout << "Meow!\n"; }
+};
+
+int main() {
+    Animal* a1 = new Dog();
+    Animal* a2 = new Cat();
+
+    a1->speak();  // Outputs "Woof!"
+    a2->speak();  // Outputs "Meow!"
+}
+```
+
+Even though both a1 and a2 are pointers to Animal, the correct function (Dog::speak or Cat::speak) is chosen at runtime.
+
+# Inheritance
+
+**Inheritance** means that one class (called the *child* or *derived* class) can **reuse and extend** the properties and behaviors of another class (called the *parent* or *base* class).
+
+> A derived class inherits everything from its base class — and can add or change features.
+
+---
+
+```cpp
+#include <iostream>
+
+class Entity{
+public:
+    float X, Y;
+
+    void move(float xa, float ya){
+        X += xa;
+        Y += ya;  
+    }
+};
+
+class Player : public Entity{
+public: 
+    const char *name;
+
+    void printName(){
+        std::cout << name << std::endl;
+    }
+
+};
+
+int main(){
+
+    std::cout << sizeof(Entity) << std::endl;
+    std::cout << sizeof(Player) << std::endl;
+
+    Player p1;
+    p1.name = "Oben";
+    p1.move(5,5);
+    std::cout << p1.X << std::endl;
+    p1.printName();
+    return 0;
+}
+```
+
+```sh
+8
+16
+5
+Oben
+```
+
+# Inheritance + Dynamic Polymorphism (Virtual Functions) + Pointer Example
 ```cpp
 #include <iostream>
 #include <string>

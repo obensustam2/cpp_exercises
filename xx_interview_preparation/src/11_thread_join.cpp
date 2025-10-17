@@ -44,7 +44,7 @@ int main(){
     traveler.join();
     std::cout << "Started Thread Main id: " << std::this_thread::get_id() << std::endl;
 
-    std::cout << "Worker thread has done the job." << std::endl;
+    std::cout << "Worker and traveler thread has done the job." << std::endl;
 
     std::cin.get();
     std::cout << "Exiting the program." << std::endl;
