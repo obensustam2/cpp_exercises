@@ -2711,67 +2711,6 @@ int main(){
 }
 ```
 
-# Polymorphism
-Polymorphism literally means “many forms.”
-In programming, it means the same function, operator, or method name can behave differently depending on the type of object or data it’s working with.
-
-**Why It Exists?**
-
-It allows you to write flexible and reusable code — you don’t have to know the exact type of object in advance, yet the correct behavior will still happen automatically.
-
-**Two Main Types**
-| Type                          | Also called            | Achieved by                                           | When it happens        |
-| ----------------------------- | ---------------------- | ----------------------------------------------------- | ---------------------- |
-| **Compile-time polymorphism** | *Static polymorphism*  | Function overloading, operator overloading, templates | During compilation     |
-| **Runtime polymorphism**      | *Dynamic polymorphism* | Virtual functions and inheritance                     | While the program runs |
-
-## 1. Compile-time Polymorphism
-The function that will be called is known at compile time.
-```cpp
-#include <iostream>
-void print(int x) { std::cout << "Integer: " << x << "\n"; }
-void print(double x) { std::cout << "Double: " << x << "\n"; }
-
-int main() {
-    print(5);     // Calls print(int)
-    print(5.5);   // Calls print(double)
-}
-```
-Same function name (print), different behavior depending on parameter type.
-
-
-## 2. Runtime/Dynamic Polymorphism
-The function that will be called is determined at runtime — usually using virtual functions in a base class and overriding them in derived classes.
-
-```cpp
-#include <iostream>
-
-class Animal {
-public:
-    virtual void speak() { std::cout << "Some sound\n"; }
-};
-
-class Dog : public Animal {
-public:
-    void speak() override { std::cout << "Woof!\n"; }
-};
-
-class Cat : public Animal {
-public:
-    void speak() override { std::cout << "Meow!\n"; }
-};
-
-int main() {
-    Animal* a1 = new Dog();
-    Animal* a2 = new Cat();
-
-    a1->speak();  // Outputs "Woof!"
-    a2->speak();  // Outputs "Meow!"
-}
-```
-
-Even though both a1 and a2 are pointers to Animal, the correct function (Dog::speak or Cat::speak) is chosen at runtime.
-
 # Inheritance
 
 **Inheritance** means that one class (called the *child* or *derived* class) can **reuse and extend** the properties and behaviors of another class (called the *parent* or *base* class).
@@ -2823,6 +2762,69 @@ int main(){
 5
 Oben
 ```
+
+# Polymorphism
+Polymorphism literally means “many forms.”
+In programming, it means the same function, operator, or method name can behave differently depending on the type of object or data it’s working with.
+
+**Why It Exists?**
+
+It allows you to write flexible and reusable code — you don’t have to know the exact type of object in advance, yet the correct behavior will still happen automatically.
+
+**Two Main Types**
+| Type                          | Also called            | Achieved by                                           | When it happens        |
+| ----------------------------- | ---------------------- | ----------------------------------------------------- | ---------------------- |
+| **Compile-time polymorphism** | *Static polymorphism*  | Function overloading, operator overloading, templates | During compilation     |
+| **Runtime polymorphism**      | *Dynamic polymorphism* | Virtual functions and inheritance                     | While the program runs |
+
+## 1. Compile-time Polymorphism
+The function that will be called is known at compile time.
+```cpp
+#include <iostream>
+void print(int x) { std::cout << "Integer: " << x << "\n"; }
+void print(double x) { std::cout << "Double: " << x << "\n"; }
+
+int main() {
+    print(5);     // Calls print(int)
+    print(5.5);   // Calls print(double)
+}
+```
+Same function name (print), different behavior depending on parameter type.
+
+
+## 2. Runtime/Dynamic Polymorphism ( Virtual Functions)
+The function that will be called is determined at runtime — usually using virtual functions in a base class and overriding them in derived classes.
+
+```cpp
+#include <iostream>
+
+class Animal {
+public:
+    virtual void speak() { std::cout << "Some sound\n"; }
+};
+
+class Dog : public Animal {
+public:
+    void speak() override { std::cout << "Woof!\n"; }
+};
+
+class Cat : public Animal {
+public:
+    void speak() override { std::cout << "Meow!\n"; }
+};
+
+int main() {
+    Animal* a1 = new Dog();
+    Animal* a2 = new Cat();
+
+    a1->speak();  // Outputs "Woof!"
+    a2->speak();  // Outputs "Meow!"
+}
+```
+
+Even though both a1 and a2 are pointers to Animal, the correct function (Dog::speak or Cat::speak) is chosen at runtime.
+
+
 
 # Inheritance + Dynamic Polymorphism (Virtual Functions) + Pointer Example
 ```cpp
@@ -2920,6 +2922,68 @@ HEAP (dynamic memory)
 | Animal("Fare")                | <-- pointed by a3 (smart pointer)
 +-------------------------------+
 ```
+
+
+# Interfaces
+What is an Interface in C++?
+
+- C++ does not have a dedicated interface keyword like Java or C#. Instead, interfaces are implemented using abstract classes, specifically classes that contain only pure virtual functions.
+
+- Definition of an Interface (Abstract Class)
+    - A class is considered an interface when:
+    - All its methods are pure virtual (declared with = 0).
+    - It contains no data members (ideally).
+    - It defines a contract that derived classes must implement.
+
+```cpp
+// Interface for any robot gripper
+class IGripper {
+public:
+    virtual void open() = 0;          // pure virtual
+    virtual void close() = 0;         // pure virtual
+    virtual bool isHolding() const = 0;
+
+    virtual ~IGripper() {}            // always add virtual destructor
+};
+```
+
+```cpp
+class FanucGripper : public IGripper {
+public:
+    void open() override {
+        std::cout << "Fanuc gripper opening...\n";
+    }
+
+    void close() override {
+        std::cout << "Fanuc gripper closing...\n";
+    }
+
+    bool isHolding() const override {
+        return true; // example
+    }
+};
+```
+
+```cpp
+IGripper* gripper = new FanucGripper();
+gripper->open();
+gripper->close();
+delete gripper;
+```
+
+# C++ Visibility / Access Specifiers
+
+| Specifier   | Accessible From Class Itself | Accessible from Derived Classes | Accessible from Outside | Typical Use |
+|-------------|------------------------------|----------------------------------|--------------------------|-------------|
+| `public`    | Yes                          | Yes                              | Yes                      | Public API, interface to the class |
+| `protected` | Yes                          | Yes                              | No                       | Allow derived classes to reuse/extend functionality |
+| `private`   | Yes                          | No                               | No                       | Strict encapsulation; internal details |
+
+## Notes
+- **Default access**:  
+  - `class` → `private`  
+  - `struct` → `public`
+- Inheritance can also change visibility (public / protected / private inheritance).
 
 
 # Templates
