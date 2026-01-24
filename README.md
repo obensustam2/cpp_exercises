@@ -1,5 +1,117 @@
 # C++ Learning Handbook
 
+# Table of Content
+   - [RAII](#raii) 
+   - [Build](#build)
+   - [Compilation vs Linking](#compilation-vs-linking)
+   - [Getting Started](#getting-started)
+        - [Preprocessor](#preprocessor)
+        - [Header Files Preprocessor](#header-files-preprocessor)
+        - [Standard Template Library vs Standard Library](#standard-template-library-vs-standard-library)
+        - [Standard Library Headers](#standard-library-headers)
+        - [Variable](#variable)
+        - [Namespace](#namespace)
+        - [Arguments](#arguments)
+        - [User Input](#user-input)
+        - [Constant Variable](#constant-variable)
+        - [Byte Size](#byte-size)
+        - [Long Variable](#long-variable)
+        - [Signed vs Unsigned](#signed-vs-unsigned)
+   - [Arrays and Vectors](#arrays-and-vectors)
+        - [Arrays](#arrays)
+        - [Vectors](#vectors)
+   - [Statements and Operators](#statements-and-operators)
+        - [Operator](#operator)
+        - [static_cast](#static_cast)
+        - [Comparision](#comparision)
+        - [Compound Assignment](#compound-assignment)
+        - [Operator Precedence](#operator-precedence)
+        - [Precision Set](#precision-set)
+   - [Controlling Program Flow](#controlling-program-flow)
+        - [If-Else](#if-else)
+        - [Switch-Case](#switch-case)
+        - [Ternary Operator (Conditional Operator)](#ternary-operator-conditional-operator)
+        - [For Loop](#for-loop)
+        - [Range Based For Loop](#range-based-for-loop)
+        - [While Loop](#while-loop)
+        - [Do While Loop](#do-while-loop)
+        - [Continue and Break](#continue-and-break)
+        - [Infinite Loops](#infinite-loops)
+        - [Nested Loops](#nested-loops)
+   - [Characters and Strings](#characters-and-strings)
+        - [C++ Strings](#c-strings)
+   - [Functions](#functions)
+        - [Random number generation](#random-number-generation)
+        - [Nearest integer floating-point operations](#nearest-integer-floating-point-operations)
+        - [Power Functions](#power-functions)
+        - [Trigonometric Functions](#trigonometric-functions)
+        - [Function Prototypes](#function-prototypes)
+        - [Default Arguments](#default-arguments)
+        - [Pass by Reference](#pass-by-reference)
+        - [Pass by Value vs Pass by Reference](#pass-by-value-vs-pass-by-reference)
+        - [Const usage for printing with reference inputs](#const-usage-for-printing-with-reference-inputs)
+        - [Local Global - Scope Rules](#local-global---scope-rules)
+        - [Function Calls - Memory Stack - Recursive Function](#function-calls---memory-stack---recursive-function)
+   - [Pointers and References](#pointers-and-references)
+        - [Stack vs Heap Memory](#stack-vs-heap-memory)
+        - [Simple Pointers](#simple-pointers)
+        - [Dereference Pointers](#dereference-pointers)
+        - [Dynamic Memory](#dynamic-memory)
+        - [Pointer Arithmetic](#pointer-arithmetic)
+        - [Pass by Pointer](#pass-by-pointer)
+        - [Some Pointer Problems](#some-pointer-problems)
+            - [Stack Overflow (Stack Memory)](#stack-overflow-stack-memory)
+            - [Memory Leak (Heap Memory)](#memory-leak-heap-memory)
+        - [Reference](#reference)
+        - [lvalue and rvalue](#lvalue-and-rvalue)
+   - [Classes and Objects](#classes-and-objects)
+        - [Accessing class members](#accessing-class-members)
+        - [Implementing Member Methods](#implementing-member-methods)
+        - [Implementing Methods with Header File (.h)](#implementing-methods-with-header-file-h)
+        - [Constructors and Deconstructors](#constructors-and-deconstructors)
+        - [Constructor Initialization](#constructor-initialization)
+        - [Delegating Constructor](#delegating-constructor)
+        - [Default Constructor Parameters](#default-constructor-parameters)
+        - [Copy Constructor](#copy-constructor)
+        - [Deep Copy](#deep-copy)
+        - [Shallow Copy](#shallow-copy)
+        - [Move Constructor](#move-constructor)
+        - [Const with Classes](#const-with-classes)
+        - [Static Class Members](#static-class-members)
+        - [Struct](#struct)
+        - [Movie Section Challenge](#movie-section-challenge)
+   - [Enumeration](#enums)
+   - [Smart Pointers](#smart-pointers)
+   - [Threads](#threads)
+   - [Lambda Expressions](#lambda-expressions)
+   - [Inheritance](#inheritance)
+   - [Polymorphism](#polymorphism)
+        - [Runtime/Dynamic Polymorphism ( Virtual Functions)](#runtimedynamic-polymorphism--virtual-functions)
+   - [Interfaces](#interfaces)
+   - [C++ Visibility / Access Specifiers](#c-visibility--access-specifiers)
+   - [Templates](#templates)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # RAII
 Resource Acquisition Is Initialization or RAII, is a C++ programming technique[1][2] which binds the life cycle of a resource that must be acquired before use (allocated heap memory, thread of execution, open socket, open file, locked mutex, disk space, database connection—anything that exists in limited supply) to the lifetime of an object.
 
@@ -140,15 +252,51 @@ long double large_amount = 2.7e120;
 
 # Arrays and Vectors
 ## Arrays
-1-D Array
 ```cpp
-int my_array [5] = {1,2,3,4,5};
-std::cout << my_array[0] << std::endl;
+#include <iostream>
+#include <array>
+
+int main()
+{    
+    int example[5];
+    std::cout << "Array address: " << example << std::endl; // pointer
+    std::cout << "Length of array in bytes: " << sizeof(example) << std::endl; // bytes
+
+
+    // Array For Loop
+    size_t len = sizeof(example) / sizeof(example[0]);
+    for(int i = 0; i < len; i++){
+        example[i] = 9;
+    }
+    std::cout << "Forth element of example: " << example[3] << std::endl;
+
+
+    // Array Pointer Aritmethic
+    int *ptr = example;
+    *(ptr+3) = 1;
+    std::cout << "Forth element of example: " << example[3] << std::endl;
+    std::cout << "Example address: " << ptr << std::endl;
+    std::cout << "Address of second element in example: " << (ptr+1) << std::endl;
+
+
+    // Heap Memory Array
+    int *another = new int[5];
+    for(int i = 0; i < 5; i++){
+        another[i] = 66;
+    }
+    std::cout << "Forth element of another: " << another[3] << std::endl;
+    delete[] another;
+
+
+    // C++ 11 Array library
+    std::array<int, 5> new_array;
+    for(int i = 0; i < new_array.size(); i++){
+        new_array[i] = 55;
+    }
+    std::cout << "Forth element of new_array: " << new_array[3] << std::endl;
+    return 0;
+}
 ```
-
-Multi-D Array
-
-<img src="00_docs/images/multi_dim_arrays.png" alt="2D Array" width="360"/>
 
 ## Vectors
 std::vector<T> stores its elements in a contiguous dynamic array on the heap.
@@ -252,15 +400,6 @@ x -= 3;   // x = 27
 | 9           | `=` `+=` `-=` `*=` `/=` | Assignment            | Right to left |            |               |
 | 10 (Low)    | `,`                     | Comma                 | Left to right |            |               |
 
-
-## Enumerator
-```cpp
-enum Color {
-    red, green, blue
-};
-
-Color screen_color = green;
-```
 
 ## Precision Set
 ```cpp
@@ -756,9 +895,6 @@ double calc_cost(double base_cost, double tax_rate, double shipping){
 ```
 
 
-
-
-
 ## Pass by Reference
 ```cpp
 void double_data2(int &val){
@@ -871,8 +1007,6 @@ int main() {
 ```
 
 ## Function Calls - Memory Stack - Recursive Function
-<img src="00_docs/images/memory_stack.png" alt="Memory Stack" width="240"/>
-
 ```cpp
 #include <iostream>
 
@@ -916,9 +1050,6 @@ unsigned long long factorial(unsigned long long val){
 - Pointer size is independent from which variable address it points.
 
 ## Simple Pointers
-
-<img src="00_docs/images/pointer.png" alt="Pointer" width="720"/>
-
 ```cpp
 #include <iostream>
 
@@ -944,8 +1075,6 @@ Value pointed to score_ptr is 10
 
 ## Dereference Pointers
 Accessing the actual value stored at the memory address the pointer holds
-
-<img src="00_docs/images/dereference_pointers.png" width="480"/>
 
 ```cpp
 #include <iostream>
@@ -1112,7 +1241,6 @@ int main(){
 0x7ffe0551263c
 ```
 
-## lvalue and rvalue
 ## lvalue and rvalue
 
 | Term       | Meaning                                                                                                    | Examples                               |
@@ -2777,7 +2905,7 @@ It allows you to write flexible and reusable code — you don’t have to know t
 | **Compile-time polymorphism** | *Static polymorphism*  | Function overloading, operator overloading, templates | During compilation     |
 | **Runtime polymorphism**      | *Dynamic polymorphism* | Virtual functions and inheritance                     | While the program runs |
 
-## 1. Compile-time Polymorphism
+## Compile-time Polymorphism
 The function that will be called is known at compile time.
 ```cpp
 #include <iostream>
@@ -2792,7 +2920,7 @@ int main() {
 Same function name (print), different behavior depending on parameter type.
 
 
-## 2. Runtime/Dynamic Polymorphism ( Virtual Functions)
+## Runtime/Dynamic Polymorphism ( Virtual Functions)
 The function that will be called is determined at runtime — usually using virtual functions in a base class and overriding them in derived classes.
 
 ```cpp
