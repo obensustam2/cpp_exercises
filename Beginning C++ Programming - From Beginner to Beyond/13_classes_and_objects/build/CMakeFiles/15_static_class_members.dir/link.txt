@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/15_static_class_members.dir/src/15_main.cpp.o CMakeFiles/15_static_class_members.dir/src/15_static_class_members.cpp.o -o 15_static_class_members 

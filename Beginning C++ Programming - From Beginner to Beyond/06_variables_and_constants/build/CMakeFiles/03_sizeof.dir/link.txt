@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/03_sizeof.dir/src/03_sizeof.cpp.o -o 03_sizeof 

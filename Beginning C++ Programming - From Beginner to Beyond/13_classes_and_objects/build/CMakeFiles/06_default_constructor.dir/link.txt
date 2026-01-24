@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/06_default_constructor.dir/src/06_default_constructor.cpp.o -o 06_default_constructor 

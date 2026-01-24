@@ -1,4 +1,0 @@
-/home/oben/cpp_exercises/10_characters_and_strings/build/CMakeFiles/00_cpp_strings.dir
-/home/oben/cpp_exercises/10_characters_and_strings/build/CMakeFiles/01_section_challenge.dir
-/home/oben/cpp_exercises/10_characters_and_strings/build/CMakeFiles/edit_cache.dir
-/home/oben/cpp_exercises/10_characters_and_strings/build/CMakeFiles/rebuild_cache.dir

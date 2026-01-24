@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/00_std_libraries.dir/src/00_std_libraries.cpp.o -o 00_std_libraries 

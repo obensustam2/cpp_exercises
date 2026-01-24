@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/06_ternary_operator.dir/src/06_ternary_operator.cpp.o -o 06_ternary_operator 

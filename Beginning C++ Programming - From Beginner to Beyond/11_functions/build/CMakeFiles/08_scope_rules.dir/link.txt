@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/08_scope_rules.dir/src/08_scope_rules.cpp.o -o 08_scope_rules 

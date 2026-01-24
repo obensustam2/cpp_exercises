@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/10_copy_constructor.dir/src/10_copy_constructor.cpp.o -o 10_copy_constructor 

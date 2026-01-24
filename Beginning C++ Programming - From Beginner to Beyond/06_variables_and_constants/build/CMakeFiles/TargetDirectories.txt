@@ -1,7 +1,0 @@
-/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles/00_multiplication.dir
-/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles/01_employee.dir
-/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles/02_long_char.dir
-/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles/03_sizeof.dir
-/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles/04_carpet_cleaning_service.dir
-/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles/edit_cache.dir
-/home/oben/cpp_exercises/06_variables_and_constants/build/CMakeFiles/rebuild_cache.dir

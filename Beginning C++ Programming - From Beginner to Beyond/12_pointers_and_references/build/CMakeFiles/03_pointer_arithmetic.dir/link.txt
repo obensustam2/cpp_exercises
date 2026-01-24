@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/03_pointer_arithmetic.dir/src/03_pointer_arithmetic.cpp.o -o 03_pointer_arithmetic 

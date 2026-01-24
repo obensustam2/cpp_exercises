@@ -1,3 +1,0 @@
-/home/oben/cpp_exercises/14_operator_overloading/build/CMakeFiles/00_mystring.dir
-/home/oben/cpp_exercises/14_operator_overloading/build/CMakeFiles/edit_cache.dir
-/home/oben/cpp_exercises/14_operator_overloading/build/CMakeFiles/rebuild_cache.dir

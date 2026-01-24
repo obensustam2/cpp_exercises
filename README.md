@@ -47,7 +47,7 @@
         - [Trigonometric Functions](#trigonometric-functions)
         - [Function Prototypes](#function-prototypes)
         - [Default Arguments](#default-arguments)
-        - [Pass by Reference](#pass-by-reference)
+        - [Pass by reference, value, pointer](#pass-by-reference-value-pointer)
         - [Pass by Value vs Pass by Reference](#pass-by-value-vs-pass-by-reference)
         - [Const usage for printing with reference inputs](#const-usage-for-printing-with-reference-inputs)
         - [Local Global - Scope Rules](#local-global---scope-rules)
@@ -895,30 +895,94 @@ double calc_cost(double base_cost, double tax_rate, double shipping){
 ```
 
 
-## Pass by Reference
+## Pass by reference, value, pointer
 ```cpp
-void double_data2(int &val){
-    val *= 2;
+#include <iostream>
+
+void pass_by_pointer(int *num){
+    *num -= 5;
 }
 
-void trial2(){
-    int value2 = 10;
-    std::cout << "Value: " << value2 << std::endl; 
-    double_data2(value2);
-    std::cout << "Value: " << value2 << std::endl; 
-    double_data2(value2);
-    std::cout << "Value: " << value2 << std::endl; 
+void swap(int *x, int *y){
+    int temp = *x;
+    *x = *y;
+    *y = temp;
 }
+
+void pass_by_reference(int &x){
+    x -= 5;
+}
+
+void pass_by_value(int x){
+    x -= 5;
+}
+
+int pass_by_value_return(int x){
+    x -= 5;
+    return x;
+}
+
 
 int main(){
-    trial2();
+    std::cout << "-------Pass by Pointer----" << std::endl;
+    int my_num = 100;
+    std::cout << "Before Decrement: " << my_num << std::endl;
+    pass_by_pointer(&my_num);
+    std::cout << "After Decrement: " << my_num << "\n" << std::endl;
+
+
+    std::cout << "---------Swap with Pointer----" << std::endl;
+    int a = 10;
+    int b = 20;
+    std::cout << "Before Swap A: " << a << " B: " << b << std::endl;
+    swap(&a, &b);
+    std::cout << "After Swap A: " << a << " B: " << b << "\n" << std::endl;
+
+
+    std::cout << "--------Pass by Reference-----" << std::endl;
+    int c = 100;
+    std::cout << "Before Decrement: " << c << std::endl;
+    pass_by_reference(c);
+    std::cout << "After Decrement: " << c << "\n" << std::endl;
+
+
+    std::cout << "------Pass by Value------" << std::endl;
+    int d = 100;
+    std::cout << "Before Decrement: " << d << std::endl;
+    pass_by_value(d);
+    std::cout << "After Decrement: " << d << "\n" << std::endl;
+
+
+    std::cout << "-----Pass by Value with Return------" << std::endl;
+    int e = 100;
+    std::cout << "Before Decrement: " << e << std::endl;
+    std::cout << "After Decrement: " << pass_by_value_return(e) << std::endl;
+    
+    
     return 0;
 }
 ```
 ```sh
-Value: 10
-Value: 20
-Value: 40
+-------Pass by Pointer----
+Before Decrement: 100
+After Decrement: 95
+
+---------Swap with Pointer----
+Before Swap A: 10 B: 20
+After Swap A: 20 B: 10
+
+--------Pass by Reference-----
+Before Decrement: 100
+After Decrement: 95
+
+------Pass by Value------
+Before Decrement: 100
+After Decrement: 100
+
+-----Pass by Value with Return------
+Before Decrement: 100
+After Decrement: 95
+
 ```
 
 ## Pass by Value vs Pass by Reference

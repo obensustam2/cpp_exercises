@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/13_section_challenge.dir/src/13_section_challenge.cpp.o -o 13_section_challenge 
