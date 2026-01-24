@@ -23,7 +23,7 @@ public:
 };
 
 int main(){
-    std::cout << "--- Shared Pointer Example ---";
+    std::cout << "--- Shared Pointer Example ---\n";
 
     // Create a Car object managed by shared_ptr
     std::shared_ptr<Car> car1_ptr = std::make_shared<Car>("Togg");
@@ -42,9 +42,6 @@ int main(){
     std::cout << "car1_ptr use_count = " << car1_ptr.use_count() << std::endl;
 
     car1_ptr->drive();
-
-    return 0;
-
 
     return 0;
 }

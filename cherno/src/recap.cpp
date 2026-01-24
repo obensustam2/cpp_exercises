@@ -30,6 +30,28 @@ void Zebra::set_age(int age_){
     age = age_ + 5;
 }
 
+
+int size(){
+    std::cout << sizeof(char) << "\n";
+    std::cout << sizeof(int) << "\n";
+    std::cout << sizeof(double) << "\n";
+    std::cout << sizeof(std::string) << "\n";
+
+    return 0;
+}
+
+int ternary(){
+    int a = 5;
+    bool b =  false;
+    
+    if(a > 4 and b == false){
+        std::cout << "Yes" << std::endl;
+    }
+    
+    return 0;
+}
+
+
 int main(){
     Animal monkey(29, "orangutan", {"coding", "peeing"});
     
@@ -48,5 +70,10 @@ int main(){
     z1.set_age(15);
     std::cout << "New Age Zebra: " << z1.get_age() << std::endl;
 
+    ternary();
+
     return 0;
 }
+
+
+

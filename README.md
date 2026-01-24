@@ -1,10 +1,9 @@
 # C++ Learning Handbook
 
 # Table of Content
-   - [RAII](#raii) 
-   - [Build](#build)
-   - [Compilation vs Linking](#compilation-vs-linking)
    - [Getting Started](#getting-started)
+        - [RAII](#raii) 
+        - [Compilation vs Linking](#compilation-vs-linking)
         - [Preprocessor](#preprocessor)
         - [Header Files Preprocessor](#header-files-preprocessor)
         - [Standard Template Library vs Standard Library](#standard-template-library-vs-standard-library)
@@ -13,7 +12,8 @@
         - [Namespace](#namespace)
         - [Arguments](#arguments)
         - [User Input](#user-input)
-        - [Constant Variable](#constant-variable)
+        - [Constant Variable and Methods](#constant-variable--methods)
+        - [Mutable Keyword](#mutable-keyword)
         - [Byte Size](#byte-size)
         - [Long Variable](#long-variable)
         - [Signed vs Unsigned](#signed-vs-unsigned)
@@ -47,49 +47,45 @@
         - [Trigonometric Functions](#trigonometric-functions)
         - [Function Prototypes](#function-prototypes)
         - [Default Arguments](#default-arguments)
-        - [Pass by reference, value, pointer](#pass-by-reference-value-pointer)
-        - [Pass by Value vs Pass by Reference](#pass-by-value-vs-pass-by-reference)
+        - [Pass by Reference, Value, Pointer](#pass-by-reference-value-pointer)
         - [Const usage for printing with reference inputs](#const-usage-for-printing-with-reference-inputs)
         - [Local Global - Scope Rules](#local-global---scope-rules)
         - [Function Calls - Memory Stack - Recursive Function](#function-calls---memory-stack---recursive-function)
-   - [Pointers and References](#pointers-and-references)
+   - [Pointers](#pointers)
+        - [Stack and Heap Pointers](#stack-and-heap-pointers)
         - [Stack vs Heap Memory](#stack-vs-heap-memory)
-        - [Simple Pointers](#simple-pointers)
-        - [Dereference Pointers](#dereference-pointers)
-        - [Dynamic Memory](#dynamic-memory)
-        - [Pointer Arithmetic](#pointer-arithmetic)
-        - [Pass by Pointer](#pass-by-pointer)
-        - [Some Pointer Problems](#some-pointer-problems)
+        - [Stack and Heap Objects](#stack-and-heap-objects)
+        - [Some Raw Pointer Problems](#some-raw-pointer-problems)
             - [Stack Overflow (Stack Memory)](#stack-overflow-stack-memory)
             - [Memory Leak (Heap Memory)](#memory-leak-heap-memory)
-        - [Reference](#reference)
+            - [Shallow Copy](#shallow-copy-problem)
         - [lvalue and rvalue](#lvalue-and-rvalue)
    - [Classes and Objects](#classes-and-objects)
         - [Accessing class members](#accessing-class-members)
         - [Implementing Member Methods](#implementing-member-methods)
         - [Implementing Methods with Header File (.h)](#implementing-methods-with-header-file-h)
-        - [Constructors and Deconstructors](#constructors-and-deconstructors)
-        - [Constructor Initialization](#constructor-initialization)
-        - [Delegating Constructor](#delegating-constructor)
-        - [Default Constructor Parameters](#default-constructor-parameters)
+        - [Constructor & Destructor](#constructor--destructor)
         - [Copy Constructor](#copy-constructor)
-        - [Deep Copy](#deep-copy)
-        - [Shallow Copy](#shallow-copy)
-        - [Move Constructor](#move-constructor)
+            - [Shallow Copy](#shallow-copy)
+            - [Deep Copy](#deep-copy)
         - [Const with Classes](#const-with-classes)
         - [Static Class Members](#static-class-members)
         - [Struct](#struct)
-        - [Movie Section Challenge](#movie-section-challenge)
+        - [Inheritance](#inheritance)
+        - [Polymorphism](#polymorphism)
+            - [Virtual Functions (Dynamic Polymorphism)](#virtual-functions-dynamic-polymorphism)
    - [Enumeration](#enums)
    - [Smart Pointers](#smart-pointers)
+        - [unique_ptr](#unique_ptr)
+        - [shared_ptr](#shared_ptr)
+   - [Copy Constructor](#copy)
    - [Threads](#threads)
+   - [this Pointer](#this-pointer)
    - [Lambda Expressions](#lambda-expressions)
-   - [Inheritance](#inheritance)
-   - [Polymorphism](#polymorphism)
-        - [Runtime/Dynamic Polymorphism ( Virtual Functions)](#runtimedynamic-polymorphism--virtual-functions)
    - [Interfaces](#interfaces)
    - [C++ Visibility / Access Specifiers](#c-visibility--access-specifiers)
    - [Templates](#templates)
+   - [Operator Overloading](#operator-overloading)
 
 
 
@@ -97,22 +93,9 @@
 
 
 
+# Getting Started
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# RAII
+## RAII
 Resource Acquisition Is Initialization or RAII, is a C++ programming technique[1][2] which binds the life cycle of a resource that must be acquired before use (allocated heap memory, thread of execution, open socket, open file, locked mutex, disk space, database connection—anything that exists in limited supply) to the lifetime of an object.
 
 RAII guarantees that the resource is available to any function that may access the object (resource availability is a class invariant, eliminating redundant runtime tests). It also guarantees that all resources are released when the lifetime of their controlling object ends, in reverse order of acquisition. Likewise, if resource acquisition fails (the constructor exits with an exception), all resources acquired by every fully-constructed member and base subobject are released in reverse order of initialization. This leverages the core language features (object lifetime, scope exit, order of initialization and stack unwinding) to eliminate resource leaks and guarantee exception safety. Another name for this technique is Scope-Bound Resource Management (SBRM), after the basic use case where the lifetime of an RAII object ends due to scope exit.
@@ -130,17 +113,9 @@ Move semantics enable the transfer of resources and ownership between objects, i
 (since C++11)
 Classes with open()/close(), lock()/unlock(), or init()/copyFrom()/destroy() member functions are typical examples of non-RAII classes:
 
-# Build
-```
-touch CMakeLists.txt
-mkdir build
-cd build
-cmake .. 
-make 
-./my_program
-```
 
-# Compilation vs Linking
+
+## Compilation vs Linking
 | Step            | Input                  | What happens                                                                                                                                                       | Output              | Happens where                 |
 | --------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- | ----------------------------- |
 | **Compilation** | `.cpp` files           | Each `.cpp` file is compiled separately into **machine code**, but not yet complete (no connections between files).                                                | `.o` (object) files | Inside `build/CMakeFiles/...` |
@@ -160,8 +135,6 @@ The linker’s job is to:
 
 > Match every **undefined symbol** with its corresponding **defined symbol** across all object files and libraries.
 
-
-# Getting Started
 ## Preprocessor
 The preprocessor runs before actual compilation. It handles all lines starting with #, like:
 ```
@@ -228,14 +201,66 @@ std::cout << "How many rooms do you want to be cleaned? ";
 std::cin >> num_rooms;
 ```
 
-## Constant Variable
+## Constant Variable & Methods
 ```cpp
-const double tax_rate = 0.06;
+const int age = 30;
+// age = 31; // ❌ Error! Cannot modify
+```
+
+```cpp
+class Person {
+    std::string name;
+public:
+    Person(std::string n) : name(n) {}
+
+    void printName() const {   // ✅ const member function
+        // name += "!"; // ❌ Error
+        std::cout << name << std::endl;
+    }
+
+    void changeName(std::string n) {  // Non-const
+        name = n;
+    }
+};
+```
+
+## Mutable Keyword
+```cpp
+class Example {
+    mutable int counter;  // can be changed even in const objects
+public:
+    Example() : counter(0) {}
+
+    void increment() const {  // const member function
+        counter++;  // allowed because counter is mutable
+    }
+
+    int getCounter() const {
+        return counter;
+    }
+};
 ```
 
 ## Byte Size
 ```cpp
-sizeof(char)
+#include <iostream>
+#include <string>
+
+int main() {
+    std::cout << sizeof(char) << "\n";
+    std::cout << sizeof(int) << "\n";
+    std::cout << sizeof(double) << "\n";
+    std::cout << sizeof(std::string) << "\n";
+
+    return 0;
+}
+```
+
+```
+1
+4
+8
+32
 ```
 
 ## Long Variable
@@ -985,18 +1010,7 @@ After Decrement: 95
 
 ```
 
-## Pass by Value vs Pass by Reference
-| Feature                         | **Pass by Value**                                                         | **Pass by Reference**                                                                |
-| ------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| **Definition**                  | A copy of the argument is passed to the function.                         | A reference (alias) to the original argument is passed.                              |
-| **Modification of Argument**    | Changes made inside the function **do not** affect the original variable. | Changes made inside the function **affect** the original variable.                   |
-| **Memory Usage**                | More memory (copy is made).                                               | Less memory (no copy, uses the original variable).                                   |
-| **Performance**                 | Slower for large objects (due to copying).                                | Faster for large objects (no copying).                                               |
-| **Syntax Example**              | `void foo(int x);`                                                        | `void foo(int& x);`                                                                  |
-| **Safe from Side Effects?**     | ✅ Yes (original data is safe)                                             | ❌ No (can accidentally modify original data)                                         |
-| **Typical Use Cases**           | Use when you **don't want** the function to modify the original data.     | Use when you **want** the function to modify the original data, or to avoid copying. |
-| **Can be used with Constants?** | Yes                                                                       | Yes (use `const` reference to prevent modification)                                  |
-| **Example Call**                | `foo(num);` (copies `num`)                                                | `foo(num);` (references `num`)                                                       |
+                                                   |
 
 
 ## Const usage for printing with reference inputs
@@ -1093,10 +1107,54 @@ unsigned long long factorial(unsigned long long val){
 }
 ```
 
-# Pointers and References
+# Pointers
+
+## Stack and Heap Pointers
+```cpp
+#include <iostream>
+#include <string>
+
+int main() {
+    // --- Stack memory ---
+    int stackVar = 42;           // stack variable
+    int* stackPtr = &stackVar;   // pointer to stack variable
+
+    std::cout << "Stack variable value: " << stackVar << std::endl;
+    std::cout << "Stack variable address: " << &stackVar << std::endl;
+    std::cout << "Stack pointer value (points to stackVar): " << stackPtr << std::endl;
+    std::cout << "Stack pointer dereferenced: " << *stackPtr << std::endl;
+
+    // --- Heap memory ---
+    int* heapVar = new int(99);  // allocate int on heap
+    std::cout << "\nHeap variable value: " << *heapVar << std::endl;
+    std::cout << "Heap pointer address: " << &heapVar << std::endl;   // address of the pointer itself (on stack)
+    std::cout << "Heap memory address it points to: " << heapVar << std::endl; // address of heap memory
+
+    // Update heap value through pointer
+    *heapVar = 123;
+    std::cout << "Heap variable updated value: " << *heapVar << std::endl;
+
+    // Free heap memory
+    delete heapVar;
+    heapVar = nullptr;           // avoid dangling pointer
+
+    return 0;
+}
+```
+
+```sh
+Stack variable value: 42
+Stack variable address: 0x7ffee3c8a6ac
+Stack pointer value (points to stackVar): 0x7ffee3c8a6ac
+Stack pointer dereferenced: 42
+
+Heap variable value: 99
+Heap pointer address: 0x7ffee3c8a6b0
+Heap memory address it points to: 0x600003e000
+Heap variable updated value: 123
+```
 
 ## Stack vs Heap Memory
-
 | Feature              | **Stack**                                                                 | **Heap**                                                                 |
 |-----------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|
 | **Size limit**        | Small & fixed (e.g., ~8 MB per thread on Linux)                          | Large & flexible (limited by system RAM, often GBs)                      |
@@ -1110,138 +1168,62 @@ unsigned long long factorial(unsigned long long val){
 | **Analogy**           | Lunch tray (items stacked & removed in order)                           | Warehouse (flexible storage, but must clean up yourself)                  |
 
 
-**Properties**
-- Pointer size is independent from which variable address it points.
-
-## Simple Pointers
+## Stack and Heap Objects
 ```cpp
 #include <iostream>
+#include <string>
 
-int main() {
-    int score = 10;
-    int *score_ptr = nullptr;
-    score_ptr = &score;
+class Entity{
+private:
+    std::string m_Name;
+public:
+    Entity() : 
+        m_Name("Unknown") {
+    }
 
-    std::cout << "\nValue of score is " << score << std::endl;
-    std::cout << "Address of score  is " << &score << std::endl;
-    std::cout << "Value of the score_ptr is " << score_ptr << std::endl;
-    std::cout << "Value pointed to score_ptr is " << *score_ptr << std::endl;
-}
-
-```
-
-```sh
-Value of score is 10
-Address of score  is 0x7ffcb29541cc
-Value of the score_ptr is 0x7ffcb29541cc
-Value pointed to score_ptr is 10
-```
-
-## Dereference Pointers
-Accessing the actual value stored at the memory address the pointer holds
-
-```cpp
-#include <iostream>
-
-int main() {
-    int score = 100;
-    int *score_ptr = &score;
-    std::cout << "Dereferencing the pointer: " << *score_ptr << std::endl;
-    std::cout << "Score value: " << score << std::endl;
-
-    *score_ptr = 200; // updating the original score variable through the pointer
-    std::cout << "\nDereferencing the pointer: " << *score_ptr << std::endl;
-    std::cout << "Score value: " << score << std::endl;
+    Entity(const std::string &name) : 
+        m_Name(name){
+    }
     
-    score = 500;  // change directly
-    std::cout << "\nDereferencing the pointer: " << *score_ptr << std::endl;
-    std::cout << "Score value: " << score << std::endl;
+    const std::string &get_name() const{
+        return m_Name;
+    } 
+};
 
-    return 0;
-}
-```
-```sh
-Dereferencing the pointer: 100
-Score value: 100
 
-Dereferencing the pointer: 200
-Score value: 200
+int main()
+{
+    Entity entity;
+    std::cout << entity.get_name() << std::endl;
 
-Dereferencing the pointer: 500
-Score value: 500
-```
+    Entity entity2("Oben");
+    std::cout << entity2.get_name() << std::endl;
 
-## Dynamic Memory
-```cpp
-#include <iostream>
+    // stack memory
+    Entity *entity_ptr = nullptr;
+    {
+        Entity entity3("Orbay");
+        entity_ptr = &entity3;
+        std::cout << entity3.get_name() << std::endl;
+        std::cout << entity_ptr->get_name() << std::endl;
+    }
 
-int main(){
-    int *int_ptr = nullptr;
-    int_ptr = new int;
-    std::cout << int_ptr << std::endl; // Heap address
-    delete int_ptr;
-
-    return 0;
-}
-```
-
-## Pointer Arithmetic 
-```cpp
-int main(){
-    std::string s1 = "Frank";
-    std::string s2 = "Frank";
-    std::string s3 = "James";
-    std::string *p1 = &s1;
-    std::string *p2 = &s2;
-    std::string *p3 = &s3;
-    std::cout << std::boolalpha;
-    std::cout << "\n" << p1 << " == " << p2 << ": " << (p1==p2) << std::endl;
-    std::cout << p1 << " == " << p3 << ": " << (p1==p3) << std::endl;
-    std::cout << *p1 << " == " << *p2 << ": " << (*p1==*p2) << std::endl;
-    std::cout << *p1 << " == " << *p3 << ": " << (*p1==*p3) << std::endl;
-    p3 = &s3 ;
-    std::cout << *p1 << " == " << *p3 << ": " << (*p1==*p3) << std::endl;
+    // heap memory
+    Entity *entity_ptr2 = nullptr;
+    {
+        entity_ptr2 = new Entity("Orcun");
+        std::cout << entity_ptr2->get_name() << std::endl;
+        delete entity_ptr2;
+    }
 
     return 0;
 }
 ```
 
-```sh
-0x7fff44d228c0 == 0x7fff44d228e0: false
-0x7fff44d228c0 == 0x7fff44d22900: false
-Frank == Frank: true
-Frank == James: false
-Frank == James: false
-```
-
-## Pass by Pointer
-```cpp
-#include <iostream>
-
-void increase_by_ten(int *num_ptr){
-    *num_ptr +=10;
-    std::cout << "Inside function: *num_ptr = " << *num_ptr << std::endl;
-}
-
-int main(){
-    int number = 42;
-    std::cout << "Before: number = " << number << std::endl;
-
-    increase_by_ten(&number);
-
-    std::cout << "After: number = " << number << std::endl;
-    
-    return 0;
-}
-```
-```sh
-Before: number = 42
-Inside function: *num_ptr = 52
-After: number = 52
-```
 
 
-## Some Pointer Problems
+
+## Some Raw Pointer Problems
 
 ### Stack Overflow (Stack Memory)
 **int** stores 4 bytes. BigStackArray has 4m elements -> 4.000.000 x 4 = 16.000.000 Byte = 16 MB. Which is higher than stack memory size (8 MB). Code will give error.
@@ -1272,38 +1254,12 @@ int main(){
 }
 ```
 
+### Shallow Copy Problem
+- Copying raw pointers copies only the address, not the actual object → two objects point to the same memory.
 
-## Reference
-```cpp
-int main(){
-    int num = 100;
-    int &ref = num;
-    std::cout << num << std::endl;
-    std::cout << ref << std::endl;
-    std::cout << &ref << std::endl;
-    num = 500;
-    std::cout << num << std::endl;
-    std::cout << ref << std::endl;
-    std::cout << &ref << std::endl;
-    ref = -300;
-    std::cout << num << std::endl;
-    std::cout << ref << std::endl;
-    std::cout << &ref << std::endl;    
-    return 0;
-}
-```
+- Leads to double deletion when both destructors try to free the same heap memory.
 
-```sh
-100
-100
-0x7ffe0551263c
-500
-500
-0x7ffe0551263c
--300
--300
-0x7ffe0551263c
-```
+- Deep copy is needed to safely duplicate objects that own dynamic memory.
 
 ## lvalue and rvalue
 
@@ -1561,7 +1517,7 @@ int main(){
 }
 ```
 
-## Constructors and Deconstructors
+## Constructor & Destructor
 ```cpp
 #include <iostream>
 #include <string>
@@ -1573,640 +1529,214 @@ private:
     int xp;
 
 public:
-    void set_name(std::string new_name){
-        name = new_name;
-    }
-
-    std::string get_name(){
-        return name;
-    }
-
-    Player(){
-        std::cout << "No args constructor is called" << name << std::endl;
-    }
-
-    Player(std::string init_name){
-        name = init_name;
-        std::cout << "String arg constructor is called for " << name << std::endl;
-    }
-
-    Player(std::string init_name, int init_health, int init_xp){
-        name = init_name;
-        health = init_health;
-        xp = init_xp;
-        std::cout << "Three args constructor is called for " << name << std::endl;
-    }
-
-    ~Player(){
-        std::cout << "Deconstructor called for " << name << std::endl;
-    }
-};
-
-
-int main(){
-    Player oben("Oben");
-    Player orbay("Orbay", 100, 10);
-    Player orcun;
-    orcun.set_name("Orcun");
-
-    Player *tenzile = new Player("Tenzile");
-    Player *orhan = new Player;
-    orhan->set_name("Orhan");
-    
-    delete tenzile;
-    delete orhan;
-
-
-    return 0;
-}
-```
-```sh
-String arg constructor is called for Oben
-Three args constructor is called for Orbay
-No args constructor is called
-String arg constructor is called for Tenzile
-No args constructor is called
-Deconstructor called for Tenzile
-Deconstructor called for Orhan
-Deconstructor called for Orcun
-Deconstructor called for Orbay
-Deconstructor called for Oben
-```
-
-| Feature             | `Player oben("Oben")` | `Player *tenzile = new Player("Tenzile")` |
-| ------------------- | --------------------- | ----------------------------------------- |
-| Memory location     | Stack                 | Heap                                      |
-| Lifetime            | Automatic             | Manual (until `delete`)                   |
-| Destructor call     | Automatic             | Manual (`delete tenzile;`)                |
-| Access method       | `.`                   | `->`                                      |
-| Risk of memory leak | No                    | Yes, if `delete` is not called            |
-
-```cpp
-void example() {
-    int a = 5;              // Stack (static) allocation
-    int* b = new int(10);   // Heap (dynamic) allocation
-
-    // Use a and b...
-    
-    delete b; // must manually free heap memory
-}
-```
-
-## Constructor Initialization
-```cpp
-#include <iostream>
-#include <string>
-
-class Player{
-private:
-    std::string name;
-    int health;
-    int xp;
-
-public:
-    std::string get_name(){
-        return name;
-    }
-
-    int get_health(){
-        return health;
-    }
-
     // Overloaded Constructors (with different parameters (type, number, or order).)
-    Player();
-    Player(std::string name_val);
-    Player(std::string name_val, int health_val, int xp_val);
-};
-
-Player::Player() : 
-    name("Oben"), health(99), xp(29) {
-}
-
-Player::Player(std::string name_val) : 
-    name(name_val), health(80), xp(22){
-}
-
-Player::Player(std::string name_val, int health_val, int xp_val) : 
-    name(name_val), health(health_val), xp(xp_val) {
-}
-
-int main(){
-
-    Player first_player;
-    std::cout << first_player.get_name() << std::endl;
-    std::cout << first_player.get_health() << std::endl;
-
-    Player second_player("Orbay");
-    std::cout << "\n" << second_player.get_name() << std::endl;
-    std::cout << second_player.get_health() << std::endl;
-
-    Player third_player("Orcun", 100, 20);
-    std::cout << "\n" << third_player.get_name() << std::endl;
-    std::cout << third_player.get_health() << std::endl;
-
-    return 0;
-}
-```
-
-
-## Delegating Constructor 
-```cpp
-Player() : Player("None", 13, 56) {}                          // 👈 Delegator
-Player(std::string name_val) : Player(name_val, 13, 56) {}   // 👈 Delegator
-Player(std::string name_val, int health_val) : Player(name_val, health_val, 56) {} // 👈 Delegator
-
-Player(std::string name_val, int health_val, int xp_val) 
-    : name(name_val), health(health_val), xp(xp_val) {}      // 👈 Delegatee
-```
-
-
-
-## Default Constructor Parameters 
-No need to define multiple constructor
-```cpp
-#include <iostream>
-#include <string>
-
-class Player{
-private:
-    std::string name;
-    int health;
-    int xp;
-
-public:
-    std::string get_name(){
-        return name;
+    Player() : 
+        name("Oben"), health(99), xp(29){
+    }
+    
+    Player(std::string &name_val) :   
+        name(name_val), health(80), xp(22){
     }
 
-    int get_health(){
-        return health;
-    }
-
-    int get_xp(){
-        return xp;
-    }
-
-    Player(std::string name_val = "None", int health_val = 13, int xp_val = 56) : 
+    Player(std::string &name_val, int &health_val, int &xp_val) : 
         name(name_val), health(health_val), xp(xp_val){
-    }
-};
-
-
-int main(){
-
-    Player first_player;
-    std::cout << first_player.get_name() << std::endl;
-    std::cout << first_player.get_health() << std::endl;
-    std::cout << first_player.get_xp() << std::endl;
-
-    Player second_player("Orbay");
-    std::cout << "\n" << second_player.get_name() << std::endl;
-    std::cout << second_player.get_health() << std::endl;
-    std::cout << second_player.get_xp() << std::endl;
-
-    Player extra_player("Orhan", 20);
-    std::cout << "\n" << extra_player.get_name() << std::endl;
-    std::cout << extra_player.get_health() << std::endl;
-    std::cout << extra_player.get_xp() << std::endl;
-
-    Player third_player("Orcun", 100, 20);
-    std::cout << "\n" << third_player.get_name() << std::endl;
-    std::cout << third_player.get_health() << std::endl;
-    std::cout << third_player.get_xp() << std::endl;
-
-
-
-    return 0;
-}
-```
-
-## Copy Constructor
-| **Aspect**                            | **Shallow Copy**                                       | **Deep Copy**                                  |
-| ------------------------------------- | ------------------------------------------------------ | ---------------------------------------------- |
-| **Definition**                        | Copies outer structure, not internal dynamic memory    | Copies both structure and internal data        |
-| **Pointer member handling**           | Copies pointer address (both point to same memory)     | Allocates new memory and copies the data       |
-| **Shared memory?**                    | ✅ Yes – shared underlying data                         | ❌ No – separate copies of everything           |
-| **Data update in one affects other?** | ✅ Yes – changes in one reflect in the other            | ❌ No – changes in one do not affect the other  |
-| **Memory efficiency**                 | ✅ More memory-efficient (no duplication)               | ❌ Uses more memory                             |
-| **Risk of bugs**                      | ❌ High – aliasing, double deletion, accidental changes | ✅ Safe and isolated                            |
-| **Destructor behavior**               | ❌ Dangerous – may delete same memory twice             | ✅ Each object cleans up its own memory safely  |
-| **Typical usage**                     | Default behavior if no custom copy constructor         | Classes that manage their own dynamic memory   |
-| **Performance**                       | ✅ Faster (no duplication)                              | ❌ Slower (due to deep copying)                 |
-| **Compiler generated?**               | ✅ Yes – default behavior                               | ❌ No – must write copy constructor manually    |
-| **Ideal when**                        | You want to share resources carefully                  | You want complete independence between objects |
-
-
-## Deep Copy
-```cpp
-#include <iostream>
-#include <cstring>
-
-class Car{
-private:
-    char *model_;
-    int year_;
-
-public:
-    Car(const char *model, int year) : year_(year){
-        model_ = new char[strlen(model) + 1];
-        strcpy(model_, model);
-        std::cout << "Car created: " << model_ << std::endl;
-    }
-
-    // Deep Copy
-    Car(const Car &other) : year_(other.year_){
-        model_ = new char[strlen(other.model_) + 1];
-        strcpy(model_, other.model_);  
-        std::cout << "Deep copy car created: " << model_ << std::endl;
-    }
-
-    ~Car(){
-        std::cout << "Deleting car: " << model_ << std::endl;
-        delete[] model_;
-    }
-
-    void set_year(int new_year){
-        year_ = new_year;
-    }
-
-    void print() { 
-        std::cout << "Model: " << model_ << ", Year: " << year_ << std::endl; 
-    } 
-};
-
-
-int main(){
-    Car c1("Audi", 1996);
-
-    Car c2 = c1;
-    c2.set_year(2000);
-
-    c1.print();
-    c2.print();
-
-    return 0;
-}
-```
-
-## Shallow Copy
-```cpp
-#include <iostream>
-#include <cstring>
-
-class Car{
-private:
-    char *model_;
-    int year_;
-
-public:
-    Car(const char *model, int year) : year_(year){
-        model_ = new char[strlen(model) + 1];
-        strcpy(model_, model);
-        std::cout << "Car created: " << model_ << std::endl;
-    }
-
-    // Shallow Copy
-    Car(const Car &other) : model_(other.model_), year_(other.year_){
-        std::cout << "Shallow copy car created: " << model_ << std::endl;
-    }
-
-    ~Car(){
-        std::cout << "Deleting car: " << model_ << std::endl;
-        delete[] model_;
-    }
-
-    void set_year(int new_year){
-        year_ = new_year;
-    }
-
-    void print() { 
-        std::cout << "Model: " << model_ << ", Year: " << year_ << std::endl; 
-    } 
-};
-
-
-int main(){
-    Car c1("Audi", 1996);
-
-    Car c2 = c1;
-    c2.set_year(2000);
-
-    c1.print();
-    c2.print();
-
-    return 0;
-}
-```
-
-When c1 is destroyed → delete[] model; frees the heap memory.
-
-But c2.model still contains the same address (dangling pointer now).
-
-Then when c2 is destroyed → delete[] model; tries to free the same memory again → ❌ double delete → undefined behavior (often a crash).
-```
-Stack:                        Heap:
-+------+                      +-----------+
-| c1   | --model------------->| "BMW\0"   |
-+------+                      +-----------+
-| c2   | --model--------------^  (same block)
-+------+
-
-
-Stack:                        Heap:
-+------+                      +-----------+
-| c1   | X (being destroyed)  |  FREED    |
-+------+                      +-----------+
-| c2   | --model------------->|  (dangling pointer!)
-+------+
-
-
-Stack:                        Heap:
-+------+                      +-----------+
-| c2   | X (being destroyed)  |  FREED    |
-+------+                      +-----------+
-```
-
-
-## Move Constructor
-To efficiently transfer ownership of resources (like heap memory) from one object to another, without copying.
-
-| Benefit                   | Explanation                                                |
-| ------------------------- | ---------------------------------------------------------- |
-| 🚀 **Performance**        | No deep copy — just pointer swap and nulling               |
-| 🔐 **No duplication**     | Ensures one owner of a resource (avoids double delete)     |
-| ♻️ **Temporary handling** | Efficiently handles return values and other temporaries    |
-| 📦 **Resource transfer**  | Transfers file handles, memory buffers, network sockets... |
-
-```cpp
-#include <iostream>
-
-class Number {
-private:
-    int* data;
-
-public:
-    // Constructor
-    Number(int value) {
-        data = new int(value);
-        std::cout << "Constructor: allocated " << *data << ", at address: " << data << std::endl;
-    }
-
-    // Copy Constructor
-    Number(const Number& source) {
-        data = new int(*source.data);  // deep copy
-        std::cout << "Copy Constructor: copied " << *data << ", at address: " << data << std::endl;
-    }
-
-    // ✅ Move Constructor
-    Number(Number &&source) : data(source.data) {
-        source.data = nullptr;  // steal ownership
-        std::cout << "Move Constructor: ownership moved" << std::endl;
     }
 
     // Destructor
-    ~Number() {
-        if (data)
-            std::cout << "Destructor: deleting " << *data << std::endl;
-        else
-            std::cout << "Destructor: nullptr — nothing to delete" << std::endl;
-
-        delete data;
+    ~Player(){
+        std::cout << "Destructor called for " << name << std::endl;
     }
 
-    void print() const {
-        if (data)
-            std::cout << "Value: " << *data << std::endl;
-        else
-            std::cout << "No value (nullptr)" << std::endl;
+    std::string get_name(){
+        return name;
     }
+
+    int get_health(){
+        return health;
+    }
+
+
 };
-
-Number create_number() {
-    Number temp(99);
-    return std::move(temp);  // Forces move constructor
-}
 
 
 int main() {
-    Number n1(10);          // Constructor
-    Number n2 = n1;         // Copy constructor
-    Number n3 = create_number();  // Move constructor
+    std::cout << "--- Creating first player ---" << std::endl;
+    Player first_player;
+    std::cout << first_player.get_name() << std::endl;
+    std::cout << first_player.get_health() << std::endl;
 
-    std::cout << "n1: ";
-    n1.print();
+    std::cout << "\n--- Creating second player ---" << std::endl;
+    Player second_player("Orbay");
+    std::cout << second_player.get_name() << std::endl;
+    std::cout << second_player.get_health() << std::endl;
 
-    std::cout << "n2: ";
-    n2.print();
+    std::cout << "\n--- Creating third player ---" << std::endl;
+    Player third_player("Orcun", 100, 20);
+    std::cout << third_player.get_name() << std::endl;
+    std::cout << third_player.get_health() << std::endl;
 
-    std::cout << "n3: ";
-    n3.print();
-
+    std::cout << "\n--- End of main ---" << std::endl;
     return 0;
 }
 ```
+
 ```sh
-Constructor: allocated 10, at address: 0x654b3e9e6eb0
-Copy Constructor: copied 10, at address: 0x654b3e9e72e0
-Constructor: allocated 99, at address: 0x654b3e9e7300
-Move Constructor: ownership moved
-Destructor: nullptr — nothing to delete
-n1: Value: 10
-n2: Value: 10
-n3: Value: 99
-Destructor: deleting 99
-Destructor: deleting 10
-Destructor: deleting 10
+--- Creating first player ---
+Default constructor called for Oben
+Oben
+99
+
+--- Creating second player ---
+Single-parameter constructor called for Orbay
+Orbay
+80
+
+--- Creating third player ---
+Three-parameter constructor called for Orcun
+Orcun
+100
+
+--- End of main ---
+Destructor called for Orcun
+Destructor called for Orbay
+Destructor called for Oben
 ```
 
-## Const with Classes
-- Object properties won't be changed
-
+## Copy Constructor
 ```cpp
 #include <iostream>
-
-class Account{ 
-private:
-    double balance;
-
-public:
-    Account(int balance_val) : 
-        balance(balance_val){
-    }
-
-    void set_balance(double bal){
-        balance = bal;
-    }
-
-    // const method
-    double get_balance() const {
-        return balance;
-    }
-};
-
-
-int main (){
-
-    Account n26(100);
-    n26.set_balance(200);
-    std::cout << n26.get_balance() << std::endl;
-
-    const Account revolut(300);
-    std::cout << revolut.get_balance() << std::endl;
-    // revolut.set_balance(600); // COMPILER ERROR BECAUSE set_balance IS NOT CONST METHOD
-
-    return 0;
-}
-```
-```sh
-200
-300
-```
-
-## Static Class Members
-The purpose of declaring:
-
-```cpp
-static int num_players;
-```
-is to make num_players a class-level variable that is shared by all objects of the class, rather than being specific to each object.
-
-
-```cpp
-static int get_num_players();
-```
-Because it accesses the static variable num_players, which belongs to the class, not any specific object.
-
-| **Reason**                                           | **Explanation**                                                                                                                                                     |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🔄 **No need for an object**                         | Since `num_players` is static (shared across all objects), we don’t need an object to access it. `get_num_players()` should also be callable **without an object**. |
-| 📦 **Class-level utility**                           | `get_num_players()` describes something about the **class as a whole**, not an individual `Player`.                                                                 |
-| 🔐 **Static methods can only access static members** | If `get_num_players()` were **not** static, you’d need to create an object just to access a shared class variable, which makes no sense.                            |
-
-
-**player.h**
-```cpp
-#ifndef _PLAYER_H_
-#define _PLAYER_H_
-
-#include <iostream>
+#include <memory>
 #include <string>
 
-class Player{
+class Car{
 private:
-    std::string name;
-    int health;
-    int xp;
-    static int num_players; // shared by all objects of the class
+    std::string model_;
 
 public:
-    std::string get_name();
-    int get_health();
-    int get_xp();
+    // Constructor
+    Car(const std::string &model) : model_(model){
+        std::cout << "Car " << model_ << " created 🚗\n";
+    }
 
-    Player(std::string name_val = "None", int health_val = 13, int xp_val = 56);
-    Player(const Player &source);
-    ~Player();
+    // Copy constructor
+    Car(const Car& other) : model_(other.model_){
+        std::cout << "Car " << model_ << " copied 🧬\n";
+    }
 
-    static int get_num_players(); // I don't need an object to call this method
+    // Destructor
+    ~Car(){
+       std::cout << "Car " << model_ << " destroyed 💥\n"; 
+    }
+
+    void drive() const{
+        std::cout << "Car " << model_ << " is driving...\n";
+    }
 };
 
-
-#endif // _PLAYER_H_
-```
-
-**15_static_class_members.cpp**
-```cpp
-#include "player.h"
-
-
-int Player::num_players = 0;
-
-std::string Player::get_name(){
-    return name;
-}
-
-int Player::get_health(){
-    return health;
-}
-
-int Player::get_xp(){
-    return xp;
-}
-
-Player::Player(std::string name_val, int health_val, int xp_val) :
-    name(name_val), health(health_val), xp(xp_val){
-    num_players += 1;
-    std::cout << "Constructor" << std::endl;
-}
-
-Player::Player(const Player &source) : 
-    Player(source.name, source.health, source.xp){ // delegating to constructor
-    std::cout << "Deep Copy Constructor" << std::endl;
-}
-
-Player::~Player(){
-    num_players -= 1;
-    std::cout << "Destructor for: " << name << std::endl;
-}
-
-int Player::get_num_players(){
-    return num_players;
-}
-```
-
-**15_main.cpp**
-```cpp
-#include "player.h"
-
-
-void display_active_players(){
-   std::cout << "Active players: " << Player::get_num_players() << std::endl;
-}
-
 int main(){
+    std::cout << "--- Copy Constructor Example ---\n";
 
-    display_active_players(); // 0
+    // Normal stack object
+    Car car1("BMW");
 
-    {
-        Player hero("Hero");
-        Player hero2("Hero2");
-        display_active_players(); // 2
-    } // hero and hero2 go out of scope *here*
+    // Copy construction
+    Car car2 = car1;   // <-- calls copy constructor
 
-    display_active_players(); // now it will print 0 again
+    car2.drive();
 
-    Player *enemy = new Player("Enemy", 100, 100);
-    display_active_players();
-    delete enemy;
-    display_active_players();
+    std::cout << "End of main()\n";
     
-    Player my_hero("Oben");
-    Player copy_hero(my_hero);
-    display_active_players();
-
     return 0;
 }
 ```
 
 ```sh
-Active players: 0
-Constructor
-Constructor
-Active players: 2
-Destructor for: Hero2
-Destructor for: Hero
-Active players: 0
-Constructor
-Active players: 1
-Destructor for: Enemy
-Active players: 0
-Constructor
-Constructor
-Deep Copy Constructor
-Active players: 2
-Destructor for: Oben
-Destructor for: Oben
+--- Copy Constructor Example ---
+Car BMW created 🚗
+Car BMW copied 🧬
+Car BMW is driving...
+End of main()
+Car BMW destroyed 💥
+Car BMW destroyed 💥
 ```
+
+### Shallow Copy
+```cpp
+#include <iostream>
+#include <cstring>
+
+class Car {
+private:
+    char* model_;   // heap-allocated string
+
+public:
+    Car(const char* model) {
+        model_ = new char[strlen(model) + 1];
+        std::strcpy(model_, model);
+        std::cout << "Car " << model_ << " created 🚗\n";
+    }
+
+    // ❌ Shallow copy constructor
+    Car(const Car& other) {
+        model_ = other.model_;   // pointer copied only
+        std::cout << "Car shallow-copied ⚠️\n";
+    }
+
+    ~Car() {
+        std::cout << "Destroying car " << model_ << "\n";
+        delete[] model_;   // double delete risk!
+    }
+};
+
+int main() {
+    Car c1("BMW");
+    Car c2 = c1;   // shallow copy
+
+    return 0; // 💥 undefined behavior when both destructors run
+}
+```
+
+- c1 and c2 share same memory
+- both call delete[]
+- → crash / undefined behavior
+
+### Deep Copy
+```cpp
+#include <iostream>
+#include <cstring>
+
+class Car {
+private:
+    char* model_;
+
+public:
+    Car(const char* model) {
+        model_ = new char[strlen(model) + 1];
+        std::strcpy(model_, model);
+        std::cout << "Car " << model_ << " created 🚗\n";
+    }
+
+    // ✅ Deep copy constructor
+    Car(const Car& other) {
+        model_ = new char[strlen(other.model_) + 1];
+        std::strcpy(model_, other.model_);
+        std::cout << "Car deep-copied ✅\n";
+    }
+
+    ~Car() {
+        std::cout << "Destroying car " << model_ << "\n";
+        delete[] model_;
+    }
+};
+
+int main() {
+    Car c1("Audi");
+    Car c2 = c1;   // deep copy
+
+    return 0; // safe
+}
+```
+
 
 ## Struct
 | Feature                 | `class`   | `struct` |
@@ -2243,216 +1773,218 @@ Logging Severity: 2, Text: Hello World
 ```
 
 
-## Movie Section Challenge
-**movie.h**
-```cpp
-#ifndef _MOVIE_
-#define _MOVIE_
+## Inheritance
 
+**Inheritance** means that one class (called the *child* or *derived* class) can **reuse and extend** the properties and behaviors of another class (called the *parent* or *base* class).
+
+> A derived class inherits everything from its base class — and can add or change features.
+
+---
+
+```cpp
+#include <iostream>
+
+class Entity{
+public:
+    float X, Y;
+
+    void move(float xa, float ya){
+        X += xa;
+        Y += ya;  
+    }
+};
+
+class Player : public Entity{
+public: 
+    const char *name;
+
+    void printName(){
+        std::cout << name << std::endl;
+    }
+
+};
+
+int main(){
+
+    std::cout << sizeof(Entity) << std::endl;
+    std::cout << sizeof(Player) << std::endl;
+
+    Player p1;
+    p1.name = "Oben";
+    p1.move(5,5);
+    std::cout << p1.X << std::endl;
+    p1.printName();
+    return 0;
+}
+```
+
+```sh
+8
+16
+5
+Oben
+```
+
+## Polymorphism
+Polymorphism literally means “many forms.”
+In programming, it means the same function, operator, or method name can behave differently depending on the type of object or data it’s working with.
+
+**Why It Exists?**
+
+It allows you to write flexible and reusable code — you don’t have to know the exact type of object in advance, yet the correct behavior will still happen automatically.
+
+**Two Main Types**
+| Type                          | Also called            | Achieved by                                           | When it happens        |
+| ----------------------------- | ---------------------- | ----------------------------------------------------- | ---------------------- |
+| **Compile-time polymorphism** | *Static polymorphism*  | Function overloading, operator overloading, templates | During compilation     |
+| **Runtime polymorphism**      | *Dynamic polymorphism* | Virtual functions and inheritance                     | While the program runs |
+
+### Compile-time Polymorphism
+The function that will be called is known at compile time.
+```cpp
+#include <iostream>
+void print(int x) { std::cout << "Integer: " << x << "\n"; }
+void print(double x) { std::cout << "Double: " << x << "\n"; }
+
+int main() {
+    print(5);     // Calls print(int)
+    print(5.5);   // Calls print(double)
+}
+```
+Same function name (print), different behavior depending on parameter type.
+
+
+### Virtual Functions (Dynamic Polymorphism)
+The function that will be called is determined at runtime — usually using virtual functions in a base class and overriding them in derived classes.
+
+```cpp
+#include <iostream>
+
+class Animal {
+public:
+    virtual void speak() { std::cout << "Some sound\n"; }
+};
+
+class Dog : public Animal {
+public:
+    void speak() override { std::cout << "Woof!\n"; }
+};
+
+class Cat : public Animal {
+public:
+    void speak() override { std::cout << "Meow!\n"; }
+};
+
+int main() {
+    Animal* a1 = new Dog();
+    Animal* a2 = new Cat();
+
+    a1->speak();  // Outputs "Woof!"
+    a2->speak();  // Outputs "Meow!"
+}
+```
+
+Even though both a1 and a2 are pointers to Animal, the correct function (Dog::speak or Cat::speak) is chosen at runtime.
+
+
+
+# Inheritance + Dynamic Polymorphism (Virtual Functions) + Pointer Example
+```cpp
 #include <iostream>
 #include <string>
+#include <memory>
 
-class Movie{
-private: 
-    std::string name;
-    std::string rating;
-    int watched;
+class Animal{
+protected:
+    std::string name_;
 
-public: 
-    std::string get_name();
-    std::string get_rating();
-    int get_watched();
-    void increase_watch();
-    
-    Movie(std::string default_name = "book", std::string default_rating = "PG", int default_watched = 1);
-};
-
-#endif // _MOVIE_
-```
-
-**movie.cpp**
-```cpp
-#include "17_movie.h"
-
-std::string Movie::get_name(){
-    return name;
-}
-
-std::string Movie::get_rating(){
-    return rating;
-}
-
-int Movie::get_watched(){
-    return watched;
-}
-
-void Movie::increase_watch(){
-    watched +=1;
-    std::cout << "Watched increased to " << watched << std::endl;
-}
-
-Movie::Movie(std::string default_name, std::string default_rating, int default_watched) : 
-    name(default_name), rating(default_rating), watched(default_watched){
-}
-```
-
-**movies.h**
-```cpp
-#ifndef _MOVIES_
-#define _MOVIES_
-
-#include "17_movie.h"
-#include <vector>
-
-class Movies{
-private:
-    std::vector<Movie> movies;
-    
 public:
-    void display();
-    void add_new_movie(Movie);
-    bool contains(std::string);
-    void increase_watched(std::string);
+    Animal(std::string name) : name_(name){
+    }
+
+    void eat(){
+        std::cout << name_ << " is eating." << std::endl;
+    }
+
+    // virtual enables polymorphism
+    virtual void sleep(){
+        std::cout << name_ << " is sleeping." << std::endl;
+    }
 };
 
-#endif // _MOVIES_
-```
-
-**movies.cpp**
-```cpp
-#include "17_movies.h"
-
-
-void Movies::display(){
-    if(movies.size() == 0){
-        std::cout << "Sorry, no movies to display" << std::endl;
-        return;
+class Dog : public Animal{
+public:
+    Dog(std::string dog_name) : Animal(dog_name){
     }
 
-    std::cout << "\n================================" << std::endl;
-    for(Movie movie_ : movies){
-        std::cout << movie_.get_name() << ", " << movie_.get_rating() << ", " << movie_.get_watched() << std::endl;
-    }
-    std::cout << "================================\n" << std::endl;
-}
-
-
-void Movies::add_new_movie(Movie new_movie){
-    movies.emplace_back(new_movie);
-    std::cout << new_movie.get_name() << " is added." << std::endl;
-}
-
-
-bool Movies::contains(std::string movie_name){
-    for(Movie movie_ : movies){
-        if (movie_.get_name() == movie_name){
-            return true;
-        }
-    }
-    return false;
-}
-
-
-void Movies::increase_watched(std::string movie_name){
-    for(Movie &movie_ : movies){
-        if(movie_.get_name() == movie_name){
-            movie_.increase_watch();
-        }
-    }
-}
-```
-
-**main.cpp**
-```cpp
-
-#include "17_movies.h"
-
-
-void add_movie(Movies &movies_, std::string movie_name, std::string movie_rating, int watched_counter){
-    if(movies_.contains(movie_name)){
-        std::cout << movie_name << " already exists" << std::endl;
-        return;
+    void bark(){
+        std::cout << name_ << " is barking." << std::endl;
     }
 
-    Movie new_movie(movie_name, movie_rating, watched_counter);
-    movies_.add_new_movie(new_movie);
-}
-
-void increment_watched(Movies &movies_, std::string movie_name){
-    if(movies_.contains(movie_name) == false){
-        std::cout << movie_name << " movie doesn't exist\n" << std::endl;
-        return;
+    // override the base version
+    void sleep() override{
+        std::cout << name_ << " is snoring while sleeping." << std::endl;
     }
-
-    movies_.increase_watched(movie_name);
-}
+};
 
 
 int main(){
 
-    Movies my_movies;
-    
-    my_movies.display();
-    
-    add_movie(my_movies, "Big", "PG-13", 2);
-    add_movie(my_movies, "Star Wars", "PG", 5);
-    add_movie(my_movies, "Cinderella", "PG", 7);
-    
-    my_movies.display();
-    
-    add_movie(my_movies, "Cinderella", "PG", 7);
-    add_movie(my_movies, "Ice Age", "PG", 12);
+    // stack object
+    Dog d1("Boncuk");
+    d1.eat();
+    d1.bark();
+    d1.sleep();
 
-    my_movies.display();
+    // stack object
+    Animal a1("Kertenkele");
+    a1.sleep(); 
 
-    increment_watched(my_movies, "Big");
-    increment_watched(my_movies, "Ice Age");
+    // stack pointer
+    Dog d2("Cesur");
+    Dog *d2_ptr = &d2;
+    d2_ptr->sleep();
 
-    my_movies.display();
+    // raw heap pointer
+    Animal *a2 = new Animal("Sincap");
+    a2->sleep();
+    delete a2;
 
-    increment_watched(my_movies, "XXX");
+    // smart pointer (heap)
+    std::unique_ptr<Animal> a3 = std::make_unique<Animal>("Fare");
+    a3->sleep();
 
     return 0;
 }
 ```
 
-**Output**
+Memory Layout
+```sh
+STACK (automatic variables)
++-------------------------------+
+| d1 : Dog("Boncuk")            | <-- Dog object (includes Animal::name_="Boncuk")
++-------------------------------+
+| a1 : Animal("Kertenkele")     | <-- Animal object
++-------------------------------+
+| d2 : Dog("Cesur")             | <-- Dog object (Animal::name_="Cesur")
++-------------------------------+
+| d2_ptr : pointer -> &d2       | <-- stack pointer pointing to d2
++-------------------------------+
+| a2 : pointer -> Heap("Sincap")| <-- raw pointer on stack
++-------------------------------+
+| a3 : unique_ptr -> Heap("Fare")| <-- smart pointer on stack
++-------------------------------+
 ```
- 
-Sorry, no movies to display
-Big is added.
-Star Wars is added.
-Cinderella is added.
 
-================================
-Big, PG-13, 2
-Star Wars, PG, 5
-Cinderella, PG, 7
-================================
-
-Cinderella already exists
-Ice Age is added.
-
-================================
-Big, PG-13, 2
-Star Wars, PG, 5
-Cinderella, PG, 7
-Ice Age, PG, 12
-================================
-
-Watched increased to 3
-Watched increased to 13
-
-================================
-Big, PG-13, 3
-Star Wars, PG, 5
-Cinderella, PG, 7
-Ice Age, PG, 13
-================================
-
-XXX movie doesn't exist
-
+```sh
+HEAP (dynamic memory)
++-------------------------------+
+| Animal("Sincap")              | <-- pointed by a2 (raw heap pointer)
++-------------------------------+
+| Animal("Fare")                | <-- pointed by a3 (smart pointer)
++-------------------------------+
 ```
+
 
 # Enums
 An **enum** (short for *enumeration*) is a user-defined type that assigns names to a set of integer constants.  
@@ -2484,108 +2016,134 @@ Going South
 Direction Value: 2
 ```
 
-# Smart Pointers 
-Some important terms are **std::move(unique_ptr)** **shared_ptr.use_count()** 
-
-## `std::unique_ptr`
-- Exclusive ownership (only one pointer can own the resource).
-- Lightweight and fast (no reference counting).
-- Best default choice for heap allocation.
-
-## `std::shared_ptr`
-- Shared ownership (multiple pointers can manage the same resource).
-- Uses reference counting → automatic cleanup when last owner dies.
-- Slightly slower due to atomic reference count operations.
-- Useful when ownership is genuinely shared (e.g., graph structures).
-
-## `std::weak_ptr`
-- Non-owning reference to a `shared_ptr` resource.
-- Prevents circular references (e.g., parent ↔ child).
-- Can check validity before access (`lock()`).
-
----
-
-## Rule of Thumb
-- Start with stack allocation whenever possible.
-- Use `unique_ptr` for heap allocation when ownership is clear.
-- Use `shared_ptr` only if ownership must be shared.
-- Use `weak_ptr` to break cycles with `shared_ptr`.
-
+# Smart Pointers
+## unique_ptr
 ```cpp
 #include <iostream>
 #include <memory>
-#include <string>
 
 class Car{
 private:
-    std::string name_;
+    std::string model_;
 
 public:
-    Car(std::string name) : name_(name){
-        std::cout << "Car object created: " << name_ << std::endl;
-    } 
+    // Constructor
+    Car(const std::string &model) : model_(model){
+        std::cout << "Car " << model_ << " created 🚗\n";
+    }
 
-    Car(Car &copy_car) : name_(copy_car.name_){
-        std::cout << "Copy car object created: " << name_ << std::endl;
-    } 
-
+    // Deconstructor
     ~Car(){
-        std::cout << "Car object deleted: " << name_ << std::endl;
+       std::cout << "Car " << model_ << " destroyed 💥\n"; 
     }
 
-    void set_name(std::string new_name){
-       name_ = new_name; 
-    }
-
-    std::string get_name(){
-        return name_;
+    // A method
+    void drive() const{
+        std::cout << "Car " << model_ << " is driving...\n";
     }
 };
 
+int main(){
+    std::cout << "--- Unique Pointer Example ---\n";
+
+    // Create a Car object on the heap, owned by unique_ptr
+    std::unique_ptr<Car> car1_ptr = std::make_unique<Car>("Tesla");
+    std::cout << "Debug 1 \n";
+
+    // Use the object via unique_ptr
+    car1_ptr->drive();
+
+    // Transfer ownership to another unique_ptr
+    std::unique_ptr<Car> car2_ptr = std::move(car1_ptr);
+
+    if(!car1_ptr){
+        std::cout << "car1_ptr no longer owns the object.\n";
+        std::cout << "Car1 Pointer: " << car1_ptr.get() << std::endl;
+        std::cout << "Car2 Pointer: " << car2_ptr.get() << std::endl;
+    }
+
+    car2_ptr->drive();
+
+    // No need to delete manually → car2_ptr automatically destroys the object
+
+    return 0;
+} 
+```
+
+```sh
+--- Unique Pointer Example ---
+Car Tesla created 🚗
+Debug 1 
+Car Tesla is driving...
+car1_ptr no longer owns the object.
+Car1 Pointer: 0
+Car2 Pointer: 0x5cfb68de12c0
+Car Tesla is driving...
+Car Tesla destroyed 💥
+```
+
+## shared_ptr
+```cpp
+#include <iostream>
+#include <memory>
+
+class Car {
+private:
+    std::string model_;
+
+public:
+    // Constructor
+    Car(const std::string &model) : model_(model){
+        std::cout << "Car " << model_ << " created 🚗\n";
+    }
+
+    // Deconstructor
+    ~Car(){
+       std::cout << "Car " << model_ << " destroyed 💥\n"; 
+    }
+
+    // A method
+    void drive() const{
+        std::cout << "Car " << model_ << " is driving...\n";
+    }    
+};
 
 int main(){
-    // Unique Pointer
-    std::unique_ptr<Car> my_car_ptr = std::make_unique<Car>("Audi");
-    my_car_ptr->set_name("Audi RS");
-    std::cout << "My car is called: " << my_car_ptr->get_name() << std::endl;
+    std::cout << "--- Shared Pointer Example ---";
 
-    std::unique_ptr<Car> copy_c1_ptr = std::move(my_car_ptr);
-    copy_c1_ptr->set_name("Audi R3");
-    std::cout << "Copy car is called: " << copy_c1_ptr->get_name() << std::endl;
+    // Create a Car object managed by shared_ptr
+    std::shared_ptr<Car> car1_ptr = std::make_shared<Car>("Togg");
     
-    // Shared Pointer
-    std::shared_ptr<Car> shared_car_ptr1 = std::make_shared<Car>("Volkswagen");
-    shared_car_ptr1->set_name("Golf 5");
-    std::cout << "My car is called: " << shared_car_ptr1->get_name() << std::endl;
+    {
+        // Another shared_ptr points to the same object
+        std::shared_ptr<Car> car2_ptr = car1_ptr;
 
-    std::shared_ptr<Car> shared_car_ptr2 = shared_car_ptr1;
-    std::cout << "My car is called: " << shared_car_ptr2->get_name() << std::endl;
+        std::cout << "car1_ptr use count: " << car1_ptr.use_count() << std::endl;
+        std::cout << "car2_ptr use count: " << car2_ptr.use_count() << std::endl;
 
-    std::shared_ptr<Car> shared_car_ptr3 = std::make_shared<Car>("Porsche");
+        car2_ptr->drive();
+    } // car2_ptr goes out of scope, ref count decreases
 
-    std::shared_ptr<Car> shared_car_ptr4 = shared_car_ptr1;
+    std::cout << "After car2_ptr is destroyed" << std::endl;
+    std::cout << "car1_ptr use_count = " << car1_ptr.use_count() << std::endl;
 
-    std::cout << "Shared pointer counter: " << shared_car_ptr2.use_count() << std::endl; // 3
+    car1_ptr->drive();
 
-    
     return 0;
 }
 ```
 
+```sh
+--- Shared Pointer Example ---
+Car Togg created 🚗
+car1_ptr use count: 2
+car2_ptr use count: 2
+Car Togg is driving...
+After car2_ptr is destroyed
+car1_ptr use_count = 1
+Car Togg is driving...
+Car Togg destroyed 💥
 ```
-Car object created: Audi
-My car is called: Audi RS
-Copy car is called: Audi R3
-Car object created: Volkswagen
-My car is called: Golf 5
-My car is called: Golf 5
-Car object created: Porsche
-Shared pointer counter: 3
-Car object deleted: Porsche
-Car object deleted: Golf 5
-Car object deleted: Audi R3
-```
-
 
 # Threads
 ## join vs detach
@@ -2749,98 +2307,42 @@ int main(){
 # this Pointer
 **this** is always a pointer to the object itself, but it does not know whether the object is on the stack or heap.
 
-Its type is always ClassName* (a raw pointer).
-
-| Expression | Type                           | Holds                        | How to Access Members              | Typical Use Case                                                           |
-| ---------- | ------------------------------ | ---------------------------- | ---------------------------------- | -------------------------------------------------------------------------- |
-| `this`     | `Robot*` (pointer to object)   | Memory address of the object | `this->member`                     | Passing pointer to functions, accessing members via pointer                |
-| `*this`    | `Robot&` (reference to object) | The object itself (alias)    | `(*this).member` or `this->member` | Returning the object for method chaining, working directly with the object |
-
-
 ```cpp
 #include <iostream>
 #include <string>
 
-class Robot{
-private:
-    std::string name;
-    int id;
-    
+class Entity;
+void printEntity(Entity &e);
+
+class Entity{
 public:
-    // Constructor with name conflict
-    Robot(const std::string &name, int id){
-        this->name = name; // resolves conflict with parameter
-        this->id = id;
+    int x, y;
+
+    Entity(int x, int y) {  
+        this->x = x;
+        this->y = y;
+    
+        printEntity(*this);
     }
 
-    // Method that returns the current object for chaining
-    Robot& setName(const std::string &newName){
-        this->name = newName;
-        return *this; // returning current object
-    }
-
-     // Pass current object to another function
-    void sendToFunction(){
-        displayRobot(this); // passing this pointer
-    }
-
-    // Static function to display robot info from pointer
-    static void displayRobot(Robot *r_ptr){
-        std::cout << "Display: Robot " << r_ptr->name << " with ID " << r_ptr->id << std::endl;
+    int get_x() const{
+        return this->x;
     }
 };
 
+void printEntity(Entity &e){
+    std::cout << e.x << ", " << e.y << std::endl;
+}
 
 int main(){
-    Robot r("Alpha", 1);
-
-    r.setName("Beta").setName("Gamma");
-
-    r.sendToFunction();
+    Entity e1(3,5);
 
     return 0;
 }
 ```
 
-Sketch
 ```sh
-+--------------------------+
-| Robot object 'r'         |  <-- created on stack in main()
-+--------------------------+
-| name : "Gamma"           |
-| id   : 1                 |
-+--------------------------+
-          ^
-          |
-        this pointer inside member functions
-        (type: Robot*)
-
----------------------------------------------------
-Inside setName("Beta"):
-this -> points to 'r'
-*this -> reference to 'r' (Robot&)
-return *this -> allows chaining
----------------------------------------------------
-
-Inside setName("Gamma"):
-this -> points to 'r'
-*this -> reference to 'r'
-return *this -> continues chaining
----------------------------------------------------
-
-Inside sendToFunction():
-this -> points to 'r'
-displayRobot(this) -> passes pointer
-
-Inside displayRobot(Robot* r_ptr):
-r_ptr -> points to 'r'
-r_ptr->name accesses "Gamma"
-r_ptr->id accesses 1
-```
-
-Output
-```sh
-Display: Robot Gamma with ID 1
+3, 5
 ```
 
 # Lambda Expressions
@@ -2902,219 +2404,6 @@ int main(){
     return 0;
 }
 ```
-
-# Inheritance
-
-**Inheritance** means that one class (called the *child* or *derived* class) can **reuse and extend** the properties and behaviors of another class (called the *parent* or *base* class).
-
-> A derived class inherits everything from its base class — and can add or change features.
-
----
-
-```cpp
-#include <iostream>
-
-class Entity{
-public:
-    float X, Y;
-
-    void move(float xa, float ya){
-        X += xa;
-        Y += ya;  
-    }
-};
-
-class Player : public Entity{
-public: 
-    const char *name;
-
-    void printName(){
-        std::cout << name << std::endl;
-    }
-
-};
-
-int main(){
-
-    std::cout << sizeof(Entity) << std::endl;
-    std::cout << sizeof(Player) << std::endl;
-
-    Player p1;
-    p1.name = "Oben";
-    p1.move(5,5);
-    std::cout << p1.X << std::endl;
-    p1.printName();
-    return 0;
-}
-```
-
-```sh
-8
-16
-5
-Oben
-```
-
-# Polymorphism
-Polymorphism literally means “many forms.”
-In programming, it means the same function, operator, or method name can behave differently depending on the type of object or data it’s working with.
-
-**Why It Exists?**
-
-It allows you to write flexible and reusable code — you don’t have to know the exact type of object in advance, yet the correct behavior will still happen automatically.
-
-**Two Main Types**
-| Type                          | Also called            | Achieved by                                           | When it happens        |
-| ----------------------------- | ---------------------- | ----------------------------------------------------- | ---------------------- |
-| **Compile-time polymorphism** | *Static polymorphism*  | Function overloading, operator overloading, templates | During compilation     |
-| **Runtime polymorphism**      | *Dynamic polymorphism* | Virtual functions and inheritance                     | While the program runs |
-
-## Compile-time Polymorphism
-The function that will be called is known at compile time.
-```cpp
-#include <iostream>
-void print(int x) { std::cout << "Integer: " << x << "\n"; }
-void print(double x) { std::cout << "Double: " << x << "\n"; }
-
-int main() {
-    print(5);     // Calls print(int)
-    print(5.5);   // Calls print(double)
-}
-```
-Same function name (print), different behavior depending on parameter type.
-
-
-## Runtime/Dynamic Polymorphism ( Virtual Functions)
-The function that will be called is determined at runtime — usually using virtual functions in a base class and overriding them in derived classes.
-
-```cpp
-#include <iostream>
-
-class Animal {
-public:
-    virtual void speak() { std::cout << "Some sound\n"; }
-};
-
-class Dog : public Animal {
-public:
-    void speak() override { std::cout << "Woof!\n"; }
-};
-
-class Cat : public Animal {
-public:
-    void speak() override { std::cout << "Meow!\n"; }
-};
-
-int main() {
-    Animal* a1 = new Dog();
-    Animal* a2 = new Cat();
-
-    a1->speak();  // Outputs "Woof!"
-    a2->speak();  // Outputs "Meow!"
-}
-```
-
-Even though both a1 and a2 are pointers to Animal, the correct function (Dog::speak or Cat::speak) is chosen at runtime.
-
-
-
-# Inheritance + Dynamic Polymorphism (Virtual Functions) + Pointer Example
-```cpp
-#include <iostream>
-#include <string>
-#include <memory>
-
-class Animal{
-protected:
-    std::string name_;
-
-public:
-    Animal(std::string name) : name_(name){
-    }
-
-    void eat(){
-        std::cout << name_ << " is eating." << std::endl;
-    }
-
-    // virtual enables polymorphism
-    virtual void sleep(){
-        std::cout << name_ << " is sleeping." << std::endl;
-    }
-};
-
-class Dog : public Animal{
-public:
-    Dog(std::string dog_name) : Animal(dog_name){
-    }
-
-    void bark(){
-        std::cout << name_ << " is barking." << std::endl;
-    }
-
-    // override the base version
-    void sleep() override{
-        std::cout << name_ << " is snoring while sleeping." << std::endl;
-    }
-};
-
-
-int main(){
-
-    // stack object
-    Dog d1("Boncuk");
-    d1.eat();
-    d1.bark();
-    d1.sleep();
-
-    // stack object
-    Animal a1("Kertenkele");
-    a1.sleep(); 
-
-    // stack pointer
-    Dog d2("Cesur");
-    Dog *d2_ptr = &d2;
-    d2_ptr->sleep();
-
-    // raw heap pointer
-    Animal *a2 = new Animal("Sincap");
-    a2->sleep();
-    delete a2;
-
-    // smart pointer (heap)
-    std::unique_ptr<Animal> a3 = std::make_unique<Animal>("Fare");
-    a3->sleep();
-
-    return 0;
-}
-```
-
-Memory Layout
-```sh
-STACK (automatic variables)
-+-------------------------------+
-| d1 : Dog("Boncuk")            | <-- Dog object (includes Animal::name_="Boncuk")
-+-------------------------------+
-| a1 : Animal("Kertenkele")     | <-- Animal object
-+-------------------------------+
-| d2 : Dog("Cesur")             | <-- Dog object (Animal::name_="Cesur")
-+-------------------------------+
-| d2_ptr : pointer -> &d2       | <-- stack pointer pointing to d2
-+-------------------------------+
-| a2 : pointer -> Heap("Sincap")| <-- raw pointer on stack
-+-------------------------------+
-| a3 : unique_ptr -> Heap("Fare")| <-- smart pointer on stack
-+-------------------------------+
-```
-
-```sh
-HEAP (dynamic memory)
-+-------------------------------+
-| Animal("Sincap")              | <-- pointed by a2 (raw heap pointer)
-+-------------------------------+
-| Animal("Fare")                | <-- pointed by a3 (smart pointer)
-+-------------------------------+
-```
-
 
 # Interfaces
 What is an Interface in C++?
@@ -3237,4 +2526,54 @@ Hello
 Sum: 13
 Sum: 15.84
 7
+```
+
+## Operator Overloading
+```cpp
+#include <iostream>
+#include <string>
+
+struct Vector2
+{
+    float x, y;
+
+    Vector2(float _x, float _y) : 
+        x(_x), y(_y){
+    }
+
+    Vector2 add(const Vector2 &new_vector) const {
+        return Vector2(x + new_vector.x, y + new_vector.y);
+    }
+
+    Vector2 operator+(const Vector2 &new_vector) {
+        return add(new_vector);
+    }
+
+    Vector2 multiply(const Vector2 &new_vector) const {
+        return Vector2(x * new_vector.x, y * new_vector.y);
+    }
+
+    Vector2 operator*(const Vector2 &new_vector) {
+        return multiply(new_vector);
+    }
+
+};
+
+std::ostream &operator<<(std::ostream &stream, const Vector2 &other){
+    stream << other.x << ", " << other.y;
+    return stream;
+} 
+
+int main(){
+    Vector2 position(4.0f, 4.0f);
+    Vector2 speed(0.5f, 1.5f);
+    Vector2 powerup(1.1f, 1.1f);
+
+    Vector2 result = position.add(speed.multiply(powerup));
+    Vector2 result2 = position + speed * powerup ;
+
+    std::cout << result2 << std::endl;
+
+    return 0;
+}
 ```

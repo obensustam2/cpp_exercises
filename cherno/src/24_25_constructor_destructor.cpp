@@ -12,9 +12,7 @@ public:
         std::cout << "Created Entity!" << std::endl;
     }
 
-    Entity(float x, float y){
-        X = x;
-        Y = y;
+    Entity(float x, float y): X(x), Y(y){
         std::cout << "Created Entity!" << std::endl;
     }
 
