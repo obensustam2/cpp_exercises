@@ -1,0 +1,10 @@
+/home/oben/cpp_exercises/12_pointers_and_references/build/CMakeFiles/00_simple_pointers.dir
+/home/oben/cpp_exercises/12_pointers_and_references/build/CMakeFiles/01_dereferencing.dir
+/home/oben/cpp_exercises/12_pointers_and_references/build/CMakeFiles/02_dynamic_memory.dir
+/home/oben/cpp_exercises/12_pointers_and_references/build/CMakeFiles/03_pointer_arithmetic.dir
+/home/oben/cpp_exercises/12_pointers_and_references/build/CMakeFiles/04_passing_pointers.dir
+/home/oben/cpp_exercises/12_pointers_and_references/build/CMakeFiles/05_passing_pointers2.dir
+/home/oben/cpp_exercises/12_pointers_and_references/build/CMakeFiles/06_references.dir
+/home/oben/cpp_exercises/12_pointers_and_references/build/CMakeFiles/07_section_challenge_customsol.dir
+/home/oben/cpp_exercises/12_pointers_and_references/build/CMakeFiles/edit_cache.dir
+/home/oben/cpp_exercises/12_pointers_and_references/build/CMakeFiles/rebuild_cache.dir

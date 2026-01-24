@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/16_struct.cpp.dir/src/16_struct.cpp.o -o 16_struct.cpp 

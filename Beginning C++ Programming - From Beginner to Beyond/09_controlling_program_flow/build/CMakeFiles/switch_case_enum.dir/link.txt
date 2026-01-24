@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/switch_case_enum.dir/src/switch_case_enum.cpp.o -o switch_case_enum 

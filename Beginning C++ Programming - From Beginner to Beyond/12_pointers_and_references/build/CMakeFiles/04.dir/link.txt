@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/04.dir/src/04.cpp.o -o 04 

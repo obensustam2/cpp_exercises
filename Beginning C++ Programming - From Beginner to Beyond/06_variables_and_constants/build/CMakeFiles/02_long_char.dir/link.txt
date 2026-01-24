@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/02_long_char.dir/src/02_long_char.cpp.o -o 02_long_char 
