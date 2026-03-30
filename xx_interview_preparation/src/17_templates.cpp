@@ -31,7 +31,7 @@ int main(){
     print(23);
     print(55.57);
 
-    sum(10,3);
+    sum(10, 3);
     sum(10.4, 5.44);
 
 

@@ -19,11 +19,3 @@ int func1(){
     return 0;
 }
 
-
-
-int main(){
-    std::cout << "--------Pointer introduction-------" << std::endl;
-    func1();
-
-    return 0;
-}

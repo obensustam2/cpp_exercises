@@ -25,3 +25,10 @@ add_executable(41_this_keyword src/41_this_keyword.cpp)
 add_executable(43a_smart_pointers_unique src/43a_smart_pointers_unique.cpp)
 add_executable(43b_smart_pointers_shared src/43b_smart_pointers_shared.cpp)
 add_executable(44_copy_constructors src/44_copy_constructors.cpp)
+add_executable(45_arrow_operator_with_shared_pointer src/45_arrow_operator_with_shared_pointer.cpp)
+add_executable(46_vector src/46_vector.cpp)
+add_executable(47_local_static src/47_local_static.cpp)
+add_executable(48_external_project 
+    src/48_external_project.cpp 
+    "$ENV{HOME}/Projects/cpp_exercises/xx_interview_preparation/src/00_pointer_intro.cpp")
+add_executable(49_multiple_return src/49_multiple_return.cpp)
