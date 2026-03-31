@@ -5,7 +5,6 @@ project(cherno)
 include_directories(include)
 
 add_executable(log src/log.cpp)
-add_executable(recap include/recap.h src/recap.cpp)
 
 add_executable(16a_raw_pointers_stack src/16a_raw_pointers_stack.cpp)
 add_executable(16b_raw_pointer_heap src/16b_raw_pointer_heap.cpp)
@@ -27,8 +26,10 @@ add_executable(43b_smart_pointers_shared src/43b_smart_pointers_shared.cpp)
 add_executable(44_copy_constructors src/44_copy_constructors.cpp)
 add_executable(45_arrow_operator_with_shared_pointer src/45_arrow_operator_with_shared_pointer.cpp)
 add_executable(46_vector src/46_vector.cpp)
-add_executable(47_local_static src/47_local_static.cpp)
-add_executable(48_external_project 
-    src/48_external_project.cpp 
-    "$ENV{HOME}/Projects/cpp_exercises/xx_interview_preparation/src/00_pointer_intro.cpp")
-add_executable(49_multiple_return src/49_multiple_return.cpp)
+add_executable(48_local_static src/48_local_static.cpp)
+# add_executable(49_external_project 
+#     src/49_external_project.cpp 
+#     "$ENV{HOME}/Projects/cpp_exercises/xx_interview_preparation/src/00_pointer_intro.cpp")
+add_executable(52_multiple_return src/52_multiple_return.cpp)
+add_executable(53_templates src/53_templates.cpp)
+add_executable(54_stack_and_heap_memory src/54_stack_and_heap_memory.cpp)

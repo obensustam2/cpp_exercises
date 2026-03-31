@@ -1,47 +1,55 @@
 #include <iostream>
 #include <memory>
 
-class Car {
-private:
-    std::string model_;
-
+class Sensor{
 public:
-    // Constructor
-    Car(const std::string &model) : model_(model){
-        std::cout << "Car " << model_ << " created 🚗\n";
+    Sensor(){
+        std::cout << "Sensor created" << std::endl;
     }
-
-    // Deconstructor
-    ~Car(){
-       std::cout << "Car " << model_ << " destroyed 💥\n"; 
+    ~Sensor(){
+        std::cout << "Sensor destroyed" << std::endl;
     }
-
-    // A method
-    void drive() const{
-        std::cout << "Car " << model_ << " is driving...\n";
-    }    
+    double read(){
+        return 42.0;
+    }
 };
 
+
+class CameraNode {
+private: 
+    std::shared_ptr<Sensor> sensor_;
+
+public:
+    explicit CameraNode(std::shared_ptr<Sensor> s) : sensor_(s){}
+    void process(){
+        std::cout << "Camera got " << sensor_->read() << std::endl;
+    }
+};
+
+
+class LoggerNode {
+private: 
+    std::shared_ptr<Sensor> sensor_;
+
+public:
+    explicit LoggerNode(std::shared_ptr<Sensor> s) : sensor_(s){}
+    void log(){
+        std::cout << "Logger got " << sensor_->read() << std::endl;
+    }
+};
+
+
 int main(){
-    std::cout << "--- Shared Pointer Example ---\n";
-
-    // Create a Car object managed by shared_ptr
-    std::shared_ptr<Car> car1_ptr = std::make_shared<Car>("Togg");
-    
-    {
-        // Another shared_ptr points to the same object
-        std::shared_ptr<Car> car2_ptr = car1_ptr;
-
-        std::cout << "car1_ptr use count: " << car1_ptr.use_count() << std::endl;
-        std::cout << "car2_ptr use count: " << car2_ptr.use_count() << std::endl;
-
-        car2_ptr->drive();
-    } // car2_ptr goes out of scope, ref count decreases
-
-    std::cout << "After car2_ptr is destroyed" << std::endl;
-    std::cout << "car1_ptr use_count = " << car1_ptr.use_count() << std::endl;
-
-    car1_ptr->drive();
-
+    std::cout << "Line: " << __LINE__ << std::endl;  
+    std::shared_ptr<Sensor> sensor_ptr = std::make_shared<Sensor>(); // ref count: 1
+    std::cout << "Line: " << __LINE__ << std::endl;  
+    CameraNode camera(sensor_ptr);  // ref count: 2
+    std::cout << "Line: " << __LINE__ << std::endl;  
+    LoggerNode logger(sensor_ptr);  // ref count: 3
+    std::cout << "Line: " << __LINE__ << std::endl;  
+    camera.process();
+    std::cout << "Line: " << __LINE__ << std::endl;  
+    logger.log();
+    std::cout << "Line: " << __LINE__ << std::endl;  
     return 0;
 }

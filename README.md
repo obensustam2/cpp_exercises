@@ -3,11 +3,9 @@
 # Table of Content
    - [Getting Started](#getting-started)
         - [RAII](#raii) 
+        - [Compile Time vs Runtime](#compile-time-vs-runtime)
         - [Compilation vs Linking](#compilation-vs-linking)
         - [Preprocessor](#preprocessor)
-        - [Header Files Preprocessor](#header-files-preprocessor)
-        - [Standard Template Library vs Standard Library](#standard-template-library-vs-standard-library)
-        - [Standard Library Headers](#standard-library-headers)
         - [Variable](#variable)
         - [Namespace](#namespace)
         - [Arguments](#arguments)
@@ -52,15 +50,14 @@
         - [Local Global - Scope Rules](#local-global---scope-rules)
         - [Function Calls - Memory Stack - Recursive Function](#function-calls---memory-stack---recursive-function)
    - [Pointers](#pointers)
-        - [Why Pointers Exist in C++](#why-pointers-exist-in-c)
-        - [Stack and Heap Pointers](#stack-and-heap-pointers)
         - [Stack vs Heap Memory](#stack-vs-heap-memory)
-        - [Stack and Heap Objects](#stack-and-heap-objects)
+        - [Why Pointers Exist in C++](#why-pointers-exist-in-c)
+        - [Stack and Raw Heap Pointers](#stack-and-raw-heap-pointers)
+        - [Stack and Raw Heap Objects](#stack-and-raw-heap-objects)
         - [Some Raw Pointer Problems](#some-raw-pointer-problems)
             - [Stack Overflow (Stack Memory)](#stack-overflow-stack-memory)
             - [Memory Leak (Heap Memory)](#memory-leak-heap-memory)
             - [Shallow Copy](#shallow-copy-problem)
-        - [lvalue and rvalue](#lvalue-and-rvalue)
         - [Smart Pointers](#smart-pointers)
             - [unique_ptr](#unique_ptr)
             - [shared_ptr](#shared_ptr)
@@ -97,24 +94,93 @@
 # Getting Started
 
 ## RAII
-Resource Acquisition Is Initialization or RAII, is a C++ programming technique[1][2] which binds the life cycle of a resource that must be acquired before use (allocated heap memory, thread of execution, open socket, open file, locked mutex, disk space, database connection—anything that exists in limited supply) to the lifetime of an object.
+**RAII** (Resource Acquisition Is Initialization) is a C++ programming technique that binds the life cycle of a resource (like heap memory, file handles, or network sockets) to the life cycle of a local object.
 
-RAII guarantees that the resource is available to any function that may access the object (resource availability is a class invariant, eliminating redundant runtime tests). It also guarantees that all resources are released when the lifetime of their controlling object ends, in reverse order of acquisition. Likewise, if resource acquisition fails (the constructor exits with an exception), all resources acquired by every fully-constructed member and base subobject are released in reverse order of initialization. This leverages the core language features (object lifetime, scope exit, order of initialization and stack unwinding) to eliminate resource leaks and guarantee exception safety. Another name for this technique is Scope-Bound Resource Management (SBRM), after the basic use case where the lifetime of an RAII object ends due to scope exit.
+Instead of manually managing "start" and "stop" actions (like `new` and `delete`), you wrap the resource in a class. The resource is "acquired" when the object is created and "released" automatically when the object is destroyed.
 
-RAII can be summarized as follows:
+---
 
-encapsulate each resource into a class, where
-the constructor acquires the resource and establishes all class invariants or throws an exception if that cannot be done,
-the destructor releases the resource and never throws exceptions;
-always use the resource via an instance of a RAII-class that either
-has automatic storage duration or temporary lifetime itself, or
-has lifetime that is bounded by the lifetime of an automatic or temporary object.
-Move semantics enable the transfer of resources and ownership between objects, inside and outside containers, and across threads, while ensuring resource safety.
+### The Two Pillars of RAII
 
-(since C++11)
-Classes with open()/close(), lock()/unlock(), or init()/copyFrom()/destroy() member functions are typical examples of non-RAII classes:
+1.  **Constructor (Acquisition):** You allocate the resource (e.g., `new int[10]`) inside the class constructor.
+2.  **Destructor (Release):** You free the resource (e.g., `delete[]`) inside the class destructor.
 
+Because C++ guarantees that local (stack) objects are destroyed the moment they go out of scope, the resource is **guaranteed** to be released—even if your code crashes, returns early, or throws an exception.
 
+### A Simple Comparison
+
+**Without RAII (Manual):**
+```cpp
+void manual_process() {
+    int* data = new int[100]; // Acquire
+    delete[] data;            // Release
+}
+```
+
+**With RAII (Automatic):**
+```cpp
+void raii_process() {
+    std::vector<int> data(100); // Resource bound to object 'data'
+} // SAFE! 'data' destructor runs here normally
+```
+
+### Why it Matters
+RAII turns "manual management" into "automatic cleanup." It is the reason why modern C++ developers rarely use `new` and `delete`. Common RAII wrappers include:
+* **`std::vector`** (manages heap memory)
+* **`std::unique_ptr`** (manages a single pointer)
+* **`std::lock_guard`** (manages mutex locks)
+* **`std::fstream`** (manages file access)
+
+---
+
+## Compile Time vs Runtime
+**Compile time** is when the compiler reads your source code and turns it into an executable.
+**Runtime** is when the executable is actually running.
+```cpp
+int i = 0;
+```
+
+- The type `int` → resolved at **compile time**
+- The value `0` → lives in memory at **runtime**
+
+---
+
+### Why it matters in C++
+#### tuple
+C++ tuple must know index value before the program runs. Because regarding the value of the variable the std::get may return double
+or std::string etc.
+
+```cpp
+std::get<0>(t);  // ✅ 0 is a hardcoded literal — compile time
+std::get<i>(t);  // ❌ i is a variable — its value is only known at runtime
+```
+
+Even if you can clearly see that `i = 0`, the compiler does not evaluate
+variables — it only sees "a variable of type int" and moves on.
+
+#### vector
+std::vector doesn't need the index to determine a type because all elements have the same type inside the vector.
+
+```cpp
+std::vector<float> v = {20.4, 89.7, 66.0};
+
+for (int i = 0; i < v.size(); i++) {
+    print(v[i]);  // ✅ — v[i] is always float, regardless of i
+}
+```
+
+### Quick reference
+
+| | Compile Time | Runtime |
+|---|---|---|
+| When | Before program runs | While program runs |
+| Examples | Types, templates, `std::get<0>` | Variable values, for loops, user input |
+| Error caught | Compiler error | Crash or wrong output |
+
+Catching errors at compile time is always better — the compiler stops
+you before the program ever runs.
+
+--- 
 
 ## Compilation vs Linking
 | Step            | Input                  | What happens                                                                                                                                                       | Output              | Happens where                 |
@@ -136,7 +202,9 @@ The linker’s job is to:
 
 > Match every **undefined symbol** with its corresponding **defined symbol** across all object files and libraries.
 
-## Preprocessor
+--- 
+
+## Preprocessor 
 The preprocessor runs before actual compilation. It handles all lines starting with #, like:
 ```
 #include <iostream>  // includes the standard I/O library
@@ -144,29 +212,26 @@ The preprocessor runs before actual compilation. It handles all lines starting w
 #ifdef DEBUG         // conditional compilation
 ```
 
-## Header Files Preprocessor
-| Method                       | Standard?                   | Works everywhere? | Simplicity       | Typical use           |
-| ---------------------------- | --------------------------- | ----------------- | ---------------- | --------------------- |
-| `#ifndef / #define / #endif` | ✅ Yes                       | ✅ 100%            | Slightly verbose | Old & modern projects |
-| `#pragma once`               | ❌ No (but widely supported) | ✅ 99%             | Very simple      | Modern C++ projects   |
+### Macros (#define, #undef)
+Macros are defined using the #define directive. When the compiler runs, the Preprocessor (a tool that runs before the actual C++ compiler) scans your code for these definitions and performs a literal *find-and-replace* across your source code.
 
+#### The Preprocessing Phase (Compile-Time)
+Because this happens before the code is turned into machine instructions, macros are considered a compile-time operation.
 
-## Standard Template Library vs Standard Library 
-| Term                     | Contains                      | Examples                                          |
-| ------------------------ | ----------------------------- | ------------------------------------------------- |
-| **STL**                  | Templates for data structures | `vector`, `map`, `sort`, `iterator`               |
-| **C++ Standard Library** | STL + many other libraries    | `string`, `iostream`, `thread`, `regex`, `memory` |
+- Textual Substitution: The preprocessor does not know C++ syntax, types, or scopes. It simply takes the text you defined and stamps it into your file wherever the macro is mentioned.
 
-## Standard Library Headers
-```
-#include <iostream>
-#include <vector>
-#include <string>
-#include <iomanip>
-#include <cmath>
-#include <ctime>
-#include <cstdlib>
-```
+- No Type-Checking: Because it is just text replacement, the compiler cannot perform type-checking until after the macro has been expanded. This is why macros are often considered "dangerous"—they can lead to confusing errors that don't point to the macro definition itself, but to the code where the macro was expanded.
+
+### File Inclusion (#include)
+This tells the preprocessor to literally copy and paste the contents of another file (like <iostream>) into your current file.
+
+### Conditional Compilation (#if, #ifdef, #ifndef, #else, #endif)
+This allows you to hide or show parts of your code based on certain conditions (e.g., "only compile this code if I am on Windows").
+
+### Pragmas (#pragma)
+Special instructions for the compiler (like #pragma once to prevent a file from being included twice).
+
+--- 
 
 ## Variable
 A variable is just a name (or label) for a location in your computer's memory where a value is stored.
@@ -1110,6 +1175,21 @@ unsigned long long factorial(unsigned long long val){
 
 # Pointers
 
+## Stack vs Heap Memory
+| Feature              | **Stack**                                                                 | **Heap**                                                                 |
+|-----------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| **Size limit**        | Small & fixed (e.g., ~8 MB per thread on Linux)                          | Large & flexible (limited by system RAM, often GBs)                      |
+| **Lifetime**          | Automatic: variables destroyed when scope ends                           | Manual: memory stays until `delete` or smart pointer frees it             |
+| **Speed**             | Very fast (simple push/pop operations)                                   | Slower (requires OS bookkeeping and possible fragmentation)               |
+| **Allocation**        | Done automatically by compiler                                           | Done manually with `new`, `malloc`, or containers like `std::vector`      |
+| **Deallocation**      | Automatic when scope ends                                                | Manual (`delete` / `delete[]`), or automatic with smart pointers/RAII     |
+| **Typical usage**     | Local variables, function parameters, small temporary objects            | Large data, dynamic arrays, objects needing custom lifetime               |
+| **Errors**            | Stack overflow (too much usage)                                          | Memory leak (forgetting to free), dangling pointers, fragmentation        |
+| **Example**           | `int x = 10;`                                                           | `int* p = new int(10); delete p;`                                        |
+| **Analogy**           | Lunch tray (items stacked & removed in order)                           | Warehouse (flexible storage, but must clean up yourself)                  |
+
+---
+
 ## Why Pointers Exist in C++
 ### The Problem: Copying is Expensive
 When you pass an object to a function in C++, it makes a **full copy** by default.
@@ -1244,8 +1324,9 @@ Same efficiency as raw pointers, no manual memory management.
 | Raw pointer (`*`) | Manual memory management — error prone |
 | Smart pointer | Automatic cleanup — use these in modern C++ and ROS2 |
 
+---
 
-## Stack and Heap Pointers
+## Stack and Raw Heap Pointers
 ```cpp
 #include <iostream>
 #include <string>
@@ -1253,7 +1334,7 @@ Same efficiency as raw pointers, no manual memory management.
 int main() {
     // --- Stack memory ---
     int stackVar = 42;           // stack variable
-    int* stackPtr = &stackVar;   // pointer to stack variable
+    int *stackPtr = &stackVar;   // pointer to stack variable
 
     std::cout << "Stack variable value: " << stackVar << std::endl;
     std::cout << "Stack variable address: " << &stackVar << std::endl;
@@ -1290,21 +1371,9 @@ Heap memory address it points to: 0x600003e000
 Heap variable updated value: 123
 ```
 
-## Stack vs Heap Memory
-| Feature              | **Stack**                                                                 | **Heap**                                                                 |
-|-----------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| **Size limit**        | Small & fixed (e.g., ~8 MB per thread on Linux)                          | Large & flexible (limited by system RAM, often GBs)                      |
-| **Lifetime**          | Automatic: variables destroyed when scope ends                           | Manual: memory stays until `delete` or smart pointer frees it             |
-| **Speed**             | Very fast (simple push/pop operations)                                   | Slower (requires OS bookkeeping and possible fragmentation)               |
-| **Allocation**        | Done automatically by compiler                                           | Done manually with `new`, `malloc`, or containers like `std::vector`      |
-| **Deallocation**      | Automatic when scope ends                                                | Manual (`delete` / `delete[]`), or automatic with smart pointers/RAII     |
-| **Typical usage**     | Local variables, function parameters, small temporary objects            | Large data, dynamic arrays, objects needing custom lifetime               |
-| **Errors**            | Stack overflow (too much usage)                                          | Memory leak (forgetting to free), dangling pointers, fragmentation        |
-| **Example**           | `int x = 10;`                                                           | `int* p = new int(10); delete p;`                                        |
-| **Analogy**           | Lunch tray (items stacked & removed in order)                           | Warehouse (flexible storage, but must clean up yourself)                  |
+---
 
-
-## Stack and Heap Objects
+## Stack and Raw Heap Objects
 ```cpp
 #include <iostream>
 #include <string>
@@ -1359,7 +1428,8 @@ int main()
 ## Some Raw Pointer Problems
 
 ### Stack Overflow (Stack Memory)
-**int** stores 4 bytes. BigStackArray has 4.000.000 elements -> 4.000.000 x 4 = 16.000.000 Byte = 16 MB. Which is higher than stack memory size (8 MB). Code will give error.
+**int** stores 4 bytes. BigStackArray has 4.000.000 elements -> 4.000.000 x 4 = 16.000.000 Byte = 16 MB. 
+Which is higher than stack memory size (8 MB). Code will give error.
 ```cpp
 #include <iostream>
 
@@ -1373,19 +1443,32 @@ int main(){
 ```
 
 ### Memory Leak (Heap Memory)
-Creating 16MB array in each loop will exceed the 9GB available system RAM and system will crash
 ```cpp
 #include <iostream>
 
 int main(){
-
     while(true){
-        new int[4000000];
+        int *ptr = new int[4000000];
+        std::cout << "Leaking..." << std::endl;
     }
 
     return 0;
 }
 ```
+#### The Allocation
+- The Heap: The OS reserves a contiguous block of memory on the heap large enough to hold 4,000,000 integers.
+
+- The Stack: The variable ptr is created on the stack. It stores the memory address of the first integer in that 16MB block.
+
+#### The Lifecycle of Your Leak
+1. Allocation (new): In every iteration of the while(true) loop, the OS sets aside 16MB of heap memory and gives your ptr pointer the address (the "key") to access it.
+
+2. Scope End: When the loop iteration ends, the variable ptr (the pointer/key) is destroyed because it goes out of scope.
+
+3. The Orphan: Because you didn't call delete[] before the loop repeated, you have "lost the key" to those 16MB. The memory remains reserved by your program, but you no longer have a way to reach it or tell the OS you are finished with it.
+
+4. Repeat: This happens over and over. Within a few seconds, your program will have requested gigabytes of RAM.
+
 
 ### Shallow Copy Problem
 - Copying raw pointers copies only the address, not the actual object → two objects point to the same memory.
@@ -1394,14 +1477,7 @@ int main(){
 
 - Deep copy is needed to safely duplicate objects that own dynamic memory.
 
-
-## lvalue and rvalue
-
-| Term       | Meaning                                                                                                    | Examples                               |
-| ---------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| **lvalue** | An object that has an identifiable location in memory (can appear on the left-hand side of assignment).    | variables (`x`), dereferenced pointers (`*p`) |
-| **rvalue** | A temporary value or literal without a persistent memory address (usually on the right-hand side of `=`).  | `5`, `x+1`, return value of a function |
-
+---
 
 ## Smart Pointers
 ### Pointer Comparison: Normal vs Smart Pointers
@@ -1600,6 +1676,7 @@ int main(){
 3, 5
 ```
 
+---
 
 # Classes and Objects
 ## Accessing class members
@@ -2182,6 +2259,36 @@ int main() {
     print(5.5);   // Calls print(double)
 }
 ```
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <tuple>
+#include <string>
+
+
+template<typename T>
+void print(T value){
+    std::cout << "Value: " << value << std::endl;
+}
+
+int main(){ 
+
+    std::vector<float> v = {20.4, 89.7, 66.0};
+    for(float vi: v){
+        print(vi);
+    }
+
+    std::tuple<bool, std::string> t = {false, "true"};
+    print(std::get<0>(t));
+    print(std::get<1>(t));
+
+    print("Oben");
+    print(29);
+    return 0;
+}
+```
+
 Same function name (print), different behavior depending on parameter type.
 
 
@@ -2633,62 +2740,40 @@ delete gripper;
 # Templates
 Templates avoid code duplication.
 
-They are resolved at compile time, which means the compiler generates a specific function/class for each type used.
+They are resolved at *compile time*, which means the compiler generates a specific function/class for each type used.
 
 ```cpp
-#include <iostream>
-#include <string>
-
 template<typename T>
 void print(T value){
-    std::cout << value << std::endl;
+    std::cout << "Value: " << value << std::endl;
 }
 
-template<typename T1, typename T2>
-void sum(T1 num1, T2 num2){
-    std::cout << "Sum: " << num1 + num2 << std::endl;
-}
+int main(){ 
 
-
-template<typename type, int size>
-class Array{
-private:
-    type arr[size];
-public:
-    int getSize(){
-        return size;
+    std::vector<float> v = {20.4, 89.7, 66.0};
+    for(float vi: v){
+        print(vi);
     }
-};
 
+    std::tuple<bool, std::string> t = {false, "true"};
+    print(std::get<0>(t));
+    print(std::get<1>(t));
 
-
-int main(){
-
-    // Testing of template function      
-    print("Hello");
-    print(23);
-    print(55.57);
-
-    sum(10, 3);
-    sum(10.4, 5.44);
-
-
-    // Testing of template class
-    Array<float, 7> array;
-    std::cout << array.getSize() << std::endl;
-
+    print("Oben");
+    print(29);
     return 0;
 }
 ```
 
 Output
 ```sh
-Hello
-23
-55.57
-Sum: 13
-Sum: 15.84
-7
+Value: 20.4
+Value: 89.7
+Value: 66
+Value: 0
+Value: true
+Value: Oben
+Value: 29
 ```
 
 ## Operator Overloading
