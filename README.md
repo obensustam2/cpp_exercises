@@ -5,9 +5,10 @@
         - [RAII](#raii) 
         - [Compile Time vs Runtime](#compile-time-vs-runtime)
         - [Compilation vs Linking](#compilation-vs-linking)
-        - [Preprocessor](#preprocessor)
+        - [Preprocessor in C++](#preprocessor-in-c)
         - [Variable](#variable)
-        - [Namespace](#namespace)
+        - [Namespaces in C++](#namespaces-in-c)
+        - [Local static in C++](#local-static-variables-in-c)
         - [Arguments](#arguments)
         - [User Input](#user-input)
         - [Constant Variable and Methods](#constant-variable--methods)
@@ -15,9 +16,11 @@
         - [Byte Size](#byte-size)
         - [Long Variable](#long-variable)
         - [Signed vs Unsigned](#signed-vs-unsigned)
+        - [Timing in C++](#timing-in-c)
    - [Arrays and Vectors](#arrays-and-vectors)
-        - [Arrays](#arrays)
-        - [Vectors](#vectors)
+        - [C-Style Array](#c-style-array)
+        - [std::array (C++11)](#stdarray-c11)
+        - [std::vector](#stdvector)
    - [Statements and Operators](#statements-and-operators)
         - [Operator](#operator)
         - [static_cast](#static_cast)
@@ -55,9 +58,6 @@
         - [Stack and Raw Heap Pointers](#stack-and-raw-heap-pointers)
         - [Stack and Raw Heap Objects](#stack-and-raw-heap-objects)
         - [Some Raw Pointer Problems](#some-raw-pointer-problems)
-            - [Stack Overflow (Stack Memory)](#stack-overflow-stack-memory)
-            - [Memory Leak (Heap Memory)](#memory-leak-heap-memory)
-            - [Shallow Copy](#shallow-copy-problem)
         - [Smart Pointers](#smart-pointers)
             - [unique_ptr](#unique_ptr)
             - [shared_ptr](#shared_ptr)
@@ -76,13 +76,16 @@
             - [Virtual Functions (Dynamic Polymorphism)](#virtual-functions-dynamic-polymorphism)
    - [Enumeration](#enums)
    - [Threads](#threads)
+   - [Function Pointers & Lambdas](#function-pointers--lambdas)
+        - [Raw Function Pointers](#raw-function-pointers)
+        - [Lambdas](#lambdas)
    - [Lambda Expressions](#lambda-expressions)
    - [Interfaces](#interfaces)
    - [C++ Visibility / Access Specifiers](#c-visibility--access-specifiers)
    - [Templates](#templates)
    - [Operator Overloading](#operator-overloading)
    - [explicit Keyword](#explicit-keyword-in-c)
-   - [Local static in C++](#local-static-variables-in-c)
+
    - [Multiple Return Value](#mutiple-return-value)
 
 
@@ -204,32 +207,106 @@ The linker’s job is to:
 
 --- 
 
-## Preprocessor 
-The preprocessor runs before actual compilation. It handles all lines starting with #, like:
+## Preprocessor in C++
+
+The preprocessor runs **before** compilation. It handles all lines starting with `#` — no C++ syntax, no types, just text manipulation.
+
+### `#include` — File Inclusion
+
+Copies and pastes the contents of another file into your current file.
+
+```cpp
+#include <iostream>   // pastes the iostream header — gives you std::cout etc.
+#include "my_file.h"  // pastes a local file
 ```
-#include <iostream>  // includes the standard I/O library
-#define PI 3.14159   // defines a constant
-#ifdef DEBUG         // conditional compilation
+
+This is why `using namespace std` works after `#include <iostream>` — the `std` namespace is already defined by the time the compiler sees your code.
+
+### `#define` — Macros
+
+Defines a find-and-replace rule. Wherever the macro name appears, the preprocessor substitutes the value before compilation.
+
+```cpp
+#define PI 3.14159
+#define SQUARE(x) ((x) * (x))
+
+int main() {
+    double area = PI * SQUARE(5);
+    // preprocessor turns this into:
+    // double area = 3.14159 * ((5) * (5));
+}
 ```
 
-### Macros (#define, #undef)
-Macros are defined using the #define directive. When the compiler runs, the Preprocessor (a tool that runs before the actual C++ compiler) scans your code for these definitions and performs a literal *find-and-replace* across your source code.
+> **No type checking.** The preprocessor doesn't know C++ types or scopes — it's pure text substitution. Errors from macros often point to the expanded code, not the macro definition, making them hard to debug. Prefer `const` or `constexpr` for constants, and inline functions or lambdas over function macros.
 
-#### The Preprocessing Phase (Compile-Time)
-Because this happens before the code is turned into machine instructions, macros are considered a compile-time operation.
+```cpp
+// prefer this over #define for constants
+constexpr double PI = 3.14159;
+```
 
-- Textual Substitution: The preprocessor does not know C++ syntax, types, or scopes. It simply takes the text you defined and stamps it into your file wherever the macro is mentioned.
+### `#ifdef` / `#ifndef` / `#if` — Conditional Compilation
 
-- No Type-Checking: Because it is just text replacement, the compiler cannot perform type-checking until after the macro has been expanded. This is why macros are often considered "dangerous"—they can lead to confusing errors that don't point to the macro definition itself, but to the code where the macro was expanded.
+Shows or hides parts of your code based on conditions — evaluated at compile time.
 
-### File Inclusion (#include)
-This tells the preprocessor to literally copy and paste the contents of another file (like <iostream>) into your current file.
+```cpp
+#define DEBUG
 
-### Conditional Compilation (#if, #ifdef, #ifndef, #else, #endif)
-This allows you to hide or show parts of your code based on certain conditions (e.g., "only compile this code if I am on Windows").
+int main() {
+#ifdef DEBUG
+    std::cout << "Debug mode on" << std::endl;  // included
+#else
+    std::cout << "Release mode" << std::endl;   // excluded
+#endif
+}
+```
 
-### Pragmas (#pragma)
-Special instructions for the compiler (like #pragma once to prevent a file from being included twice).
+Common use — platform-specific code:
+
+```cpp
+#ifdef _WIN32
+    // Windows-only code
+#else
+    // Linux / macOS code
+#endif
+```
+
+### `#pragma` — Compiler Instructions
+
+Special directives for the compiler. The most common is `#pragma once` — prevents a header file from being included more than once.
+
+```cpp
+// my_sensor.h
+#pragma once  // if this file is included multiple times, ignore duplicates
+
+class Sensor {
+    // ...
+};
+```
+
+The alternative is the classic include guard using `#ifndef`:
+
+```cpp
+#ifndef MY_SENSOR_H
+#define MY_SENSOR_H
+
+class Sensor {
+    // ...
+};
+
+#endif
+```
+
+Both do the same thing. `#pragma once` is shorter and used in most modern codebases.
+
+### Summary
+
+| Directive | What it does |
+|---|---|
+| `#include` | Paste another file's contents here |
+| `#define` | Find-and-replace before compilation |
+| `#ifdef / #ifndef` | Include code only if a macro is / isn't defined |
+| `#if / #else / #endif` | Conditional code blocks |
+| `#pragma once` | Include this file only once |
 
 --- 
 
@@ -244,12 +321,170 @@ The computer reserves a spot in memory big enough to store an int (usually 4 byt
 - It gives that memory location a name — in this case, age.
 - So when you use age, you're referring to that memory location.
 
-## Namespace
-All ROS 2 C++ functionality is grouped under the **rclcpp** namespace. This keeps the API structured and makes it clear where functions and classes come from.
+---
+
+## Namespaces in C++
+
+A namespace is a named scope that groups related code and prevents name collisions.
+
+```cpp
+#include <iostream>
+
+namespace MySensors {
+    int id = 1;
+    void read() {
+        std::cout << "id: " << id << std::endl;
+    }
+}
+
+namespace MyActuator {
+    int id = 2;      // no collision with MySensors::id
+    void read() {
+        std::cout << "id: " << id << std::endl;
+    }
+}
+
+int main() {
+    MySensors::read();   // :: is the scope resolution operator
+    MyActuator::read();
+}
 ```
-rclcpp::shutdown();
+
+Both namespaces define `id` and `read()` — no collision because they live in separate scopes.
+
+### `using namespace`
+
+Tells the compiler to look inside a namespace automatically — so you don't need to type the prefix every time.
+
+> **Important:** `using namespace` must come **after** the namespace definition. The compiler reads top to bottom — using a namespace before defining it causes a compile error.
+
+```cpp
+#include <iostream>
+
+namespace MySensors {
+    int id = 1;
+    void read() {
+        std::cout << "id: " << id << std::endl;
+    }
+}
+
+namespace MyActuator {
+    int id = 2;
+    void read() {
+        std::cout << "id: " << id << std::endl;
+    }
+}
+
+using namespace MySensors;  // defined above, safe to use here
+
+int main() {
+    read();              // compiler knows you mean MySensors::read()
+    MyActuator::read();  // still need prefix for everything else
+}
 ```
-rclcpp::shutdown() clearly tells the compiler "use ROS 2’s shutdown"
+
+You can also bring in a single name instead of the whole namespace:
+
+```cpp
+using MySensors::read;  // only import read(), nothing else
+
+int main() {
+    read();              // works
+    MyActuator::read();  // still needs prefix
+}
+```
+
+> Avoid `using namespace` in larger projects — if two namespaces have a function with the same name, the compiler won't know which one you mean.
+
+### `std` Namespace
+
+The entire C++ Standard Library lives inside the `std` namespace.
+
+```cpp
+std::vector<int> data;
+std::string name;
+std::cout << name << std::endl;
+```
+
+With `using namespace std` you can drop the prefix — fine for small scripts, risky in large codebases:
+
+```cpp
+using namespace std;
+
+vector<int> data;   // same as std::vector
+string name;        // same as std::string
+```
+
+### In Practice — Large Projects
+
+Namespaces are used to wrap classes so they don't collide with other libraries:
+
+```cpp
+namespace fanuc_gripper_controller {
+
+    using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+
+    class FanucGripperInterface : public hardware_interface::SystemInterface {
+        // ...
+    };
+
+} // namespace fanuc_gripper_controller
+```
+
+```cpp
+fanuc_gripper_controller::FanucGripperInterface obj;  // unambiguous
+```
+
+The `using` alias inside the namespace is also scoped — it won't leak out and pollute the global scope.
+
+### Summary
+
+| | Meaning |
+|---|---|
+| `namespace Foo { }` | Create a named scope called Foo |
+| `Foo::bar` | Access `bar` from namespace Foo |
+| `using namespace Foo` | Skip the `Foo::` prefix for everything in Foo (define Foo first!) |
+| `using Foo::bar` | Skip the prefix for `bar` only |
+
+---
+
+## Local Static Variables in C++
+A `static` variable inside a function is **initialized once** and keeps its value between calls.
+
+```cpp
+#include <iostream>
+
+void function(){
+    static int i = 0;  // initialized once, persists across calls
+    i++;
+    std::cout << i << std::endl;
+}
+
+int main(){
+    for(int j = 0; j < 5; j++){
+        function();
+    }
+    return 0;
+}
+```
+
+Output:
+```
+1
+2
+3
+4
+5
+```
+
+Without `static`, `i` resets to `0` every call and always prints `1`.
+| Property | Normal local | Local static |
+|---|---|---|
+| Initialized | Every call | Once |
+| Lifetime | Dies on return | Entire program |
+| Scope | Inside function | Inside function |
+
+---
 
 ## Arguments
 ```cpp
@@ -340,12 +575,166 @@ long double large_amount = 2.7e120;
 | `int` (signed 32-bit)   | 32        | −2,147,483,648 → +2,147,483,647 |
 | `unsigned int` (32-bit) | 32        | 0 → 4,294,967,295               |
 
+---
 
-# Arrays and Vectors
-## Arrays
+## Timing in C++
+
+All timing utilities live in the `<chrono>` header. The library is built around three concepts: **clocks**, **time_points**, and **durations**.
+
+### Clocks
+
+A clock is the source of time. Each clock has a `now()` static method that returns the current `time_point`.
+
+| Clock | Monotonic | Use for |
+|---|---|---|
+| `steady_clock` | Yes | Measuring elapsed time, timeouts, sleep |
+| `system_clock` | No | Timestamps, logging, real wall time |
+| `high_resolution_clock` | Implementation-defined | Finest tick — often alias of `steady_clock` |
+
+`steady_clock` is guaranteed to never go backwards. `system_clock` tracks real wall time and can be adjusted by the OS (NTP sync, DST, manual changes), so it is not suitable for measuring elapsed time.
+
+### time_point
+
+A `time_point` represents a specific moment in time relative to a clock's epoch. Obtained via `now()`:
+
+```cpp
+std::chrono::time_point<std::chrono::steady_clock> t = std::chrono::steady_clock::now();
+```
+
+### duration
+
+A `duration` represents a span of time. Subtracting two `time_point`s yields a `duration`:
+
+```cpp
+std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
+// ... work ...
+std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
+std::chrono::duration<long, std::nano> elapsed = end - start;
+```
+
+Use `duration_cast` to convert to a specific unit, then `.count()` to extract the raw value:
+
+```cpp
+std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
+std::chrono::microseconds us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed);
+
+std::cout << ms.count() << " ms\n";
+std::cout << us.count() << " us\n";
+```
+
+#### Predefined duration types
+
+```cpp
+std::chrono::nanoseconds
+std::chrono::microseconds
+std::chrono::milliseconds
+std::chrono::seconds
+std::chrono::minutes
+std::chrono::hours
+```
+
+### Measuring elapsed time
+
 ```cpp
 #include <iostream>
-#include <array>
+#include <chrono>
+#include <thread>
+
+int main() {
+    std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+    std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
+    std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    std::cout << "Elapsed: " << elapsed.count() << " ms\n";  // 200 ms
+}
+```
+
+### Sleeping
+
+```cpp
+#include <thread>
+#include <chrono>
+
+// sleep for a duration
+std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+// sleep until a specific time_point
+std::chrono::time_point<std::chrono::steady_clock> wake = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+std::this_thread::sleep_until(wake);
+```
+
+### system_clock — wall time and timestamps
+
+`system_clock` is convertible to `std::time_t`, which allows formatting with standard C functions.
+
+```cpp
+#include <iostream>
+#include <chrono>
+#include <ctime>
+
+int main() {
+    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+    std::time_t t = std::chrono::system_clock::to_time_t(now);
+    std::cout << std::ctime(&t);  // Wed Apr  1 14:32:10 2026
+}
+```
+
+#### Formatted timestamp
+
+```cpp
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+
+std::string timestamp() {
+    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+    std::time_t t = std::chrono::system_clock::to_time_t(now);
+    std::ostringstream oss;
+    oss << std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S");
+    return oss.str();
+}
+```
+
+Common `std::put_time` format tokens:
+
+| Token | Output |
+|---|---|
+| `%Y` | Full year (2026) |
+| `%m` | Month (01–12) |
+| `%d` | Day (01–31) |
+| `%H` | Hour 24h (00–23) |
+| `%M` | Minutes (00–59) |
+| `%S` | Seconds (00–59) |
+
+### Summary
+
+| Concept | Purpose |
+|---|---|
+| `steady_clock` | Monotonic clock — measuring elapsed time |
+| `system_clock` | Real wall clock — timestamps and logging |
+| `time_point` | A moment in time from a clock's perspective |
+| `duration` | A span of time between two time_points |
+| `duration_cast` | Convert duration to a specific unit |
+| `.count()` | Extract the raw numeric value from a duration |
+| `sleep_for` | Pause the current thread for a duration |
+| `sleep_until` | Pause the current thread until a time_point |
+| `to_time_t` | Convert system_clock time_point to std::time_t |
+| `std::put_time` | Format time using strftime-style tokens |
+
+---
+
+# Arrays and Vectors
+
+## C-Style Array
+
+The classic array inherited from C. Fixed size, stack-allocated, no bounds checking.
+
+```cpp
+#include <iostream>
 
 int main()
 {    
@@ -378,19 +767,50 @@ int main()
     std::cout << "Forth element of another: " << another[3] << std::endl;
     delete[] another;
 
-
-    // C++ 11 Array library
-    std::array<int, 5> new_array;
-    for(int i = 0; i < new_array.size(); i++){
-        new_array[i] = 55;
-    }
-    std::cout << "Forth element of new_array: " << new_array[3] << std::endl;
     return 0;
 }
 ```
 
-## Vectors
-std::vector<T> stores its elements in a contiguous dynamic array on the heap.
+> `example[3]` and `*(ptr+3)` are identical — indexing `[]` is just pointer arithmetic under the hood.
+
+
+## std::array (C++11)
+
+A thin wrapper around a C-style array. Same stack allocation and fixed size, but with STL support and bounds checking via `.at()`.
+
+```cpp
+#include <iostream>
+#include <array>
+
+int main()
+{
+    std::array<int, 5> new_array;
+
+    // Index-based loop
+    for(int i = 0; i < new_array.size(); i++){
+        new_array[i] = 55;
+    }
+    std::cout << "Forth element of new_array: " << new_array[3] << std::endl;
+
+    // Range-based loop (preferred)
+    for(int val : new_array){
+        std::cout << val << " ";
+    }
+
+    // Bounds-checked access — throws std::out_of_range if out of bounds
+    std::cout << new_array.at(3) << std::endl;
+
+    return 0;
+}
+```
+
+> Prefer `std::array` over C-style arrays. Same performance, but safer and STL-compatible.
+
+---
+
+## std::vector
+
+`std::vector<T>` stores its elements in a contiguous dynamic array on the heap.
 
 Internally, it uses raw pointers to manage this array.
 
@@ -402,7 +822,8 @@ class Vector {
     size_t capacity_;
 };
 ```
-When you push_back(), it may allocate a new array, copy/move the elements, and delete the old array.
+
+When you `push_back()`, it may allocate a new array, copy/move the elements, and delete the old array.
 
 ```cpp
 #include <iostream>
@@ -410,29 +831,50 @@ When you push_back(), it may allocate a new array, copy/move the elements, and d
 
 int main()
 {
-    std::vector <double> number_vector = {0.5, 0.6, 0.7, 0.8, 0.9};
+    std::vector<double> number_vector = {0.5, 0.6, 0.7, 0.8, 0.9};
     std::cout << number_vector.at(0) << std::endl; 
 
     number_vector.at(0) = 1000;
 
-    number_vector.push_back(1.0);
+    number_vector.push_back(1.0);           // add to end — O(1) amortized
 
-    number_vector.insert(number_vector.begin(), -0.6);
+    number_vector.insert(number_vector.begin(), -0.6);  // add to front — O(n), shifts everything
 
     std::cout << "Length of the vector is: " << number_vector.size() << std::endl;
 
-    number_vector.pop_back();
+    number_vector.pop_back();               // remove last element
 
-    std::vector <std::vector<int>> my_2d_vector = {
+    // Range-based loop (preferred)
+    for(double val : number_vector){
+        std::cout << val << " ";
+    }
+
+    // 2D vector — each inner vector is a separate heap allocation
+    std::vector<std::vector<int>> my_2d_vector = {
         {1, 2, 3},
         {4, 5, 6}
     };
-
     std::cout << my_2d_vector.at(1).at(2) << std::endl; 
     
     return 0;
 }  
 ```
+
+> `.at()` throws `std::out_of_range` on bad index. `[]` does not — it causes undefined behavior.
+
+## Comparison
+
+| | C-Style `int arr[5]` | `std::array<int, 5>` | `std::vector<int>` |
+|---|---|---|---|
+| Size | Fixed at compile time | Fixed at compile time | Dynamic |
+| Memory | Stack | Stack | Heap |
+| Bounds checking | No | Yes (`.at()`) | Yes (`.at()`) |
+| Knows its own size | No (`sizeof` trick) | Yes (`.size()`) | Yes (`.size()`) |
+| STL compatible | No | Yes | Yes |
+| Manual memory management | No | No | No |
+| When to use | Rarely (legacy/C) | Fixed-size collections | Most cases |
+
+---
 
 # Statements and Operators
 ## Operator
@@ -2068,6 +2510,8 @@ Car BMW destroyed 💥
 Car BMW destroyed 💥
 ```
 
+---
+
 ### Shallow Copy
 ```cpp
 #include <iostream>
@@ -2108,6 +2552,8 @@ int main() {
 - both call delete[]
 - → crash / undefined behavior
 
+---
+
 ### Deep Copy
 ```cpp
 #include <iostream>
@@ -2145,6 +2591,7 @@ int main() {
 }
 ```
 
+---
 
 ## Struct
 | Feature                 | `class`   | `struct` |
@@ -2180,6 +2627,7 @@ int main(){
 Logging Severity: 2, Text: Hello World
 ```
 
+---
 
 ## Inheritance
 
@@ -2232,6 +2680,8 @@ int main(){
 5
 Oben
 ```
+
+---
 
 ## Polymorphism
 Polymorphism literally means “many forms.”
@@ -2291,6 +2741,7 @@ int main(){
 
 Same function name (print), different behavior depending on parameter type.
 
+---
 
 ### Virtual Functions (Dynamic Polymorphism)
 The function that will be called is determined at runtime — usually using virtual functions in a base class and overriding them in derived classes.
@@ -2324,105 +2775,7 @@ int main() {
 
 Even though both a1 and a2 are pointers to Animal, the correct function (Dog::speak or Cat::speak) is chosen at runtime.
 
-
-
-# Inheritance + Dynamic Polymorphism (Virtual Functions) + Pointer Example
-```cpp
-#include <iostream>
-#include <string>
-#include <memory>
-
-class Animal{
-protected:
-    std::string name_;
-
-public:
-    Animal(std::string name) : name_(name){
-    }
-
-    void eat(){
-        std::cout << name_ << " is eating." << std::endl;
-    }
-
-    // virtual enables polymorphism
-    virtual void sleep(){
-        std::cout << name_ << " is sleeping." << std::endl;
-    }
-};
-
-class Dog : public Animal{
-public:
-    Dog(std::string dog_name) : Animal(dog_name){
-    }
-
-    void bark(){
-        std::cout << name_ << " is barking." << std::endl;
-    }
-
-    // override the base version
-    void sleep() override{
-        std::cout << name_ << " is snoring while sleeping." << std::endl;
-    }
-};
-
-
-int main(){
-
-    // stack object
-    Dog d1("Boncuk");
-    d1.eat();
-    d1.bark();
-    d1.sleep();
-
-    // stack object
-    Animal a1("Kertenkele");
-    a1.sleep(); 
-
-    // stack pointer
-    Dog d2("Cesur");
-    Dog *d2_ptr = &d2;
-    d2_ptr->sleep();
-
-    // raw heap pointer
-    Animal *a2 = new Animal("Sincap");
-    a2->sleep();
-    delete a2;
-
-    // smart pointer (heap)
-    std::unique_ptr<Animal> a3 = std::make_unique<Animal>("Fare");
-    a3->sleep();
-
-    return 0;
-}
-```
-
-Memory Layout
-```sh
-STACK (automatic variables)
-+-------------------------------+
-| d1 : Dog("Boncuk")            | <-- Dog object (includes Animal::name_="Boncuk")
-+-------------------------------+
-| a1 : Animal("Kertenkele")     | <-- Animal object
-+-------------------------------+
-| d2 : Dog("Cesur")             | <-- Dog object (Animal::name_="Cesur")
-+-------------------------------+
-| d2_ptr : pointer -> &d2       | <-- stack pointer pointing to d2
-+-------------------------------+
-| a2 : pointer -> Heap("Sincap")| <-- raw pointer on stack
-+-------------------------------+
-| a3 : unique_ptr -> Heap("Fare")| <-- smart pointer on stack
-+-------------------------------+
-```
-
-```sh
-HEAP (dynamic memory)
-+-------------------------------+
-| Animal("Sincap")              | <-- pointed by a2 (raw heap pointer)
-+-------------------------------+
-| Animal("Fare")                | <-- pointed by a3 (smart pointer)
-+-------------------------------+
-```
-
+---
 
 # Enums
 An **enum** (short for *enumeration*) is a user-defined type that assigns names to a set of integer constants.  
@@ -2454,226 +2807,352 @@ Going South
 Direction Value: 2
 ```
 
+---
+
 # Threads
-## join vs detach
 
-| Feature                     | `join()`                          | `detach()`                      |
-|-----------------------------|----------------------------------|--------------------------------|
-| Wait for thread             | ✅ Yes (blocks until thread ends) | ❌ No (runs independently)     |
-| Safe to access results      | ✅ Yes                            | ❌ No                          |
-| Thread cleanup              | Automatic after thread finishes   | Automatic after thread finishes|
-| Use case                    | Coordinated work / dependencies   | Background / fire-and-forget  |
-| Thread ownership            | Thread remains joinable           | Thread is detached (no ownership) |
-| Consequence if thread object is destroyed without join/detach | ❌ `std::terminate()` | ❌ Undefined behavior if accessing out-of-scope data |
-
-## atomic vs mutex
-| Feature             | `std::atomic`                                                                                | `std::mutex`                                                                        |
-| ------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| **Purpose**         | Provides lock-free atomic operations on a single variable                                    | Provides mutual exclusion for critical sections (any block of code)                 |
-| **Scope**           | Works only for the variable it wraps                                                         | Can protect **multiple variables** or a whole code section                          |
-| **Locking**         | No explicit locking; atomic operations happen in hardware                                    | Explicit locking (`lock()`) and unlocking (`unlock()`), or `std::lock_guard`        |
-| **Performance**     | Usually faster because lock-free (depends on hardware)                                       | Can be slower due to OS-level locking and context switching                         |
-| **Use cases**       | Counters, flags, shared state of a single variable                                           | Complex operations, multiple variables, critical sections, or non-atomic operations |
-| **Complexity**      | Simple API (`load`, `store`, `fetch_add`, etc.)                                              | More general, requires careful lock management to avoid deadlocks                   |
-| **Deadlocks**       | Impossible                                                                                   | Possible if multiple mutexes are locked in the wrong order                          |
-| **Memory ordering** | Supports fine-grained memory ordering (`memory_order_relaxed`, `memory_order_seq_cst`, etc.) | Mutex automatically provides sequential consistency                                 |
-
-
-## Join
-Do I need the thread’s work to finish before continuing?
-- If yes → join soon after creation.
-- If no, it’s background work → join when shutting down.
+By default, your program runs on a single thread — one sequence of instructions executed one at a time. A thread is an independent execution path. With multiple threads, you can do several things concurrently inside the same process.
 
 ```cpp
-#include <iostream>
-#include <thread>
-#include <chrono>
-#include <mutex>
-
-
-std::mutex mtx1, mtx2;
-int counter = 0;
-
-
-void increment1(int id){
-    for(int i=0; i<5; i++){
-        std::lock_guard<std::mutex> lock(mtx1); // locks the mutex
-        counter++; // safe access
-        std::cout << "Thread " << id << " incremented counter to " << counter << "\n";
-    }
-} // lock goes out of scope here → mutex is automatically unlocked
-
-void increment2(int id){
-    for(int i=0; i<5; i++){
-        std::lock_guard<std::mutex> lock(mtx2);
-        counter += 5;
-        std::cout << "Thread " << id << " incremented counter to " << counter << "\n";
-    }
+void task() {
+    std::cout << "Running in a thread\n";
 }
 
+int main() {
+    std::thread t(task);  // starts task() on a new thread
+    t.join();             // wait for it to finish
+    return 0;
+}
+```
 
-int main(){
-    std::cout << "Main ID: " << std::this_thread::get_id() << std::endl;
-    
-    std::thread t1(increment1, 1);
-    std::thread t2(increment2, 2);
+## Thread with argument
 
+Pass arguments to the thread function after the function name:
+
+```cpp
+void greet(std::string name) {
+    std::cout << name << std::endl;
+}
+
+int main() {
+    std::thread t(greet, "Oben");  // pass arguments after the function
+    t.join();
+    return 0;
+}
+```
+
+You can also use a lambda:
+
+```cpp
+std::thread t([]() {
+    std::cout << "Hello from lambda\n";
+});
+t.join();
+```
+
+## Data races
+
+A data race happens when two threads read/write the same variable at the same time without coordination.
+
+```cpp
+int counter = 0;  // plain int — no protection
+
+void increment() {
+    for (int i = 0; i < 100000; i++)
+        counter++;
+}
+
+int main() {
+    std::thread t1(increment);
+    std::thread t2(increment);
     t1.join();
     t2.join();
-
-    std::cout << "Final counter: " << counter << "\n";
-
-    return 0;
+    std::cout << counter << "\n";  // should be 200000, never is
 }
 ```
 
-```sh
-oben@oben-ABRA-A5-V13-2:~/cpp_exercises/xx_interview_preparation/build$ ./13_thread_mutex 
-Main ID: 129642844219200
-Thread Thread 2 incremented counter to 6
-Thread 2 incremented counter to 11
-Thread 2 incremented counter to 16
-Thread 2 incremented counter to 21
-Thread 2 incremented counter to 26
-1 incremented counter to 26
-Thread 1 incremented counter to 27
-Thread 1 incremented counter to 28
-Thread 1 incremented counter to 29
-Thread 1 incremented counter to 30
-Final counter: 30
-oben@oben-ABRA-A5-V13-2:~/cpp_exercises/xx_interview_preparation/build$ ./13_thread_mutex 
-Main ID: 136471178823488
-Thread 1 incremented counter to 1
-Thread 1 incremented counter to 2
-Thread 1 incremented counter to 3
-Thread 1 incremented counter to 4
-Thread 1 incremented counter to 5
-Thread 2 incremented counter to 10
-Thread 2 incremented counter to 15
-Thread 2 incremented counter to 20
-Thread 2 incremented counter to 25
-Thread 2 incremented counter to 30
-Final counter: 30
+```
+Result: 143721   // run 1
+Result: 167342   // run 2
+Result: 158901   // run 3
 ```
 
-Unlock Version
+`counter++` looks like one operation but the CPU actually does three separate steps:
+
+```
+1. read  counter from memory  (gets 5)
+2. add   1                    (gets 6)
+3. write 6 back to memory
+```
+
+When two threads do these three steps simultaneously they constantly overlap and overwrite each other:
+
+```
+thread A: read  counter → 5
+thread B: read  counter → 5   ← reads same value as A, before A wrote back
+thread A: write counter → 6
+thread B: write counter → 6   ← overwrites A's result, one increment is lost
+```
+
+Both threads incremented, but counter only went from 5 to 6 instead of 5 to 7. This is called a **lost update**.
+
+## std::atomic
+
+`std::atomic` does **not** prevent multiple threads from accessing a variable at the same time. Multiple threads can still all read and write concurrently.
+
+What it does guarantee is that no thread ever sees a **half-written value**. To understand why that matters, consider that a `double` is 8 bytes. Without atomic, the CPU may write those 8 bytes in two separate steps:
+
+```
+thread A writes 3.14 to a plain double:
+  step 1 → writes first  4 bytes  [3.14 first half | 0.0 second half]  ← broken state
+  step 2 → writes second 4 bytes  [3.14 first half | 3.14 second half] ← complete
+
+if thread B reads between step 1 and step 2, it gets garbage
+```
+
+`std::atomic<double>` makes the entire 8-byte write happen as one single step. Thread B will either see the old value or the new value — never something in between. This is what **indivisible** means: the operation either happened completely or not at all.
+
 ```cpp
+std::atomic<int> a_counter = 0;
+
+void a_increment() {
+    for (int i = 0; i < 100000; i++)
+        a_counter++;  // safe — ++ is overloaded for atomics
+}
+
+int main() {
+    std::thread t1(a_increment);
+    std::thread t2(a_increment);
+    t1.join();
+    t2.join();
+    std::cout << a_counter << "\n";  // always 200000
+}
+```
+
+### When atomic is not enough
+
+If two variables must change together and be seen as a consistent pair, atomic cannot help — another thread may read the first store before the second one happens:
+
+```cpp
+std::atomic<bool> stopValue  = true;
+std::atomic<bool> warnValue  = true;
+
+// thread A writes:
+stopValue.store(false);   // thread B could read here...
+warnValue.store(false);   // ...and see stopValue=false, warnValue=true — inconsistent
+```
+
+For this case, use a mutex to protect both stores as a single operation.
+
+## Mutex
+
+A `std::mutex` is a lock. Only one thread can hold it at a time. The other waits. This is what actually enforces "only one thread at a time" — unlike atomic which only protects a single operation.
+
+```cpp
+int m_counter = 0;
 std::mutex mtx;
-int counter = 0;
 
-void increment_manual(int id) {
-    for(int i = 0; i < 5; i++) {
-        mtx.lock();  // manually lock the mutex
-        counter++;   // critical section
-        std::cout << "Thread " << id << " incremented counter to " << counter << "\n";
-        mtx.unlock(); // manually unlock the mutex
+void m_increment() {
+    for (int i = 0; i < 100000; i++) {
+        mtx.lock();
+        m_counter++;
+        mtx.unlock();
     }
+}
+
+int main() {
+    std::thread t1(m_increment);
+    std::thread t2(m_increment);
+    t1.join();
+    t2.join();
+    std::cout << m_counter << "\n";  // always 200000
 }
 ```
 
-Atomic Version
+## lock_guard
+
+`std::lock_guard` is a wrapper around a mutex. It locks on construction and unlocks automatically when it goes out of scope — even if an exception is thrown. This is the preferred way over calling `lock()` and `unlock()` manually.
+
 ```cpp
-std::atomic<int> counter(0); // atomic counter
+int lg_counter = 0;
+std::mutex lg_mtx;
 
-void increment1(int id){
-    for(int i=0; i<5; i++){
-        counter++; // atomic increment
-        std::cout << "Thread " << id << " incremented counter to " << counter.load() << "\n";
-    }
+void lg_increment() {
+    for (int i = 0; i < 100000; i++) {
+        std::lock_guard<std::mutex> lock(lg_mtx);
+        lg_counter++;
+    }  // lock released automatically here
 }
 ```
 
-## Detach
+| | `lock()`/`unlock()` | `lock_guard` |
+|---|---|---|
+| Unlocks automatically | No | Yes |
+| Safe if exception thrown | No — unlock never called | Yes |
+| Verbose | Yes | No |
+
+## join vs detach
+
+After creating a thread you **must** call either `join()` or `detach()` before the thread object is destroyed — otherwise the program crashes.
+
 ```cpp
-#include <iostream>
-#include <thread>
-#include <chrono>
-
-
-void backgroundTask(){
-    std::cout << "backgroundTask ID: " << std::this_thread::get_id() << std::endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-    std::cout << "backgroundTask finished" << std::endl;
+void slow_task(std::string label) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::cout << "[" << label << "] finished\n";
 }
 
-int main(){
-    std::cout << "Main ID: " << std::this_thread::get_id() << std::endl;
-    
-    std::thread baby_thread(backgroundTask);
-    baby_thread.detach();
+int main() {
+    // -- join --
+    std::thread t1(slow_task, "join thread");
+    std::cout << "[main] waiting...\n";
+    t1.join();                               // main blocks here until t1 finishes
+    std::cout << "[main] continues\n";
 
-    for(int i=0;i<5;i++){
-        std::cout << "I don't wait the backgroundTask completion to run" << std::endl;
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    }
-
-    std::cout << "Exiting the program." << std::endl;
-
-    return 0;
+    // -- detach --
+    std::thread t2(slow_task, "detach thread");
+    t2.detach();                             // main does not wait
+    std::cout << "[main] already here\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 ```
 
+```
+[main] waiting...
+[join thread] finished        ← main was blocked until this printed
+[main] continues
+[main] already here           ← main rushed past immediately
+[detach thread] finished
+```
+
+| | `join()` | `detach()` |
+|---|---|---|
+| What it does | Waits for the thread to finish | Lets the thread run independently |
+| When to use | You need the result before moving on | Fire-and-forget background work |
+| Risk | Blocks the caller | Thread may outlive the data it uses |
+
+## mutex vs atomic
+
+| | `std::mutex` | `std::atomic` |
+|---|---|---|
+| What it prevents | Any other thread entering the protected block | Torn/partial reads or writes on one variable |
+| Enforces "one thread at a time" | Yes | No |
+| Works across multiple variables | Yes | No — one variable only |
+| Performance | Slower (OS-level blocking) | Faster (single CPU instruction) |
+| Use when | Protecting a block of logic or multiple variables | Single variable with simple load/store/increment |
+
+## CMakeLists.txt
+
+Threads require linking against the system thread library. Use CMake's built-in `Threads` package:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(my_project)
+
+set(CMAKE_CXX_STANDARD 17)
+
+find_package(Threads REQUIRED)
+
+add_executable(my_app src/main.cpp)
+
+target_link_libraries(my_app PRIVATE Threads::Threads)
+```
+
+Without `target_link_libraries(... Threads::Threads)` you will get a linker error on Linux.
+
+## Summary
+
+| Concept | Purpose |
+|---|---|
+| `std::thread` | Create a new thread |
+| `join()` | Wait for thread to finish |
+| `detach()` | Let thread run independently |
+| `std::mutex` | Enforce one thread at a time over a block or multiple variables |
+| `std::lock_guard` | RAII wrapper — auto-unlocks the mutex |
+| `std::atomic<T>` | Safe load/store on a single variable without a mutex |
+
+---
+
+# Function Pointers & Lambdas
+
+## Raw Function Pointers
+
+A variable that stores the memory address of a function.
+
+```cpp
+int add(int a, int b) { return a + b; }
+
+int (*fn_ptr)(int, int) = &add;  // pointer to a function: takes 2 ints, returns int
+fn_ptr(3, 4);                    // calls add(3, 4) → 7
+```
+
+Passing a function as an argument:
+
+```cpp
+void apply(int a, int b, int (*fn)(int, int)) {
+    std::cout << fn(a, b) << std::endl;
+}
+
+apply(3, 4, add);  // 7
+```
+
+> Raw function pointers are C-style. In modern C++ prefer lambdas or `std::function`.
 
 
-# Lambda Expressions
-a lambda expression is essentially an anonymous function you can define inline without giving it a name. It's often used for short, local operations, such as sorting, filtering, or passing functions to algorithms.
+## Lambdas
 
-```sh
-auto FUNCTION_NAME = [capture](parameters){
-    // function body
+An anonymous function defined inline. Syntax:
+
+```
+[ capture ] ( parameters ) { body }
+```
+
+```cpp
+auto add = [](int a, int b) {
+    return a + b;
 };
+
+add(3, 4);  // 7
 ```
 
-- auto tells the compiler: “Deduce the type of this lambda for me.”. Its type is unique and known only to the compiler (you cannot write it explicitly).
+### Capture List
 
-- [capture]: captures variables from the surrounding scope.
-
-- (parameters): the function arguments, like in a normal function.
-
-- function body: what the lambda does.
+The key difference from raw function pointers — lambdas can access variables from the surrounding scope:
 
 ```cpp
-#include <iostream>
-#include <string>
+int x = 10;
 
-
-int main(){
-
-    // Simple Lambda
-    auto greet = [](){
-        std::cout << "Hello Lambda!" << std::endl;
-    };
-    greet();
-    greet();
-
-
-    // Lambda with parameters
-    auto add = [](int a, int b){
-        return a+b;
-    };
-    std::cout << "Add: " << add(3,4) << std::endl; 
-
-
-    // Lambda with capturing variables
-    int x = 10;
-    int y = 5;
-    auto sum = [x,y](){
-        return x+y;
-    };
-    std::cout << "Sum: " << sum() << std::endl; 
-
-
-    // Lambda with auto parameter
-    auto print = [](auto val){
-        std::cout << val << std::endl;
-    };
-    print("Oben");
-    print(29);
-
-
-    return 0;
-}
+auto add_x = [x](int a) { return a + x; };  // capture x by value
+add_x(5);  // 15
 ```
+
+| Capture | Meaning |
+|---|---|
+| `[x]` | capture x by value (copy) |
+| `[&x]` | capture x by reference |
+| `[=]` | capture everything by value |
+| `[&]` | capture everything by reference |
+| `[]` | capture nothing |
+
+### Common Use — STL Algorithms
+
+```cpp
+std::vector<int> nums = {3, 1, 4, 1, 5};
+
+std::sort(nums.begin(), nums.end(), [](int a, int b) {
+    return a > b;  // descending → {5, 4, 3, 1, 1}
+});
+```
+
+## Comparison
+
+| | Raw Function Pointer | Lambda |
+|---|---|---|
+| Syntax | `int (*fn)(int, int)` | `[](int a, int b) { ... }` |
+| Defined inline | No | Yes |
+| Can capture variables | No | Yes |
+| Modern C++ | No | Yes |
+
+--- 
 
 # Interfaces
 What is an Interface in C++?
@@ -2860,43 +3339,7 @@ ship(Box(42));  // OK — intent is clear
 
 Implicit conversions are almost never what you want — they hide intent and create hard-to-spot bugs. Most modern C++ guidelines recommend `explicit` by default.
 
-
-# Local Static Variables in C++
-A `static` variable inside a function is **initialized once** and keeps its value between calls.
-
-```cpp
-#include <iostream>
-
-void function(){
-    static int i = 0;  // initialized once, persists across calls
-    i++;
-    std::cout << i << std::endl;
-}
-
-int main(){
-    for(int j = 0; j < 5; j++){
-        function();
-    }
-    return 0;
-}
-```
-
-Output:
-```
-1
-2
-3
-4
-5
-```
-
-Without `static`, `i` resets to `0` every call and always prints `1`.
-| Property | Normal local | Local static |
-|---|---|---|
-| Initialized | Every call | Once |
-| Lifetime | Dies on return | Entire program |
-| Scope | Inside function | Inside function |
-
+---
 
 # Mutiple Return Value
 | Feature | std::tuple | struct |

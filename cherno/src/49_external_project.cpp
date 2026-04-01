@@ -1,6 +1,6 @@
-int func1();
+#include "test.h"
 
-int main(){
-    func1();
+int main() {
+    print();
     return 0;
 }
