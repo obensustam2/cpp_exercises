@@ -72,21 +72,26 @@
             - [Deep Copy](#deep-copy)
         - [Struct](#struct)
         - [Inheritance](#inheritance)
-        - [Polymorphism](#polymorphism)
-            - [Virtual Functions (Dynamic Polymorphism)](#virtual-functions-dynamic-polymorphism)
+   - [Polymorphism](#polymorphism)
+        - [Compile-time Polymorphism](#compile-time-polymorphism)
+        - [Runtime Polymorphism - Virtual Functions](#runtime-polymorphism---virtual-functions)
+            - [Interfaces](#interfaces)
+            - [Virtual Destructors](#virtual-destructors)
    - [Enumeration](#enums)
    - [Threads](#threads)
    - [Function Pointers & Lambdas](#function-pointers--lambdas)
         - [Raw Function Pointers](#raw-function-pointers)
         - [Lambdas](#lambdas)
    - [Lambda Expressions](#lambda-expressions)
-   - [Interfaces](#interfaces)
    - [C++ Visibility / Access Specifiers](#c-visibility--access-specifiers)
    - [Templates](#templates)
    - [Operator Overloading](#operator-overloading)
    - [explicit Keyword](#explicit-keyword-in-c)
-
    - [Multiple Return Value](#mutiple-return-value)
+   - [C++ Sorting](#c-sorting)
+   - [Memory](#memory)
+        - [Sample Memory Diagram](#sample-memory-diagram)
+   - [Casting in C++](#casting-in-c)
 
 
 
@@ -874,6 +879,81 @@ int main()
 | Manual memory management | No | No | No |
 | When to use | Rarely (legacy/C) | Fixed-size collections | Most cases |
 
+## 2D Arrays
+
+### C-Style 2D Array
+
+```cpp
+int arr[2][3] = {
+    {1, 2, 3},
+    {4, 5, 6}
+};
+
+std::cout << arr[1][2] << "\n"; // 6
+
+for(int i = 0; i < 2; i++){
+    for(int j = 0; j < 3; j++){
+        std::cout << arr[i][j] << " ";
+    }
+    std::cout << "\n";
+}
+```
+
+> No `.size()` — you must hardcode or use `sizeof(arr) / sizeof(arr[0])` for row count.
+
+### std::array 2D
+
+```cpp
+std::array<std::array<int, 3>, 2> arr = {{
+    {1, 2, 3},
+    {4, 5, 6}
+}};
+
+std::cout << arr[1][2] << "\n"; // 6
+
+for(size_t i = 0; i < arr.size(); i++){
+    for(size_t j = 0; j < arr[i].size(); j++){
+        std::cout << arr[i][j] << " ";
+    }
+    std::cout << "\n";
+}
+```
+
+> Double braces `{{}}` needed because `std::array` is a struct wrapping a raw array — the outer `{}` initializes the struct, the inner `{}` initializes the raw array inside it.
+
+### std::vector 2D
+
+```cpp
+std::vector<std::vector<int>> vec = {
+    {1, 2, 3},
+    {4, 5, 6}
+};
+
+std::cout << vec[1][2] << "\n"; // 6
+
+for(size_t i = 0; i < vec.size(); i++){
+    for(size_t j = 0; j < vec[i].size(); j++){
+        std::cout << vec[i][j] << " ";
+    }
+    std::cout << "\n";
+}
+
+vec.push_back({7, 8, 9}); // rows can be added at runtime
+```
+
+> Each inner vector is a **separate heap allocation** — not contiguous in memory. More flexible but slower than the fixed-size alternatives.
+
+### 2D Comparison
+
+| | `int arr[2][3]` | `std::array<std::array<int,3>,2>` | `std::vector<std::vector<int>>` |
+|---|---|---|---|
+| Size fixed | Yes | Yes | No |
+| Memory | Stack (contiguous) | Stack (contiguous) | Heap (non-contiguous rows) |
+| `.size()` | No | Yes | Yes |
+| Bounds checking | No | Yes (`.at()`) | Yes (`.at()`) |
+| Rows addable at runtime | No | No | Yes |
+| Init syntax | `{}` | `{{}}` (double brace) | `{}` |
+
 ---
 
 # Statements and Operators
@@ -1299,6 +1379,8 @@ int main(){
     return 0;
 }
 ```
+
+---
 
 # Functions
 ## Random number generation
@@ -2683,7 +2765,7 @@ Oben
 
 ---
 
-## Polymorphism
+# Polymorphism
 Polymorphism literally means “many forms.”
 In programming, it means the same function, operator, or method name can behave differently depending on the type of object or data it’s working with.
 
@@ -2697,7 +2779,9 @@ It allows you to write flexible and reusable code — you don’t have to know t
 | **Compile-time polymorphism** | *Static polymorphism*  | Function overloading, operator overloading, templates | During compilation     |
 | **Runtime polymorphism**      | *Dynamic polymorphism* | Virtual functions and inheritance                     | While the program runs |
 
-### Compile-time Polymorphism
+## Compile-time Polymorphism
+
+### Function Overloading
 The function that will be called is known at compile time.
 ```cpp
 #include <iostream>
@@ -2710,6 +2794,7 @@ int main() {
 }
 ```
 
+### Templates
 ```cpp
 #include <iostream>
 #include <vector>
@@ -2743,8 +2828,7 @@ Same function name (print), different behavior depending on parameter type.
 
 ---
 
-### Virtual Functions (Dynamic Polymorphism)
-The function that will be called is determined at runtime — usually using virtual functions in a base class and overriding them in derived classes.
+## Runtime Polymorphism - Virtual Functions 
 
 ```cpp
 #include <iostream>
@@ -2774,6 +2858,117 @@ int main() {
 ```
 
 Even though both a1 and a2 are pointers to Animal, the correct function (Dog::speak or Cat::speak) is chosen at runtime.
+
+---
+
+### Interfaces
+What is an Interface in C++?
+
+- C++ does not have a dedicated interface keyword like Java or C#. Instead, interfaces are implemented using abstract classes, specifically classes that contain only pure virtual functions.
+
+- Definition of an Interface (Abstract Class)
+    - A class is considered an interface when:
+    - All its methods are pure virtual (declared with = 0).
+    - It contains no data members (ideally).
+    - It defines a contract that derived classes must implement.
+
+```cpp
+// Interface for any robot gripper
+class IGripper {
+public:
+    virtual void open() = 0;          // pure virtual
+    virtual void close() = 0;         // pure virtual
+    virtual bool isHolding() const = 0;
+
+    virtual ~IGripper() {}            // always add virtual destructor
+};
+```
+
+```cpp
+class FanucGripper : public IGripper {
+public:
+    void open() override {
+        std::cout << "Fanuc gripper opening...\n";
+    }
+
+    void close() override {
+        std::cout << "Fanuc gripper closing...\n";
+    }
+
+    bool isHolding() const override {
+        return true; // example
+    }
+};
+```
+
+```cpp
+IGripper* gripper = new FanucGripper();
+gripper->open();
+gripper->close();
+delete gripper;
+```
+
+---
+
+### Virtual Destructors 
+
+```cpp
+#include <iostream>
+
+class Base {
+public:
+    Base()  { std::cout << "Base Constructor"  << std::endl; }
+    virtual ~Base() { std::cout << "Base Destructor" << std::endl; }
+};
+
+class Derived : public Base {
+public:
+    Derived()  { std::cout << "Derived Constructor"  << std::endl; }
+    ~Derived() { std::cout << "Derived Destructor" << std::endl; }
+};
+
+int main() {
+    Base *base = new Base();          // Case 1: Base*    -> Base obj
+    delete base;
+
+    Derived *derived = new Derived(); // Case 2: Derived* -> Derived obj
+    delete derived;
+
+    Base *poly = new Derived();       // Case 3: Base*    -> Derived obj
+    delete poly;
+}
+```
+
+#### The Three Pointer Cases
+
+| Case | Pointer type | Object | Destructor(s) called | Safe? |
+|---|---|---|---|---|
+| `Base *base = new Base()` | `Base*` | Base | `~Base()` | Yes |
+| `Derived *derived = new Derived()` | `Derived*` | Derived | `~Derived()` → `~Base()` | Yes |
+| `Base *poly = new Derived()` | `Base*` | Derived | `~Base()` only — **leak** | No* |
+
+*Safe only if `~Base()` is `virtual`.
+
+> Constructors always run base-first. Destructors always run derived-first.
+
+#### Why Case 3 is Dangerous
+
+The compiler sees `Base*` at the `delete` line and hard-codes a call to `~Base()` at compile time. It never inspects the actual object. The `Derived` part silently leaks — this is **undefined behavior**.
+
+#### The Fix: `virtual` Destructor
+
+```cpp
+class Base {
+public:
+    virtual ~Base() = default;
+};
+```
+
+With `virtual`, the compiler defers the destructor call to runtime via the **vtable**. Each object gets a hidden `vptr` pointing to its class's vtable — an array of function pointers for all virtual functions. At `delete poly`, the program follows the `vptr` to `Derived`'s vtable, finds `~Derived()`, and calls it — then automatically chains to `~Base()`.
+
+#### Rule of Thumb
+
+> If a class is meant to be inherited from, always declare its destructor `virtual`.
 
 ---
 
@@ -3154,53 +3349,6 @@ std::sort(nums.begin(), nums.end(), [](int a, int b) {
 
 --- 
 
-# Interfaces
-What is an Interface in C++?
-
-- C++ does not have a dedicated interface keyword like Java or C#. Instead, interfaces are implemented using abstract classes, specifically classes that contain only pure virtual functions.
-
-- Definition of an Interface (Abstract Class)
-    - A class is considered an interface when:
-    - All its methods are pure virtual (declared with = 0).
-    - It contains no data members (ideally).
-    - It defines a contract that derived classes must implement.
-
-```cpp
-// Interface for any robot gripper
-class IGripper {
-public:
-    virtual void open() = 0;          // pure virtual
-    virtual void close() = 0;         // pure virtual
-    virtual bool isHolding() const = 0;
-
-    virtual ~IGripper() {}            // always add virtual destructor
-};
-```
-
-```cpp
-class FanucGripper : public IGripper {
-public:
-    void open() override {
-        std::cout << "Fanuc gripper opening...\n";
-    }
-
-    void close() override {
-        std::cout << "Fanuc gripper closing...\n";
-    }
-
-    bool isHolding() const override {
-        return true; // example
-    }
-};
-```
-
-```cpp
-IGripper* gripper = new FanucGripper();
-gripper->open();
-gripper->close();
-delete gripper;
-```
-
 # C++ Visibility / Access Specifiers
 
 | Specifier   | Accessible From Class Itself | Accessible from Derived Classes | Accessible from Outside | Typical Use |
@@ -3405,3 +3553,376 @@ int main(){
     return 0;
 }
 ```
+
+---
+
+# C++ Sorting
+
+## Iterators
+
+An iterator is a pointer-like object that marks a position inside a container.
+
+- `v.begin()` → points to the **first element**
+- `v.end()` → points to **one past the last element** (half-open range `[begin, end)`)
+
+```cpp
+std::sort(v.begin(), v.end());            // sort entire vector
+std::sort(v.begin() + 1, v.begin() + 4); // sort only index 1..3
+```
+
+---
+
+## Sorting variants
+
+| Function | Use case | Stable? | Complexity |
+|---|---|---|---|
+| `std::sort` | General purpose | ❌ | O(n log n) |
+| `std::stable_sort` | Preserve order of equal elements | ✅ | O(n log² n) |
+| `std::partial_sort` | Only need top N elements | ❌ | O(n log k) |
+| `std::is_sorted` | Check if already sorted | — | O(n) |
+
+---
+
+## 1 — `std::sort`
+
+The comparator returns `true` if `a` should come **before** `b`.
+
+```cpp
+std::vector<int> v = {5, 2, 8, 1, 9, 3};
+
+std::sort(v.begin(), v.end());                       // ascending
+std::sort(v.begin(), v.end(), std::greater<int>());  // descending
+```
+
+### 1b — `std::sort` with a lambda
+
+```cpp
+std::vector<int> v = {-5, 3, -1, 4, -2};
+
+std::sort(v.begin(), v.end(), [](int a, int b) {
+    return std::abs(a) < std::abs(b);  // sort by absolute value
+});
+// → -1, -2, 3, 4, -5
+```
+
+### 1c — `std::sort` with a plain function
+
+```cpp
+bool byAbsoluteValue(int a, int b) {
+    return std::abs(a) < std::abs(b);
+}
+
+std::vector<int> v = {-5, 3, -1, 4, -2};
+std::sort(v.begin(), v.end(), byAbsoluteValue);
+// → -1, -2, 3, 4, -5
+```
+
+> Use a plain function over a lambda when the comparator logic is complex or reused across multiple sort calls.
+
+### 1d — `std::sort` with `std::pair`
+
+Pairs sort by `.first` first, then `.second` as tiebreaker — built-in, no comparator needed.
+
+```cpp
+std::vector<std::pair<int, std::string>> scores = {
+    {90, "Alice"}, {85, "Charlie"}, {90, "Bob"}
+};
+
+std::sort(scores.begin(), scores.end());
+// → {85,"Charlie"}, {90,"Alice"}, {90,"Bob"}
+//    ↑ by score, then alphabetically for ties
+```
+
+To sort by `.second` instead, use a lambda:
+
+```cpp
+std::sort(scores.begin(), scores.end(), [](const auto& a, const auto& b) {
+    return a.second < b.second;  // sort by name alphabetically
+});
+// → {90,"Alice"}, {85,"Charlie"}, {90,"Bob"}
+```
+
+### 1e — `std::sort` with `std::map`
+
+Maps are always sorted by key internally — you can't sort them directly. To sort by value, dump into a vector first and sort that.
+
+Since map entries are already pairs internally, you can use C++17 CTAD and let the vector type be deduced automatically:
+
+```cpp
+std::map<std::string, int> wordCount = {
+    {"apple", 5}, {"banana", 2}, {"cherry", 8}
+};
+
+std::vector v(wordCount.begin(), wordCount.end());  // type deduced via CTAD
+
+std::sort(v.begin(), v.end(), [](const auto& a, const auto& b) {
+    return a.second > b.second;  // sort by value descending
+});
+// → cherry:8, apple:5, banana:2
+```
+
+---
+
+## 2 — `std::stable_sort`
+
+Preserves the original relative order of equal elements. Use when order within a group matters.
+
+```cpp
+struct Task { std::string name; int priority; };
+
+std::vector<Task> tasks = {
+    {"Write tests",  2},
+    {"Fix bug",      1},
+    {"Code review",  2},
+    {"Deploy",       1}
+};
+
+std::stable_sort(tasks.begin(), tasks.end(), [](const Task& a, const Task& b) {
+    return a.priority < b.priority;
+});
+// → Fix bug(1), Deploy(1), Write tests(2), Code review(2)
+//                ↑ original order preserved within each priority group
+```
+
+---
+
+## 3 — `std::partial_sort`
+
+Sorts only the first `k` elements. More efficient than full sort when you only need the top N.
+
+```cpp
+std::vector<int> v = {5, 2, 8, 1, 9, 3, 7};
+
+std::partial_sort(v.begin(), v.begin() + 3, v.end());
+// → 1, 2, 3, [rest in unspecified order]
+```
+
+---
+
+## 4 — `std::is_sorted`
+
+Checks if a range is already sorted. Returns `bool`.
+
+```cpp
+std::vector<int> v = {1, 2, 3, 4, 5};
+
+if (std::is_sorted(v.begin(), v.end())) {
+    std::cout << "Already sorted!\n";
+}
+```
+
+---
+
+# Memory
+
+## Sample Memory Diagram
+
+![memory diagram](media/memory_diagram.png)
+
+```cpp
+int    a    = 175;          // 0x1000 — int,    4 bytes
+double b    = 255.0;        // 0x1008 — double, 8 bytes
+int    c    = 43;           // 0x1010 — int,    4 bytes
+int*   sp   = &a;           // 0x1018 — points to a on stack (0x1000)
+int*   val1 = new int;      // 0x1020 — points to heap (0x2018)
+int*   p    = new int;      // 0x1028 — points to heap (0x2040)
+
+*val1 = 300;                // heap @ 0x2018 → 2C 01 00 00
+*p    = 255;                // heap @ 0x2040 → FF 00 00 00
+
+delete val1;
+delete p;
+```
+
+---
+
+## Unions
+
+Multiple variables sharing the same memory. Size = largest member. Only one is valid at a time.
+
+```cpp
+union Data {
+    int   i;
+    float f;
+    char  c;
+};  // 4 bytes total, not 9
+
+Data d;
+d.i = 42;     // valid
+d.f = 3.14f;  // now only d.f is valid — d.i is garbage
+```
+
+The union doesn't track which member is active — you do. Pair with an enum if you need safety, or just use `std::variant` (C++17).
+
+**Still useful for:** embedded systems, protocol parsing, type punning (inspecting raw bytes).
+
+---
+
+# Casting in C++
+
+> C++ provides four named cast operators. Unlike C-style casts, they make your intent explicit and are easier to search in code.
+
+## Overview
+
+| Cast | Purpose | Runtime Check? | Safety |
+|---|---|---|---|
+| `static_cast` | Numeric conversions, related types | No | Safe (mostly) |
+| `dynamic_cast` | Safe polymorphic downcast | Yes | Safe |
+| `const_cast` | Add or remove `const` | No | Situational |
+| `reinterpret_cast` | Raw memory / bit reinterpretation | No | Dangerous |
+
+## 1. `static_cast`
+
+Converts between related types at **compile time**. No runtime overhead. The most commonly used cast in everyday C++.
+
+```cpp
+float pi = 3.14f;
+int x = static_cast<int>(pi);      // 3  (truncates decimal)
+
+int i = 42;
+double d = static_cast<double>(i); // 42.0
+```
+
+**Use for:** numeric type conversions, upcasting (`Dog*` → `Animal*`), converting `void*` to a typed pointer.
+
+**Avoid when:** you don't know the actual runtime type — use `dynamic_cast` for that.
+
+## 2. `dynamic_cast`
+
+Safely checks the **real runtime type** of a pointer or reference. Requires at least one `virtual` function in the class (enables RTTI).
+
+```cpp
+class Animal {
+public:
+    virtual ~Animal() {}        // virtual destructor enables RTTI
+    virtual void speak() {}
+};
+
+class Dog : public Animal {
+public:
+    void speak() override { std::cout << "woof\n"; }
+    void fetch()           { std::cout << "fetched!\n"; }
+};
+
+class Cat : public Animal {
+public:
+    void speak() override { std::cout << "meow\n"; }
+};
+
+Animal* a1 = new Dog();
+Animal* a2 = new Cat();
+
+Dog* d1 = dynamic_cast<Dog*>(a1);  // succeeds — a1 is really a Dog
+if (d1) d1->fetch();
+
+Dog* d2 = dynamic_cast<Dog*>(a2);  // fails — a2 is a Cat → returns nullptr
+if (!d2) std::cout << "nullptr\n";
+```
+
+### Pointer vs Reference cast
+
+```cpp
+// Pointer — returns nullptr on failure
+Dog* d = dynamic_cast<Dog*>(animalPtr);
+
+// Reference — throws std::bad_cast on failure
+Dog& d = dynamic_cast<Dog&>(animalRef);
+```
+
+Use **pointer cast** when failure is expected and normal.
+Use **reference cast** when you're certain of the type and want a hard error if wrong.
+
+### Cast direction guide
+
+| Direction | Example | `static_cast`? | `dynamic_cast`? |
+|---|---|---|---|
+| Upcast (Derived → Base) | `Dog*` → `Animal*` | Yes (implicit too) | Not needed |
+| Downcast (Base → Derived) | `Animal*` → `Dog*` | Only if certain | Yes — safe check |
+| Cross-cast (sibling classes) | `Animal*` → `Flyable*` | Cannot | Yes |
+
+> ⚠️ `dynamic_cast` has a runtime cost. Cast once, store the result — avoid calling it in tight loops.
+
+> ⚠️ Needing many `dynamic_cast` checks often signals a missing `virtual` function in the base class.
+
+## 3. `const_cast`
+
+The **only** cast that can add or remove `const`. Most commonly used to call legacy APIs that take non-const parameters but don't actually modify the data.
+
+```cpp
+// Legacy function you cannot modify
+void legacyProcess(std::string& str) {
+    std::cout << str << std::endl;  // read-only, but takes non-const ref
+}
+
+const std::string message = "Hello, World!";
+
+// legacyProcess(message);  // ERROR: cannot bind non-const ref to const
+legacyProcess(const_cast<std::string&>(message));  // OK
+```
+
+### The dangerous case
+
+```cpp
+const int x = 10;
+int* p = const_cast<int*>(&x);
+*p = 99;  // undefined behavior — x may be in read-only memory
+```
+
+### Safety rules
+
+| Scenario | Safe? |
+|---|---|
+| Object was originally non-const, passed as const | ✅ Safe to remove const |
+| Object was originally const from the start | ❌ Writing to it is UB |
+
+> ✅ In modern C++, if you find yourself using `const_cast` often, the better fix is updating the function signatures.
+
+## 4. `reinterpret_cast`
+
+Tells the compiler to treat the raw bits of a value as a completely different type. **No conversion happens** — just a different lens on the same memory. Mostly used in low-level systems, embedded, and hardware code.
+
+### Example — inspect raw bytes of an int
+
+```cpp
+int x = 42;
+
+char* bytes = reinterpret_cast<char*>(&x);
+
+for (size_t i = 0; i < sizeof(int); i++) {
+    std::cout << static_cast<int>(bytes[i]) << " ";
+}
+// Output on little-endian (x86): 42 0 0 0
+```
+
+### Example — type punning with a struct
+
+```cpp
+struct Entity { int x, y; };
+
+Entity e;
+e.x = 3;
+e.y = 5;
+
+// treat struct memory as a plain int array
+int* position = reinterpret_cast<int*>(&e);
+std::cout << position[0] << "\n";  // 3 → reads e.x
+std::cout << position[1] << "\n";  // 5 → reads e.y
+```
+
+> ⚠️ `reinterpret_cast` violates strict aliasing rules in many cases. Use `std::memcpy` or `std::bit_cast` (C++20) for safe type punning between unrelated types.
+
+## C-Style Casts — Avoid in C++
+
+C-style casts still work but are a blunt tool. The compiler silently tries `static_cast` → `const_cast` → `reinterpret_cast` in sequence. You lose clarity about your intent.
+
+```cpp
+// C-style — what kind of cast is this?
+int* position = (int*)(&e);
+
+// C++ style — intent is explicit
+int* position = reinterpret_cast<int*>(&e);
+```
+
+**Rule of thumb:** reach for `static_cast` first. Only escalate to `dynamic_cast`, `const_cast`, or `reinterpret_cast` when you have a specific, justified reason.
+
+---
