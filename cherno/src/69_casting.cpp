@@ -49,19 +49,24 @@ int main(){
 
 
     // dynamic_cast
-    Animal *a1 = new Dog();
+    Animal* a1 = new Dog();
     a1->speak();
 
-    Animal *a2 = new Cat();
+    Animal* a2 = new Cat();
     a2->speak();
 
-    Dog *d1 = dynamic_cast<Dog*>(a1);
+    Dog* d1 = dynamic_cast<Dog*>(a1);
     if (d1){
+        std::cout << "d1: ";
         d1->fetch();
     }
+    else{
+        std::cout << "nullptr" << std::endl;
+    }
 
-    Dog *d2 = dynamic_cast<Dog*>(a2); // no direct connection from Cat to Dog
+    Dog* d2 = dynamic_cast<Dog*>(a2); // no direct connection from Cat to Dog
     if (d2){
+        std::cout << "d2: ";
         d2->fetch();
     }
     else{
@@ -80,7 +85,7 @@ int main(){
     e.x = 3;
     e.y = 5;
 
-    int *position = reinterpret_cast<int*>(&e);
+    int* position = reinterpret_cast<int*>(&e);
 
     std::cout << position[0] << "\n"; // 3  → reads e.x
     std::cout << position[1] << "\n"; // 5  → reads e.y

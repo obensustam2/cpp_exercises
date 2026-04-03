@@ -1,16 +1,16 @@
 #include <iostream>
 
-void pass_by_pointer(int *num){
+void pass_by_pointer(int* num){
     *num -= 5;
 }
 
-void swap(int *x, int *y){
+void swap(int* x, int* y){
     int temp = *x;
     *x = *y;
     *y = temp;
 }
 
-void pass_by_reference(int &x){
+void pass_by_reference(int& x){
     x -= 5;
 }
 

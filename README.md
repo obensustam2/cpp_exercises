@@ -3,8 +3,6 @@
 # Table of Content
    - [Getting Started](#getting-started)
         - [RAII](#raii) 
-        - [Compile Time vs Runtime](#compile-time-vs-runtime)
-        - [Compilation vs Linking](#compilation-vs-linking)
         - [Preprocessor in C++](#preprocessor-in-c)
         - [Variable](#variable)
         - [Namespaces in C++](#namespaces-in-c)
@@ -17,6 +15,12 @@
         - [Long Variable](#long-variable)
         - [Signed vs Unsigned](#signed-vs-unsigned)
         - [Timing in C++](#timing-in-c)
+        - [C++ Exception Handling (try-catch)](#c-exception-handling-try-catch)
+   - [Compiler Concepts in C++](#compiler-concepts-in-c)
+        - [Compile Time vs Runtime](#compile-time-vs-runtime)
+        - [Compilation Pipeline](#compilation-pipeline)
+        - [Compilation vs Linking](#compilation-vs-linking)
+        - [Precompiled Headers (PCH)](#precompiled-headers-pch)
    - [Arrays and Vectors](#arrays-and-vectors)
         - [C-Style Array](#c-style-array)
         - [std::array (C++11)](#stdarray-c11)
@@ -140,77 +144,6 @@ RAII turns "manual management" into "automatic cleanup." It is the reason why mo
 * **`std::fstream`** (manages file access)
 
 ---
-
-## Compile Time vs Runtime
-**Compile time** is when the compiler reads your source code and turns it into an executable.
-**Runtime** is when the executable is actually running.
-```cpp
-int i = 0;
-```
-
-- The type `int` → resolved at **compile time**
-- The value `0` → lives in memory at **runtime**
-
----
-
-### Why it matters in C++
-#### tuple
-C++ tuple must know index value before the program runs. Because regarding the value of the variable the std::get may return double
-or std::string etc.
-
-```cpp
-std::get<0>(t);  // ✅ 0 is a hardcoded literal — compile time
-std::get<i>(t);  // ❌ i is a variable — its value is only known at runtime
-```
-
-Even if you can clearly see that `i = 0`, the compiler does not evaluate
-variables — it only sees "a variable of type int" and moves on.
-
-#### vector
-std::vector doesn't need the index to determine a type because all elements have the same type inside the vector.
-
-```cpp
-std::vector<float> v = {20.4, 89.7, 66.0};
-
-for (int i = 0; i < v.size(); i++) {
-    print(v[i]);  // ✅ — v[i] is always float, regardless of i
-}
-```
-
-### Quick reference
-
-| | Compile Time | Runtime |
-|---|---|---|
-| When | Before program runs | While program runs |
-| Examples | Types, templates, `std::get<0>` | Variable values, for loops, user input |
-| Error caught | Compiler error | Crash or wrong output |
-
-Catching errors at compile time is always better — the compiler stops
-you before the program ever runs.
-
---- 
-
-## Compilation vs Linking
-| Step            | Input                  | What happens                                                                                                                                                       | Output              | Happens where                 |
-| --------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- | ----------------------------- |
-| **Compilation** | `.cpp` files           | Each `.cpp` file is compiled separately into **machine code**, but not yet complete (no connections between files).                                                | `.o` (object) files | Inside `build/CMakeFiles/...` |
-| **Linking**     | `.o` files + libraries | All object files (and libraries) are **combined** into one final program. The linker **resolves all symbol references** (functions, variables, etc.) across files. | final executable    | `build/`                      |
-## Linking 
-Every function or global variable name (like `foo`, `bar`, `std::cout`) becomes a **symbol** inside object files.
-
-There are two types:
-
-- **Defined symbols**: functions/variables you define yourself  
-  → e.g., `void greet() {}`
-
-- **Undefined symbols**: references to something defined elsewhere  
-  → e.g., `greet();` in another file
-
-The linker’s job is to:
-
-> Match every **undefined symbol** with its corresponding **defined symbol** across all object files and libraries.
-
---- 
 
 ## Preprocessor in C++
 
@@ -729,6 +662,309 @@ Common `std::put_time` format tokens:
 | `sleep_until` | Pause the current thread until a time_point |
 | `to_time_t` | Convert system_clock time_point to std::time_t |
 | `std::put_time` | Format time using strftime-style tokens |
+
+---
+
+## C++ Exception Handling (try-catch)
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+
+int divide(int a, int b){
+    if (b == 0){
+        throw std::runtime_error("Division by zero");
+    }
+    return a / b;
+}
+
+int parse_and_divide(const std::string& a, const std::string& b){
+    if (!std::isdigit(a[0]) || !std::isdigit(b[0])){
+        throw std::invalid_argument("Arguments must be numeric");
+    }
+    return divide(std::stoi(a), std::stoi(b));
+}
+
+int main(){
+    try{
+        int result = divide(10, 0);
+        // int result = parse_and_divide("10", "abc");
+        std::cout << result << std::endl;
+    } catch (const std::runtime_error &e){
+        std::cout << "Caught: " << e.what() << std::endl;
+    } catch (const std::invalid_argument &e){
+        std::cout << "Caught: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
+```
+
+### Standard Exception Types (`<stdexcept>`)
+
+| Exception | Inherits From | When to Use | Auto-thrown? |
+|---|---|---|---|
+| `std::runtime_error` | `std::exception` | General runtime failures | No — throw manually |
+| `std::invalid_argument` | `std::logic_error` | Bad input to a function | No — throw manually |
+| `std::out_of_range` | `std::logic_error` | Index or value out of valid range | By `std::vector::at()`, `std::string::at()` |
+| `std::overflow_error` | `std::runtime_error` | Arithmetic overflow | No — throw manually |
+| `std::logic_error` | `std::exception` | Violated logical precondition | No — throw manually |
+| `std::bad_alloc` | `std::exception` | Memory allocation failure | Yes — by `new` |
+| `std::bad_cast` | `std::exception` | Failed `dynamic_cast` to reference | Yes — by `dynamic_cast` |
+
+### Key Concepts
+
+**Exceptions don't throw themselves.**
+`std::invalid_argument`, `std::runtime_error`, etc. are just classes. They only fire when you explicitly `throw` them. The names are conventions to communicate intent.
+
+**Catch order matters.**
+Derived types must be caught before base types. Since most standard exceptions inherit from `std::exception`, catching `std::exception` first would swallow everything.
+
+```cpp
+// Wrong — std::exception catches everything before the specific handlers
+catch (const std::exception &e) { ... }
+catch (const std::runtime_error &e) { ... }  // never reached
+
+// Correct — specific first, general last
+catch (const std::runtime_error &e) { ... }
+catch (const std::exception &e) { ... }
+```
+
+**Catch-all.**
+`catch (...)` catches any thrown type, including non-standard ones. Use as a last resort.
+
+**No `finally` in C++.**
+Use RAII instead — destructors run automatically when objects go out of scope, even during stack unwinding from an exception.
+
+---
+
+# Compiler Concepts in C++
+
+## Compile Time vs Runtime
+
+**Compile time** is when the compiler reads your source code and turns it into an executable.
+**Runtime** is when the executable is actually running.
+
+```cpp
+int i = 0;
+```
+
+- The type `int` → resolved at **compile time**
+- The value `0` → lives in memory at **runtime**
+
+---
+
+### Why it matters in C++
+
+#### tuple
+C++ tuple must know the index value before the program runs. Because depending on the index, `std::get` may return a `double`, `std::string`, etc. — different types entirely.
+
+```cpp
+std::get<0>(t);  // ✅ 0 is a hardcoded literal — compile time
+std::get<i>(t);  // ❌ i is a variable — its value is only known at runtime
+```
+
+Even if you can clearly see that `i = 0`, the compiler does not evaluate variables — it only sees "a variable of type int" and moves on.
+
+#### vector
+`std::vector` doesn't need the index at compile time because all elements share the same type — the return type of `v[i]` is always known regardless of `i`.
+
+```cpp
+std::vector<float> v = {20.4, 89.7, 66.0};
+
+for (int i = 0; i < v.size(); i++) {
+    print(v[i]);  // ✅ — v[i] is always float, regardless of i
+}
+```
+
+### Quick reference
+
+| | Compile Time | Runtime |
+|---|---|---|
+| When | Before program runs | While program runs |
+| Examples | Types, templates, `std::get<0>` | Variable values, for loops, user input |
+| Error caught | Compiler error | Crash or wrong output |
+
+Catching errors at compile time is always better — the compiler stops you before the program ever runs.
+
+## Compilation Pipeline
+
+When you run `g++ main.cpp`, it goes through several stages:
+
+```
+source code (.cpp)
+      ↓
+1. Preprocessor    — handles #include, #define, #pragma once
+      ↓
+2. Parser          — reads text and builds an AST
+      ↓
+3. Semantic analysis — checks types, resolves names
+      ↓
+4. Optimization    — restructures code to run faster
+      ↓
+5. Code generation — produces machine code
+      ↓
+object file (.o)
+```
+
+### What is parsing?
+
+Parsing is step 2 — the compiler reads your source text and builds an internal tree called an **AST (Abstract Syntax Tree)**. All later stages work from this tree, never from raw text again.
+
+```cpp
+int x = 5 + 3;
+```
+
+Becomes:
+
+```
+Declaration
+└── type: int
+└── name: x
+└── value: Add
+          ├── 5
+          └── 3
+```
+
+This is why headers are expensive — `<vector>` is thousands of lines of template code. Every `.cpp` that includes it forces the parser to rebuild that entire tree from scratch. PCH skips this by saving the pre-built tree to disk.
+
+## Compilation vs Linking
+
+| Step | Input | What happens | Output | Location |
+|---|---|---|---|---|
+| **Compilation** | `.cpp` files | Each file compiled separately into machine code — no connections between files yet | `.o` object files | `build/CMakeFiles/...` |
+| **Linking** | `.o` files + libraries | All object files combined, symbol references resolved across files | final executable | `build/` |
+
+### Symbols
+
+Every function or global variable name (like `foo`, `bar`, `std::cout`) becomes a **symbol** inside object files.
+
+There are two types:
+
+- **Defined symbols** — functions/variables you define yourself
+  ```cpp
+  void greet() {}   // defined here
+  ```
+
+- **Undefined symbols** — references to something defined elsewhere
+  ```cpp
+  greet();          // defined somewhere else — linker must find it
+  ```
+
+The linker's job:
+
+> Match every **undefined symbol** with its corresponding **defined symbol** across all object files and libraries.
+
+If a symbol is referenced but never defined anywhere, you get a **linker error** — not a compiler error:
+
+```
+undefined reference to `greet()`
+```
+
+## Precompiled Headers (PCH)
+
+### The problem
+
+Headers like `<vector>` and `<string>` are parsed by the compiler once per `.cpp` file that includes them. In a project with 50 source files, `<vector>` gets parsed 50 times — even though the result is identical every time.
+
+### The solution
+
+PCH compiles headers once into a binary `.gch` file. On every subsequent build the parser is skipped entirely — the pre-built AST is loaded directly from disk.
+
+### Setup (GCC)
+
+**1. Create `pch.h`** — stable, heavy headers only:
+
+```cpp
+#pragma once
+#include <vector>
+#include <string>
+#include <map>
+#include <unordered_map>
+#include <algorithm>
+#include <iostream>
+#include <memory>
+```
+
+**2. Compile it once:**
+
+```bash
+g++ -std=c++17 pch.h
+# produces pch.h.gch in the same directory
+```
+
+**3. Include it first in every `.cpp`:**
+
+```cpp
+#include "pch.h"   // must be first — loads pch.h.gch automatically
+#include "my_stuff.h"
+```
+
+**4. Compile normally:**
+
+```bash
+g++ -std=c++17 main.cpp -o main
+```
+
+### How GCC finds the PCH
+
+When the compiler sees `#include "pch.h"` it checks: does `pch.h.gch` exist in the same directory with matching compile flags? If yes — load it. If no — parse normally. No configuration needed.
+
+```
+#include "pch.h"
+      ↓
+pch.h.gch exists?
+  ↓ yes                 ↓ no
+flags match?        parse pch.h normally
+  ↓ yes   ↓ no
+load .gch  parse pch.h normally
+```
+
+### CMake (3.16+)
+
+```cmake
+target_precompile_headers(my_target PRIVATE pch.h)
+```
+
+CMake handles compilation and flag matching automatically.
+
+### Rules
+
+| Rule | Why |
+|---|---|
+| PCH must be the **first** include | Anything before it invalidates the cache |
+| Compile flags must **match** | Different `-std=` or `-D` flags = stale cache |
+| Only put **stable** headers in PCH | Frequently changed headers force full PCH recompile |
+| Don't include headers you **don't use** | Bloats `.gch`, slower to load |
+
+### What belongs in PCH
+
+```
+✓  Standard library headers   (<vector>, <string>, <map> ...)
+✓  Heavy third-party SDKs     (OpenCV, Boost, Qt ...)
+✗  Your own headers           (change frequently → invalidates PCH)
+```
+
+### When to bother
+
+PCH pays off when you have **20+ `.cpp` files** all including the same heavy headers. For small/sandbox projects the build is already fast — skip it.
+
+## `#pragma once` and Include Guards
+
+Without protection, including the same header twice in one `.cpp` causes redefinition errors. Two solutions:
+
+```cpp
+// Option 1 — pragma once (simpler, universally supported)
+#pragma once
+
+// Option 2 — include guards (portable standard C++)
+#ifndef MY_HEADER_H
+#define MY_HEADER_H
+// ... content ...
+#endif
+```
+
+`#pragma once` protects within a single translation unit — it does not prevent the same header from being parsed in other `.cpp` files. That is what PCH solves.
 
 ---
 

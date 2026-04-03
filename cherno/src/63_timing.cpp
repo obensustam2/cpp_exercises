@@ -16,6 +16,7 @@ void elapsed_time() {
     std::cout << "Elapsed Time: " << elapsed.count() << " ms\n";
 }
 
+
 class ElapsedTime {
 private:
     std::chrono::time_point<std::chrono::steady_clock> start, end;
@@ -34,6 +35,17 @@ public:
     }
 };
 
+
+void print_current_time(){
+    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+    std::time_t now_t = std::chrono::system_clock::to_time_t(now); // It holds the number of seconds elapsed since the Unix epoch: 00:00:00 UTC, January 1, 
+    std::tm* local = std::localtime(&now_t);
+    char buffer[64];
+    std::strftime(buffer, sizeof(buffer), "%H:%M - %d/%m/%Y", local);
+    std::cout << "Current time: " << buffer << "\n";
+}
+
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cout << "Usage: ./62_timing <example>\n";
@@ -51,6 +63,10 @@ int main(int argc, char* argv[]) {
         }
         case 2: {
             ElapsedTime time;
+            break;
+        }
+        case 3: {
+            print_current_time();
             break;
         }
         default:
