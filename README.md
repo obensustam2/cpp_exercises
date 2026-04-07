@@ -91,11 +91,14 @@
    - [Templates](#templates)
    - [Operator Overloading](#operator-overloading)
    - [explicit Keyword](#explicit-keyword-in-c)
-   - [Multiple Return Value](#mutiple-return-value)
+   - [Structured Bindings](#structured-bindings)
    - [C++ Sorting](#c-sorting)
    - [Memory](#memory)
         - [Sample Memory Diagram](#sample-memory-diagram)
    - [Casting in C++](#casting-in-c)
+   - [`std::optional` — Optional Data in C++](#stdoptional--optional-data-in-c)
+   - [`std::variant` — Type-Safe Union](#stdvariant--type-safe-union)
+   - [`std::any` — Type-Erased Single Value](#stdany--type-erased-single-value)
 
 
 
@@ -625,28 +628,33 @@ int main() {
 ```cpp
 #include <chrono>
 #include <ctime>
-#include <iomanip>
-#include <sstream>
 
-std::string timestamp() {
-    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-    std::time_t t = std::chrono::system_clock::to_time_t(now);
-    std::ostringstream oss;
-    oss << std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S");
-    return oss.str();
+void print_current_time(){
+    std::chrono::time_point<std::chrono::system_clock> system_now = std::chrono::system_clock::now(); // time point
+
+    time_t system_now_t = std::chrono::system_clock::to_time_t(system_now); // integer value of time point in seconds
+
+    std::tm* local = std::localtime(&system_now_t); // breaks the total second count into calendar fields (hour, min, day, month, year...)
+
+    char buffer[64];
+    std::strftime(buffer, sizeof(buffer), "%H:%M - %d/%m/%Y", local); // formatting the local time
+    std::cout << "Current Time: " << buffer << std::endl;
 }
 ```
 
-Common `std::put_time` format tokens:
-
-| Token | Output |
-|---|---|
-| `%Y` | Full year (2026) |
-| `%m` | Month (01–12) |
-| `%d` | Day (01–31) |
-| `%H` | Hour 24h (00–23) |
-| `%M` | Minutes (00–59) |
-| `%S` | Seconds (00–59) |
+```
+struct tm {
+    int tm_sec;    // seconds       [0, 60]
+    int tm_min;    // minutes       [0, 59]
+    int tm_hour;   // hours         [0, 23]
+    int tm_mday;   // day of month  [1, 31]
+    int tm_mon;    // month         [0, 11]  ← 0 = January
+    int tm_year;   // years since 1900
+    int tm_wday;   // day of week   [0, 6]   ← 0 = Sunday
+    int tm_yday;   // day of year   [0, 365]
+    int tm_isdst;  // daylight saving time flag
+};
+```
 
 ### Summary
 
@@ -2263,64 +2271,65 @@ int main(){
 #include <iostream>
 #include <memory>
 
-class Car{
-private:
-    std::string model_;
 
-public:
-    // Constructor
-    Car(const std::string &model) : model_(model){
-        std::cout << "Car " << model_ << " created 🚗\n";
+struct Robot{
+    int id;
+    int distance;
+
+    Robot(int id) : id(id), distance(0){
+        std::cout << "Robot created with id: " << id << std::endl;
     }
 
-    // Deconstructor
-    ~Car(){
-       std::cout << "Car " << model_ << " destroyed 💥\n"; 
+    ~Robot(){
+        std::cout << "Robot destroyed with id: " << id <<  std::endl;
     }
 
-    // A method
-    void drive() const{
-        std::cout << "Car " << model_ << " is driving...\n";
+    void move(int meter){
+        distance += meter;
+        std::cout << "Robot moved to distance: " << distance << std::endl;
     }
 };
 
+
+void move(Robot& r, int val){
+    r.move(val);
+}
+
+void move2(Robot* ptr, int val){
+    ptr->move(val);
+}
+
+
 int main(){
-    std::cout << "--- Unique Pointer Example ---\n";
+    std::unique_ptr<Robot> rbt_ptr1 = std::make_unique<Robot>(7);
+    rbt_ptr1->move(7);
+    move(*rbt_ptr1, 7);
 
-    // Create a Car object on the heap, owned by unique_ptr
-    std::unique_ptr<Car> car1_ptr = std::make_unique<Car>("Tesla");
-    std::cout << "Debug 1 \n";
+    std::unique_ptr<Robot> rbt_ptr2 = std::move(rbt_ptr1);
+    rbt_ptr2->id = 5;
 
-    // Use the object via unique_ptr
-    car1_ptr->drive();
-
-    // Transfer ownership to another unique_ptr
-    std::unique_ptr<Car> car2_ptr = std::move(car1_ptr);
-
-    if(!car1_ptr){
-        std::cout << "car1_ptr no longer owns the object.\n";
-        std::cout << "Car1 Pointer: " << car1_ptr.get() << std::endl;
-        std::cout << "Car2 Pointer: " << car2_ptr.get() << std::endl;
+    if (rbt_ptr1 == nullptr) {
+        std::cout << "rbt_ptr1 gave up ownership" << std::endl;
     }
-
-    car2_ptr->drive();
-
-    // No need to delete manually → car2_ptr automatically destroys the object
+    else{
+        std::cout << "rbt_ptr1 still owns it" << std::endl;
+    }
+    
+    move(*rbt_ptr2, 5);
+    move2(rbt_ptr2.get(), 5);
 
     return 0;
-} 
+}
 ```
 
 ```sh
---- Unique Pointer Example ---
-Car Tesla created 🚗
-Debug 1 
-Car Tesla is driving...
-car1_ptr no longer owns the object.
-Car1 Pointer: 0
-Car2 Pointer: 0x5cfb68de12c0
-Car Tesla is driving...
-Car Tesla destroyed 💥
+Robot created with id: 7
+Robot moved to distance: 7
+Robot moved to distance: 14
+rbt_ptr1 gave up ownership
+Robot moved to distance: 19
+Robot moved to distance: 24
+Robot destroyed with id: 5
 ```
 
 ### shared_ptr
@@ -2328,71 +2337,82 @@ Car Tesla destroyed 💥
 #include <iostream>
 #include <memory>
 
-class Sensor{
-public:
-    Sensor(){
-        std::cout << "Sensor created" << std::endl;
-    }
-    ~Sensor(){
-        std::cout << "Sensor destroyed" << std::endl;
-    }
-    double read(){
-        return 42.0;
-    }
-};
 
+struct Robot{
+    int id;
+    int distance;
 
-class CameraNode {
-private: 
-    std::shared_ptr<Sensor> sensor_;
+    Robot(int id) : id(id), distance(0){
+        std::cout << "Robot created with id: " << id << std::endl;
+    }
 
-public:
-    explicit CameraNode(std::shared_ptr<Sensor> s) : sensor_(s){}
-    void process(){
-        std::cout << "Camera got " << sensor_->read() << std::endl;
+    ~Robot(){
+        std::cout << "Robot destroyed with id: " << id <<  std::endl;
+    }
+
+    void move(int meter){
+        distance += meter;
+        std::cout << "Robot moved to distance: " << distance << std::endl;
     }
 };
 
 
-class LoggerNode {
-private: 
-    std::shared_ptr<Sensor> sensor_;
+void move(Robot& r, int val){
+    r.move(val);
+}
 
-public:
-    explicit LoggerNode(std::shared_ptr<Sensor> s) : sensor_(s){}
-    void log(){
-        std::cout << "Logger got " << sensor_->read() << std::endl;
-    }
-};
+void move2(Robot* ptr, int val){
+    ptr->move(val);
+}
 
 
 int main(){
-    std::cout << "Line: " << __LINE__ << std::endl;  
-    std::shared_ptr<Sensor> sensor_ptr = std::make_shared<Sensor>(); // ref count: 1
-    std::cout << "Line: " << __LINE__ << std::endl;  
-    CameraNode camera(sensor_ptr);  // ref count: 2
-    std::cout << "Line: " << __LINE__ << std::endl;  
-    LoggerNode logger(sensor_ptr);  // ref count: 3
-    std::cout << "Line: " << __LINE__ << std::endl;  
-    camera.process();
-    std::cout << "Line: " << __LINE__ << std::endl;  
-    logger.log();
-    std::cout << "Line: " << __LINE__ << std::endl;  
+    std::shared_ptr<Robot> rbt_ptr1 = std::make_shared<Robot>(7);
+    std::cout << "refs to robot: " << rbt_ptr1.use_count() << std::endl;
+    rbt_ptr1->move(7);
+    move(*rbt_ptr1, 7);
+
+    std::shared_ptr<Robot> rbt_ptr2 = rbt_ptr1;
+
+    if (rbt_ptr1 == nullptr) {
+        std::cout << "rbt_ptr1 gave up ownership" << std::endl;
+    }
+    else{
+        std::cout << "rbt_ptr1 still owns it" << std::endl;
+    }
+    
+    std::cout << "refs to robot: " << rbt_ptr2.use_count() << std::endl;
+    rbt_ptr2->id = 5;
+
+    move(*rbt_ptr2, 5);
+    move2(rbt_ptr2.get(), 5);
+
+    {
+        std::shared_ptr<Robot> rbt_ptr3 = rbt_ptr1;
+        rbt_ptr3->id = 9;
+        std::cout << "refs to robot: " << rbt_ptr3.use_count() << std::endl;
+        move(*rbt_ptr3, 9);
+    }
+
+    std::cout << "refs to robot: " << rbt_ptr1.use_count() << std::endl;
+
     return 0;
 }
 ```
 
 ```sh
-Line: 43
-Sensor created
-Line: 45
-Line: 47
-Line: 49
-Camera got 42
-Line: 51
-Logger got 42
-Line: 53
-Sensor destroyed
+Robot created with id: 7
+refs to robot: 1
+Robot moved to distance: 7
+Robot moved to distance: 14
+rbt_ptr1 still owns it
+refs to robot: 2
+Robot moved to distance: 19
+Robot moved to distance: 24
+refs to robot: 3
+Robot moved to distance: 33
+refs to robot: 2
+Robot destroyed with id: 9
 ```
 
 ## this Pointer
@@ -3725,7 +3745,7 @@ Implicit conversions are almost never what you want — they hide intent and cre
 
 ---
 
-# Mutiple Return Value
+# Structured Bindings
 | Feature | std::tuple | struct |
 |---|---|---|
 | Naming | Anonymous (accessed by index) | Descriptive names (.name, .age).
@@ -4162,3 +4182,393 @@ int* position = reinterpret_cast<int*>(&e);
 **Rule of thumb:** reach for `static_cast` first. Only escalate to `dynamic_cast`, `const_cast`, or `reinterpret_cast` when you have a specific, justified reason.
 
 ---
+
+# `std::optional` — Optional Data in C++
+
+`std::optional<T>` represents a value that may or may not be present. No heap allocation, no null pointers, no sentinel values. Available since C++17.
+
+## Core Idea
+
+```cpp
+std::optional<int> a = 42;        // has a value
+std::optional<int> b = std::nullopt; // empty — no value
+std::optional<int> c;             // also empty (default)
+```
+
+## `std::nullopt`
+
+A named constant meaning "no value" — the optional equivalent of `nullptr`.
+
+```cpp
+std::optional<int> find(const std::vector<int>& v, int target) {
+    for (int i = 0; i < (int)v.size(); i++) {
+        if (v[i] == target) return i;  // implicitly wraps value
+    }
+    return std::nullopt;               // explicitly empty
+}
+```
+
+## Accessing the Value
+
+| Method | Behavior when empty |
+|---|---|
+| `has_value()` / `operator bool` | Returns false — safe to check |
+| `value()` | Throws `std::bad_optional_access` |
+| `*opt` / `opt->field` | Undefined behavior — dangerous |
+| `value_or(default)` | Returns the default — no check needed |
+
+```cpp
+std::optional<int> result = find(v, 20);
+
+// Safe check then access
+if (result.has_value()) {
+    std::cout << result.value() << "\n";
+}
+
+// Shorthand — optional is truthy when it has a value
+if (result) {
+    std::cout << *result << "\n";
+}
+
+// Fallback — no if-check needed
+std::cout << result.value_or(-1) << "\n";
+```
+
+## `value_or` — Backup Value
+
+Returns the value if present, otherwise the fallback. Useful when you want a default and don't need to distinguish absence from presence.
+
+```cpp
+std::optional<int> get_age(bool logged_in) {
+    if (!logged_in) return std::nullopt;
+    return 25;
+}
+
+int age = get_age(false);  // wrong — optional not implicitly convertible to int
+int age = get_age(false).value_or(0);  // correct — prints 0
+int age = get_age(true).value_or(0);   // prints 25
+```
+
+## File Reading Example
+
+A common pattern: return `std::nullopt` if the file can't be opened, otherwise return the content.
+
+```cpp
+#include <fstream>
+#include <optional>
+#include <sstream>
+#include <string>
+
+std::optional<std::string> read_file(const std::string& path) {
+    std::ifstream file(path);
+    if (!file.is_open()) return std::nullopt;
+
+    std::ostringstream ss;
+    ss << file.rdbuf();  // reads entire file in one shot
+    return ss.str();
+}
+
+int main() {
+    std::optional<std::string> content = read_file("config.txt");
+
+    if (!content) {
+        std::cerr << "File not found\n";
+        return 1;
+    }
+
+    std::cout << *content << "\n";
+
+    // Or with fallback — skips the if-check entirely
+    std::cout << content.value_or("(unavailable)") << "\n";
+}
+```
+
+---
+
+# `std::variant` — Type-Safe Union
+
+## What Is It?
+
+`std::variant` is a type-safe union introduced in C++17. It holds **exactly one value at a time** from a fixed set of types. Unlike a raw `union`, it always knows which type is currently active.
+
+```cpp
+#include <variant>
+#include <string>
+
+std::variant<int, double, std::string> var;
+```
+
+## Assigning Values
+
+Simply assign — the variant tracks which type is now active:
+
+```cpp
+var = 42;           // holds int
+var = 3.14;         // holds double
+var = "Oben";       // holds std::string
+```
+
+## Accessing Values
+
+### `std::get<T>` — Direct access (throws on wrong type)
+
+```cpp
+var = "Oben";
+std::string name = std::get<std::string>(var);  // OK
+std::string bad  = std::get<int>(var);           // throws std::bad_variant_access
+```
+
+### `std::get_if<T>` — Safe pointer-based access
+
+Returns a pointer to the value, or `nullptr` if the type doesn't match:
+
+```cpp
+var = "Oben";
+
+std::string* isString = std::get_if<std::string>(&var);
+if (isString) {
+    std::cout << *isString << std::endl;  // "Oben"
+}
+
+double* isDouble = std::get_if<double>(&var);
+if (isDouble) {
+    std::cout << *isDouble << std::endl;
+} else {
+    std::cout << "var is not a double" << std::endl;  // prints this
+}
+```
+
+| Method           | Wrong type behaviour           | Use when                    |
+|------------------|--------------------------------|-----------------------------|
+| `std::get<T>`    | throws `std::bad_variant_access` | you are certain of the type |
+| `std::get_if<T>` | returns `nullptr`              | you want to check safely    |
+
+## Querying the Active Type
+
+### `.index()` — Returns the 0-based index of the active type
+
+```cpp
+std::variant<int, double, std::string> var;
+
+var = 42;      // index() == 0
+var = 3.14;    // index() == 1
+var = "Oben";  // index() == 2
+
+std::cout << var.index() << std::endl;  // 2
+```
+
+### `std::holds_alternative<T>` — Boolean check
+
+```cpp
+var = "Oben";
+if (std::holds_alternative<std::string>(var)) {
+    std::cout << "It's a string" << std::endl;
+}
+```
+
+## `std::visit` — Handle All Types
+
+`std::visit` applies a callable to the currently active type. Use an overloaded lambda to handle each case:
+
+```cpp
+var = 3.14;
+
+std::visit([](auto&& val) {
+    std::cout << val << std::endl;
+}, var);
+```
+
+With per-type handling using overloaded lambdas:
+
+```cpp
+var = "Oben";
+
+std::visit([](auto&& val) {
+    using T = std::decay_t<decltype(val)>;
+    if constexpr (std::is_same_v<T, int>)
+        std::cout << "int: " << val << std::endl;
+    else if constexpr (std::is_same_v<T, double>)
+        std::cout << "double: " << val << std::endl;
+    else if constexpr (std::is_same_v<T, std::string>)
+        std::cout << "string: " << val << std::endl;
+}, var);
+```
+
+## Memory Layout
+
+`std::variant` reserves space for the **largest member** plus a small index field (padded for alignment):
+
+```cpp
+std::variant<int, double, std::string> var;
+
+sizeof(int)         // 4
+sizeof(double)      // 8
+sizeof(std::string) // 32
+sizeof(var)         // 40  (32 + index overhead, padded to alignment)
+```
+
+Compare with raw `union` — same storage, but no index tracking:
+
+```cpp
+union U { int i; double d; std::string s; };
+sizeof(U)  // 32 — no overhead, but unsafe
+```
+
+## `std::variant` vs Raw `union`
+
+| Feature              | `std::variant`     | `union`           |
+|----------------------|--------------------|-------------------|
+| Tracks active type   | yes                | no                |
+| Type-safe access     | yes                | no                |
+| Throws on bad access | yes (`std::get`)   | undefined behaviour |
+| Overhead             | small (index field)| none              |
+| C++ version          | C++17              | all               |
+
+## Default State
+
+A default-constructed `std::variant` holds the **first type**, value-initialized:
+
+```cpp
+std::variant<int, double, std::string> var;  // holds int = 0
+std::cout << var.index();                    // 0
+std::cout << std::get<int>(var);             // 0
+```
+
+Use `std::monostate` as the first type if you want an explicit "empty" state:
+
+```cpp
+std::variant<std::monostate, int, std::string> var;  // empty by default
+```
+
+## Summary
+
+```
+std::variant<T1, T2, T3>
+├── holds exactly one type at a time
+├── .index()                    → which type is active (0-based)
+├── std::holds_alternative<T>   → bool check
+├── std::get<T>                 → direct access, throws if wrong
+├── std::get_if<T>              → pointer access, nullptr if wrong
+└── std::visit                  → dispatch over all possible types
+```
+
+---
+
+# `std::any` — Type-Erased Single Value
+
+## What Is It?
+
+`std::any` is a C++17 type that can hold a single value of **any type**. Unlike `std::variant`, you don't declare the possible types upfront — `std::any` accepts anything. The tradeoff is that type information is **erased** at compile time and must be explicitly recovered at runtime.
+
+```cpp
+#include <any>
+
+std::any a = 42;
+a = 3.14;
+a = std::string("Oben");  // can reassign to completely different type
+```
+
+## Assigning Values
+
+```cpp
+std::any a;             // empty
+a = 42;                 // holds int
+a = 3.14;               // now holds double
+a = std::string("Oben"); // now holds std::string
+```
+
+Each assignment replaces the previous value and type entirely.
+
+## Accessing Values — `std::any_cast<T>`
+
+Since the type is erased, you must explicitly tell it what type to recover:
+
+```cpp
+std::any a = std::string("Oben");
+std::string s = std::any_cast<std::string>(a);  // OK
+int x         = std::any_cast<int>(a);           // throws std::bad_any_cast
+```
+
+### Why the cast is required
+
+With a normal variable the compiler knows the type at compile time. With `std::any` the type is hidden — the cast is how you bring it back:
+
+```
+int x = 42       → no cast needed        (type fully known at compile time)
+std::any a = 42  → any_cast<int> needed  (type erased, recovered at runtime)
+```
+
+### Pointer version — safe, no throw
+
+Pass a pointer to get a `nullptr` instead of an exception on wrong type:
+
+```cpp
+std::any a = std::string("Oben");
+
+std::string* s = std::any_cast<std::string>(&a);  // OK, valid pointer
+int*         x = std::any_cast<int>(&a);           // nullptr, no throw
+```
+
+| Form | Wrong type behaviour |
+|---|---|
+| `std::any_cast<T>(a)` | throws `std::bad_any_cast` |
+| `std::any_cast<T>(&a)` | returns `nullptr` |
+
+## Checking State
+
+```cpp
+std::any a = 42;
+
+a.has_value();           // true — something is stored
+a.type() == typeid(int); // true — check the active type
+
+a.reset();               // clear to empty
+a.has_value();           // false
+```
+
+## Exception Handling
+
+```cpp
+std::any a = std::string("Oben");
+
+try {
+    int x = std::any_cast<int>(a);  // wrong type
+} catch (const std::bad_any_cast& e) {
+    std::cout << "bad cast: " << e.what() << std::endl;
+}
+```
+
+## Memory
+
+`std::any` typically **heap-allocates** for large types. Small types (like `int`) may be stored inline via small buffer optimization, depending on the implementation.
+
+This makes `std::any` heavier than `std::variant`, which always stores on the stack.
+
+## `std::any` vs `std::variant` vs `void*`
+
+| | Types known upfront | Type safe | Runtime cost | Use when |
+|---|---|---|---|---|
+| `void*` | no | no | none | never in modern C++ |
+| `std::variant<...>` | yes | yes | minimal (stack) | finite known set of types |
+| `std::any` | no | yes | higher (heap) | truly unknown type |
+
+## When to Use It
+
+Good fit:
+- Plugin systems where types are unknown at compile time
+- Heterogeneous containers where element types vary arbitrarily
+- Passing arbitrary user data through a generic interface
+
+Prefer `std::variant` instead when the set of possible types is known — it's faster, safer, and more explicit.
+
+## Summary
+
+```
+std::any
+├── holds any single value, any type
+├── .has_value()              → bool, is something stored
+├── .type()                   → std::type_info, compare with typeid(T)
+├── .reset()                  → clear to empty
+├── std::any_cast<T>(a)       → value, throws if wrong type
+└── std::any_cast<T>(&a)      → pointer, nullptr if wrong type
+```

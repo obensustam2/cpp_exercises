@@ -4,15 +4,10 @@
 
 void elapsed_time() {
     std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
-
     std::this_thread::sleep_for(std::chrono::seconds(1));
-
     for(int counter=0; counter<100000000; counter++){}
-
     std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
-
     std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
     std::cout << "Elapsed Time: " << elapsed.count() << " ms\n";
 }
 
@@ -37,12 +32,15 @@ public:
 
 
 void print_current_time(){
-    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-    std::time_t now_t = std::chrono::system_clock::to_time_t(now); // It holds the number of seconds elapsed since the Unix epoch: 00:00:00 UTC, January 1, 
-    std::tm* local = std::localtime(&now_t);
+    std::chrono::time_point<std::chrono::system_clock> system_now = std::chrono::system_clock::now(); // time point
+
+    time_t system_now_t = std::chrono::system_clock::to_time_t(system_now); // integer value of time point in seconds
+
+    std::tm* local = std::localtime(&system_now_t); // breaks the total second count into calendar fields (hour, min, day, month, year...)
+
     char buffer[64];
-    std::strftime(buffer, sizeof(buffer), "%H:%M - %d/%m/%Y", local);
-    std::cout << "Current time: " << buffer << "\n";
+    std::strftime(buffer, sizeof(buffer), "%H:%M - %d/%m/%Y", local); // formatting the local time
+    std::cout << "Current Time: " << buffer << std::endl;
 }
 
 
