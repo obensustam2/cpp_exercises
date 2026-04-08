@@ -44,7 +44,9 @@
         - [Infinite Loops](#infinite-loops)
         - [Nested Loops](#nested-loops)
    - [Characters and Strings](#characters-and-strings)
-        - [C++ Strings](#c-strings)
+        - [C-Style Strings](#c-style-strings)
+        - [`std::string` — C++ Strings](#stdstring--c-strings)
+        - [`std::string` vs `std::string_view`](#stdstring-vs-stdstring_view)
    - [Functions](#functions)
         - [Random number generation](#random-number-generation)
         - [Nearest integer floating-point operations](#nearest-integer-floating-point-operations)
@@ -81,24 +83,24 @@
         - [Runtime Polymorphism - Virtual Functions](#runtime-polymorphism---virtual-functions)
             - [Interfaces](#interfaces)
             - [Virtual Destructors](#virtual-destructors)
-   - [Enumeration](#enums)
-   - [Threads](#threads)
    - [Function Pointers & Lambdas](#function-pointers--lambdas)
         - [Raw Function Pointers](#raw-function-pointers)
         - [Lambdas](#lambdas)
-   - [Lambda Expressions](#lambda-expressions)
    - [C++ Visibility / Access Specifiers](#c-visibility--access-specifiers)
    - [Templates](#templates)
    - [Operator Overloading](#operator-overloading)
    - [explicit Keyword](#explicit-keyword-in-c)
    - [Structured Bindings](#structured-bindings)
-   - [C++ Sorting](#c-sorting)
+   - [`std::sort` — C++ Sorting](#stdsort--c-sorting)
    - [Memory](#memory)
         - [Sample Memory Diagram](#sample-memory-diagram)
    - [Casting in C++](#casting-in-c)
    - [`std::optional` — Optional Data in C++](#stdoptional--optional-data-in-c)
    - [`std::variant` — Type-Safe Union](#stdvariant--type-safe-union)
    - [`std::any` — Type-Erased Single Value](#stdany--type-erased-single-value)
+   - [Enumeration](#enums)
+   - [Threads](#threads)
+   - [`std::async` and `std::future` — Asynchronous Functions](#stdasync-and-stdfuture--asynchronous-functions)
 
 
 
@@ -1569,7 +1571,80 @@ int main (){
 ```
 
 # Characters and Strings
-## C++ Strings
+
+## C-Style Strings
+
+Before `std::string`, strings were handled with `const char*` or `char[]` — a pointer to a null-terminated array of characters.
+
+```cpp
+const char* name = "Oben";   // pointer to string literal in read-only memory
+```
+
+Every C-style string ends with a null terminator `'\0'` that marks the end:
+
+```
+"Oben" in memory: [ 'O' ][ 'b' ][ 'e' ][ 'n' ][ '\0' ]
+```
+
+All C string functions walk the pointer until they hit `'\0'` to know where the string ends.
+
+### Sample Code
+
+```cpp
+#include <iostream>
+
+int main() {
+
+    const char* name = "Oben";
+
+    // length
+    std::cout << strlen(name) << std::endl;  // 4
+
+    // indexing and iteration
+    std::cout << name[0] << std::endl;  // O
+
+    for (int i = 0; name[i] != '\0'; i++) {
+        std::cout << name[i] << " ";    // O b e n
+    }
+    std::cout << std::endl;
+
+    // printing — cout has special operator<< for const char*
+    // walks pointer until '\0' and prints each char automatically
+    std::cout << name << std::endl;   // Oben  (not the address)
+    std::cout << *name << std::endl;  // O     (first char only)
+
+    // to print the actual address, cast to void*
+    std::cout << (void*)name << std::endl;  // 0x...
+
+    return 0;
+}
+```
+
+### Pain Points vs `std::string`
+
+| | C-style | `std::string` |
+|---|---|---|
+| Concatenation | Manual buffer + `strcat` | `s1 + s2` |
+| Comparison | `strcmp(a, b) == 0` | `a == b` |
+| Bounds checking | None — buffer overflow | `.at()` throws |
+| Length | `strlen(s)` | `.size()` |
+| Modifiable | `char[]` only | Always |
+
+## `std::string` — C++ Strings
+
+Internally `std::string` has the same structure as `std::vector<char>`:
+
+```cpp
+class String {
+    char*  data_;
+    size_t size_;
+    size_t capacity_;
+};
+```
+
+Heap-allocated, dynamically sized, with `+`, `==`, and other operators built in.
+
+### Sample Code
 ```cpp
 #include <iostream>
 #include <string>
@@ -1623,6 +1698,165 @@ int main(){
     return 0;
 }
 ```
+
+## `std::string` vs `std::string_view`
+
+```cpp
+#include <iostream>
+#include <string>
+
+uint32_t s_AllocCount = 0;
+void* operator new(size_t size){
+    s_AllocCount++;
+    std::cout << "Allocating " << size << " bytes\n";
+    return malloc(size);
+}
+
+void printName(std::string_view name){
+    std::cout << name << std::endl;
+}
+
+int main(){
+
+#if 0
+    std::string full_name   = "Msc. Eng. Oben Sustam - Robotics Engineer - Munich";
+    std::string first_part  = full_name.substr(0, 21);
+    std::string second_part = full_name.substr(22, 35);
+    printName(full_name);
+    printName(first_part);
+    printName(second_part);
+#elif 1
+    std::string full_name    = "Msc. Eng. Oben Sustam - Robotics Engineer - Munich";
+    const char* name_ptr     = full_name.c_str();  // c_str(): converts std::string to C-style string
+    std::string_view first_part(name_ptr, 21);
+    std::string_view second_part(name_ptr + 22, 35);
+    printName(full_name);
+    printName(first_part);
+    printName(second_part);
+#else
+    const char* name_ptr     = "Msc. Eng. Oben Sustam - Robotics Engineer - Munich";
+    std::string_view first_part(name_ptr, 21);
+    std::string_view second_part(name_ptr + 22, 35);
+    printName(name_ptr);
+    printName(first_part);
+    printName(second_part);
+#endif
+
+    return 0;
+}
+```
+
+The core difference is **ownership**:
+
+```cpp
+std::string      s    = "Oben";  // owns the memory, manages its own copy
+std::string_view view = "Oben";  // points into existing memory, owns nothing
+```
+
+| | `std::string` | `std::string_view` |
+|---|---|---|
+| Owns memory | Yes | No |
+| Heap allocation | Yes (unless SSO) | Never |
+| Modifiable | Yes | No |
+| Lifetime dependency | Independent | Original must outlive view |
+| Use case | Own/modify strings | Read-only access |
+
+### Tracking Allocations — operator new
+
+To see which options allocate heap memory, `operator new` is overridden globally:
+
+```cpp
+uint32_t s_AllocCount = 0;
+
+void* operator new(size_t size) {
+    s_AllocCount++;
+    std::cout << "Allocating " << size << " bytes\n";
+    return malloc(size);  // what the default new does internally
+}
+```
+
+Every heap allocation in the program triggers this — making allocations visible.
+
+### printName — std::string_view parameter
+
+```cpp
+void printName(std::string_view name) {
+    std::cout << name << std::endl;
+}
+```
+
+`std::string_view` as a parameter accepts `std::string`, `const char*`, and string literals — all without copying. It is the modern replacement for `const std::string&`.
+
+### Three Options Compared
+
+#### Option 1 — `std::string` with `substr`
+
+```cpp
+std::string full_name   = "Msc. Eng. Oben Sustam - Robotics Engineer - Munich";
+std::string first_part  = full_name.substr(0, 21);
+std::string second_part = full_name.substr(22, 35);
+printName(full_name);
+printName(first_part);
+printName(second_part);
+```
+
+**Allocations: 3** — `full_name`, `first_part`, `second_part` each allocate heap memory. `substr()` always returns a new `std::string` with its own copy of the data.
+
+#### Option 2 — `std::string` with `std::string_view` via `c_str()`
+
+```cpp
+std::string full_name    = "Msc. Eng. Oben Sustam - Robotics Engineer - Munich";
+const char* name_ptr     = full_name.c_str();  // c_str(): converts std::string to C-style string
+std::string_view first_part(name_ptr, 21);
+std::string_view second_part(name_ptr + 22, 35);
+printName(full_name);
+printName(first_part);
+printName(second_part);
+```
+
+**Allocations: 1** — only `full_name` allocates. The two `string_view`s point into `full_name`'s heap memory using `c_str()` which returns a `const char*` to the underlying data.
+
+`c_str()` = **C string** — returns the `std::string` data as a C-style null-terminated `const char*`, needed here for pointer arithmetic (`+ 22`).
+
+**Lifetime warning** — the views depend on `full_name` staying alive. If `full_name` is destroyed or reallocated, the views point to dead memory.
+
+#### Option 3 — `const char*` with `std::string_view`
+
+```cpp
+const char* name_ptr    = "Msc. Eng. Oben Sustam - Robotics Engineer - Munich";
+std::string_view first_part(name_ptr, 21);
+std::string_view second_part(name_ptr + 22, 35);
+printName(name_ptr);
+printName(first_part);
+printName(second_part);
+```
+
+**Allocations: 0** — `const char*` is a pointer to string literal stored in read-only memory (not heap). Both `string_view`s just point into that same memory with an offset and length — no copies, no allocation.
+
+```
+name_ptr:    "Msc. Eng. Oben Sustam - Robotics Engineer - Munich"
+first_part:   ^--------------------^ (0, 21)
+second_part:                          ^----------------------------------^ (22, 35)
+```
+
+### Summary
+
+| Option | Allocations | Modifiable | Notes |
+|---|---|---|---|
+| `std::string` + `substr` | 3 | Yes | Most copies, safest lifetime |
+| `std::string` + `string_view` via `c_str()` | 1 | `full_name` only | Balance — one allocation, views are free |
+| `const char*` + `string_view` | 0 | No | Fastest, literal in read-only memory |
+
+### SSO — Small String Optimization
+
+`std::string` does not always allocate on the heap. Short strings (typically under 15 chars on GCC) are stored directly inside the `std::string` object on the stack:
+
+```cpp
+std::string a = "Oben";           // 4 chars — SSO, no heap allocation
+std::string b = "Oben Sustam..."; // long string — heap allocation
+```
+
+`std::string_view` never allocates regardless of length.
 
 ---
 
@@ -2456,6 +2690,27 @@ int main(){
 3, 5
 ```
 
+## void pointers
+```cpp
+#include <iostream>
+
+
+int main(){
+
+    double a = 5;
+    void* p = &a;
+    std::cout << p << std::endl;
+    std::cout << *static_cast<double*>(p) << std::endl;
+
+    return 0;
+}
+```
+
+```
+0x7fffb44effa8
+5
+```
+
 ---
 
 # Classes and Objects
@@ -3228,301 +3483,6 @@ With `virtual`, the compiler defers the destructor call to runtime via the **vta
 
 ---
 
-# Enums
-An **enum** (short for *enumeration*) is a user-defined type that assigns names to a set of integer constants.  
-It makes code more readable and easier to maintain.
-
-```cpp
-#include <iostream>
-using namespace std;
-
-enum Direction {
-    North,   // 0
-    East,    // 1
-    South,   // 2
-    West     // 3
-};
-
-int main() {
-    Direction dir = South;
-
-    if (dir == South)
-        cout << "Going South!" << endl;
-
-    cout << "Direction value: " << dir << endl; 
-}
-```
-
-```sh
-Going South
-Direction Value: 2
-```
-
----
-
-# Threads
-
-By default, your program runs on a single thread — one sequence of instructions executed one at a time. A thread is an independent execution path. With multiple threads, you can do several things concurrently inside the same process.
-
-```cpp
-void task() {
-    std::cout << "Running in a thread\n";
-}
-
-int main() {
-    std::thread t(task);  // starts task() on a new thread
-    t.join();             // wait for it to finish
-    return 0;
-}
-```
-
-## Thread with argument
-
-Pass arguments to the thread function after the function name:
-
-```cpp
-void greet(std::string name) {
-    std::cout << name << std::endl;
-}
-
-int main() {
-    std::thread t(greet, "Oben");  // pass arguments after the function
-    t.join();
-    return 0;
-}
-```
-
-You can also use a lambda:
-
-```cpp
-std::thread t([]() {
-    std::cout << "Hello from lambda\n";
-});
-t.join();
-```
-
-## Data races
-
-A data race happens when two threads read/write the same variable at the same time without coordination.
-
-```cpp
-int counter = 0;  // plain int — no protection
-
-void increment() {
-    for (int i = 0; i < 100000; i++)
-        counter++;
-}
-
-int main() {
-    std::thread t1(increment);
-    std::thread t2(increment);
-    t1.join();
-    t2.join();
-    std::cout << counter << "\n";  // should be 200000, never is
-}
-```
-
-```
-Result: 143721   // run 1
-Result: 167342   // run 2
-Result: 158901   // run 3
-```
-
-`counter++` looks like one operation but the CPU actually does three separate steps:
-
-```
-1. read  counter from memory  (gets 5)
-2. add   1                    (gets 6)
-3. write 6 back to memory
-```
-
-When two threads do these three steps simultaneously they constantly overlap and overwrite each other:
-
-```
-thread A: read  counter → 5
-thread B: read  counter → 5   ← reads same value as A, before A wrote back
-thread A: write counter → 6
-thread B: write counter → 6   ← overwrites A's result, one increment is lost
-```
-
-Both threads incremented, but counter only went from 5 to 6 instead of 5 to 7. This is called a **lost update**.
-
-## std::atomic
-
-`std::atomic` does **not** prevent multiple threads from accessing a variable at the same time. Multiple threads can still all read and write concurrently.
-
-What it does guarantee is that no thread ever sees a **half-written value**. To understand why that matters, consider that a `double` is 8 bytes. Without atomic, the CPU may write those 8 bytes in two separate steps:
-
-```
-thread A writes 3.14 to a plain double:
-  step 1 → writes first  4 bytes  [3.14 first half | 0.0 second half]  ← broken state
-  step 2 → writes second 4 bytes  [3.14 first half | 3.14 second half] ← complete
-
-if thread B reads between step 1 and step 2, it gets garbage
-```
-
-`std::atomic<double>` makes the entire 8-byte write happen as one single step. Thread B will either see the old value or the new value — never something in between. This is what **indivisible** means: the operation either happened completely or not at all.
-
-```cpp
-std::atomic<int> a_counter = 0;
-
-void a_increment() {
-    for (int i = 0; i < 100000; i++)
-        a_counter++;  // safe — ++ is overloaded for atomics
-}
-
-int main() {
-    std::thread t1(a_increment);
-    std::thread t2(a_increment);
-    t1.join();
-    t2.join();
-    std::cout << a_counter << "\n";  // always 200000
-}
-```
-
-### When atomic is not enough
-
-If two variables must change together and be seen as a consistent pair, atomic cannot help — another thread may read the first store before the second one happens:
-
-```cpp
-std::atomic<bool> stopValue  = true;
-std::atomic<bool> warnValue  = true;
-
-// thread A writes:
-stopValue.store(false);   // thread B could read here...
-warnValue.store(false);   // ...and see stopValue=false, warnValue=true — inconsistent
-```
-
-For this case, use a mutex to protect both stores as a single operation.
-
-## Mutex
-
-A `std::mutex` is a lock. Only one thread can hold it at a time. The other waits. This is what actually enforces "only one thread at a time" — unlike atomic which only protects a single operation.
-
-```cpp
-int m_counter = 0;
-std::mutex mtx;
-
-void m_increment() {
-    for (int i = 0; i < 100000; i++) {
-        mtx.lock();
-        m_counter++;
-        mtx.unlock();
-    }
-}
-
-int main() {
-    std::thread t1(m_increment);
-    std::thread t2(m_increment);
-    t1.join();
-    t2.join();
-    std::cout << m_counter << "\n";  // always 200000
-}
-```
-
-## lock_guard
-
-`std::lock_guard` is a wrapper around a mutex. It locks on construction and unlocks automatically when it goes out of scope — even if an exception is thrown. This is the preferred way over calling `lock()` and `unlock()` manually.
-
-```cpp
-int lg_counter = 0;
-std::mutex lg_mtx;
-
-void lg_increment() {
-    for (int i = 0; i < 100000; i++) {
-        std::lock_guard<std::mutex> lock(lg_mtx);
-        lg_counter++;
-    }  // lock released automatically here
-}
-```
-
-| | `lock()`/`unlock()` | `lock_guard` |
-|---|---|---|
-| Unlocks automatically | No | Yes |
-| Safe if exception thrown | No — unlock never called | Yes |
-| Verbose | Yes | No |
-
-## join vs detach
-
-After creating a thread you **must** call either `join()` or `detach()` before the thread object is destroyed — otherwise the program crashes.
-
-```cpp
-void slow_task(std::string label) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    std::cout << "[" << label << "] finished\n";
-}
-
-int main() {
-    // -- join --
-    std::thread t1(slow_task, "join thread");
-    std::cout << "[main] waiting...\n";
-    t1.join();                               // main blocks here until t1 finishes
-    std::cout << "[main] continues\n";
-
-    // -- detach --
-    std::thread t2(slow_task, "detach thread");
-    t2.detach();                             // main does not wait
-    std::cout << "[main] already here\n";
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-}
-```
-
-```
-[main] waiting...
-[join thread] finished        ← main was blocked until this printed
-[main] continues
-[main] already here           ← main rushed past immediately
-[detach thread] finished
-```
-
-| | `join()` | `detach()` |
-|---|---|---|
-| What it does | Waits for the thread to finish | Lets the thread run independently |
-| When to use | You need the result before moving on | Fire-and-forget background work |
-| Risk | Blocks the caller | Thread may outlive the data it uses |
-
-## mutex vs atomic
-
-| | `std::mutex` | `std::atomic` |
-|---|---|---|
-| What it prevents | Any other thread entering the protected block | Torn/partial reads or writes on one variable |
-| Enforces "one thread at a time" | Yes | No |
-| Works across multiple variables | Yes | No — one variable only |
-| Performance | Slower (OS-level blocking) | Faster (single CPU instruction) |
-| Use when | Protecting a block of logic or multiple variables | Single variable with simple load/store/increment |
-
-## CMakeLists.txt
-
-Threads require linking against the system thread library. Use CMake's built-in `Threads` package:
-
-```cmake
-cmake_minimum_required(VERSION 3.10)
-project(my_project)
-
-set(CMAKE_CXX_STANDARD 17)
-
-find_package(Threads REQUIRED)
-
-add_executable(my_app src/main.cpp)
-
-target_link_libraries(my_app PRIVATE Threads::Threads)
-```
-
-Without `target_link_libraries(... Threads::Threads)` you will get a linker error on Linux.
-
-## Summary
-
-| Concept | Purpose |
-|---|---|
-| `std::thread` | Create a new thread |
-| `join()` | Wait for thread to finish |
-| `detach()` | Let thread run independently |
-| `std::mutex` | Enforce one thread at a time over a block or multiple variables |
-| `std::lock_guard` | RAII wrapper — auto-unlocks the mutex |
-| `std::atomic<T>` | Safe load/store on a single variable without a mutex |
-
----
-
 # Function Pointers & Lambdas
 
 ## Raw Function Pointers
@@ -3594,7 +3554,31 @@ std::sort(nums.begin(), nums.end(), [](int a, int b) {
 });
 ```
 
-## Comparison
+### Sample Usage
+```cpp
+#include <iostream>
+
+void doMath(int a, int b) {
+
+    auto add = [a, b]() {
+        return a + b;
+    };
+
+    auto multiply = [a, b]() {
+        return a * b;
+    };
+
+    std::cout << "Add:      " << add()      << std::endl;
+    std::cout << "Multiply: " << multiply() << std::endl;
+}
+
+int main(){
+    doMath(4, 6);
+    return 0;
+}
+```
+
+### Comparison
 
 | | Raw Function Pointer | Lambda |
 |---|---|---|
@@ -3659,58 +3643,156 @@ Value: Oben
 Value: 29
 ```
 
-## Operator Overloading
+---
+
+# Operator Overloading
+
+Operator overloading lets you define what `+`, `*`, `==`, `<<` etc. do for your own types.
+
+```cpp
+Vector2 v3 = v1 + v2;           // calls v1.operator+(v2)
+Vector2 v3 = v1.operator+(v2);  // equivalent, explicit form
+```
+
+The compiler translates operator syntax into function calls automatically.
+
+---
+
+## Syntax
+
+```cpp
+return_type operator<symbol>(parameters)
+```
+
+The operator is always a member function (or free function) named `operator` followed directly by the symbol:
+
+```cpp
+operator+    // addition
+operator*    // multiplication
+operator==   // equality
+operator<<   // output stream
+operator new // heap allocation
+```
+
+## Example
 ```cpp
 #include <iostream>
-#include <string>
 
-struct Vector2
-{
+struct Vector2{
     float x, y;
 
-    Vector2(float _x, float _y) : 
-        x(_x), y(_y){
+    Vector2 operator +(const Vector2& other){
+        return {x+other.x, y+other.y};
     }
 
-    Vector2 add(const Vector2 &new_vector) const {
-        return Vector2(x + new_vector.x, y + new_vector.y);
+    Vector2 operator *(const Vector2& other){
+        return {x*other.x, y*other.y};
     }
 
-    Vector2 operator+(const Vector2 &new_vector) {
-        return add(new_vector);
+    bool operator ==(const Vector2& other){
+        return (x == other.x && y == other.y);
     }
-
-    Vector2 multiply(const Vector2 &new_vector) const {
-        return Vector2(x * new_vector.x, y * new_vector.y);
-    }
-
-    Vector2 operator*(const Vector2 &new_vector) {
-        return multiply(new_vector);
-    }
-
 };
 
-std::ostream &operator<<(std::ostream &stream, const Vector2 &other){
-    stream << other.x << ", " << other.y;
-    return stream;
-} 
+
+uint32_t s_AllocCount = 0;
+void* operator new(size_t size){
+    s_AllocCount++;
+    std::cout << "Allocating " << size << " bytes\n";
+    return malloc(size); // what default new function do
+}
+
 
 int main(){
-    Vector2 position(4.0f, 4.0f);
-    Vector2 speed(0.5f, 1.5f);
-    Vector2 powerup(1.1f, 1.1f);
+    Vector2 v1 = {1.0, 2.0};
+    Vector2 v2 = {3.0, 4.0};
 
-    Vector2 result = position.add(speed.multiply(powerup));
-    Vector2 result2 = position + speed * powerup ;
+    Vector2 v3 = v1 + v2; // Vector2 v3 = v1.operator+(v2)
+    std::cout << "V3-x: " << v3.x << ", V3-y: " << v3.y << std::endl; 
+    std::cout << "v1 == v2: " << (v1 == v2) << "\n" << std::endl;
 
-    std::cout << result2 << std::endl;
+    int* pi = new int(76);
+    double* pd = new double(76.85);
 
     return 0;
 }
 ```
 ```sh
-4.55, 5.65
+V3-x: 4, V3-y: 6
+v1 == v2: 0
+
+Allocating 4 bytes
+Allocating 8 bytes
 ```
+
+Inside the operator, `x` and `y` refer to the **left-hand side** object (via implicit `this`), and `other` is the right-hand side:
+
+```cpp
+Vector2 v3 = v1 + v2;
+//            ^^   ^^
+//            this other
+//            x    other.x
+```
+
+### Overloading `operator new`
+
+`new` is a keyword that acts as an operator — not a plain function. In C++, operators are broader than just symbols like `+` or `==`:
+
+```cpp
+new       // operator new  — heap allocation
+delete    // operator delete — heap deallocation
+sizeof    // operator sizeof — size query
+```
+
+The distinction:
+- **function** — called explicitly by name: `malloc(4)`
+- **operator** — compiler translates syntax into a call: `new int(42)` → `operator new(4)`
+
+`new` is an operator because you never call it by name — the compiler translates `new int(42)` into the call automatically.
+
+`operator new` can also be overloaded — every heap allocation in the program goes through it:
+
+```cpp
+uint32_t s_AllocCount = 0;  // s_ prefix = static/file-scope variable
+
+void* operator new(size_t size) {  // size = bytes requested, not the value
+    s_AllocCount++;
+    std::cout << "Allocating " << size << " bytes\n";
+    return malloc(size);  // malloc: requests raw bytes from the heap
+}
+```
+
+`new` works in two steps internally:
+1. `operator new(sizeof(T))` — allocates raw bytes, this is what gets overridden
+2. Constructor/value placement — happens after, outside of `operator new`
+
+```cpp
+int*    pi = new int(76);      // operator new(4)  → then places 76
+double* pd = new double(76.85); // operator new(8)  → then places 76.85
+```
+
+Output:
+```
+Allocating 4 bytes
+Allocating 8 bytes
+```
+
+`operator new` only sees the size — never the value. The value `76` is placed into memory after allocation.
+
+#### uint32_t
+
+`uint32_t` is a fixed-width integer type from `<cstdint>`:
+
+```
+u     → unsigned (no negatives)
+int   → integer
+32    → exactly 32 bits guaranteed
+_t    → type naming convention
+```
+
+Used instead of `int` when exact bit width matters — on most platforms `int` happens to be 32 bits, but it's not guaranteed by the standard.
+
+---
 
 # `explicit` keyword in C++
 Prevents the compiler from silently converting one type into your class.
@@ -3812,7 +3894,7 @@ int main(){
 
 ---
 
-# C++ Sorting
+# `std::sort` — C++ Sorting
 
 ## Iterators
 
@@ -4366,34 +4448,6 @@ if (std::holds_alternative<std::string>(var)) {
 }
 ```
 
-## `std::visit` — Handle All Types
-
-`std::visit` applies a callable to the currently active type. Use an overloaded lambda to handle each case:
-
-```cpp
-var = 3.14;
-
-std::visit([](auto&& val) {
-    std::cout << val << std::endl;
-}, var);
-```
-
-With per-type handling using overloaded lambdas:
-
-```cpp
-var = "Oben";
-
-std::visit([](auto&& val) {
-    using T = std::decay_t<decltype(val)>;
-    if constexpr (std::is_same_v<T, int>)
-        std::cout << "int: " << val << std::endl;
-    else if constexpr (std::is_same_v<T, double>)
-        std::cout << "double: " << val << std::endl;
-    else if constexpr (std::is_same_v<T, std::string>)
-        std::cout << "string: " << val << std::endl;
-}, var);
-```
-
 ## Memory Layout
 
 `std::variant` reserves space for the **largest member** plus a small index field (padded for alignment):
@@ -4572,3 +4626,655 @@ std::any
 ├── std::any_cast<T>(a)       → value, throws if wrong type
 └── std::any_cast<T>(&a)      → pointer, nullptr if wrong type
 ```
+
+---
+
+# Enums
+An **enum** (short for *enumeration*) is a user-defined type that assigns names to a set of integer constants.  
+It makes code more readable and easier to maintain.
+
+```cpp
+#include <iostream>
+
+enum Direction {
+    North,   // 0
+    East,    // 1
+    South,   // 2
+    West     // 3
+};
+
+int main() {
+    Direction dir = South;
+
+    if (dir == South)
+        std::cout << "Going South!" << std::endl;
+
+    std::cout << "Direction value: " << dir << std::endl; 
+}
+```
+
+```sh
+Going South
+Direction Value: 2
+```
+
+```cpp
+#include <iostream>
+
+enum class Season { 
+    Spring, 
+    Summer, 
+    Autumn, 
+    Winter 
+};
+
+std::string seasonMessage(Season s) {
+    switch (s) {
+        case Season::Spring: 
+            return "Flowers blooming";
+        case Season::Summer: 
+            return "Hot and sunny";
+        case Season::Autumn: 
+            return "Leaves falling";
+        case Season::Winter: 
+            return "Cold and snowy";
+    }
+    return "Unknown";
+}
+
+int main() {
+    Season current = Season::Autumn;
+    std::cout << seasonMessage(current) << std::endl;
+
+    return 0;
+}
+```
+
+---
+
+# Threads
+
+By default, your program runs on a single thread — one sequence of instructions executed one at a time. A thread is an independent execution path. With multiple threads, you can do several things concurrently inside the same process.
+
+```cpp
+void task() {
+    std::cout << "Running in a thread\n";
+}
+
+int main() {
+    std::thread t(task);  // starts task() on a new thread
+    t.join();             // wait for it to finish
+    return 0;
+}
+```
+
+## Thread with argument
+
+Pass arguments to the thread function after the function name:
+
+```cpp
+void greet(std::string name) {
+    std::cout << name << std::endl;
+}
+
+int main() {
+    std::thread t(greet, "Oben");  // pass arguments after the function
+    t.join();
+    return 0;
+}
+```
+
+You can also use a lambda:
+
+```cpp
+std::thread t([]() {
+    std::cout << "Hello from lambda\n";
+});
+t.join();
+```
+
+## Data races
+
+A data race happens when two threads read/write the same variable at the same time without coordination.
+
+```cpp
+int counter = 0;  // plain int — no protection
+
+void increment() {
+    for (int i = 0; i < 100000; i++)
+        counter++;
+}
+
+int main() {
+    std::thread t1(increment);
+    std::thread t2(increment);
+    t1.join();
+    t2.join();
+    std::cout << counter << "\n";  // should be 200000, never is
+}
+```
+
+```
+Result: 143721   // run 1
+Result: 167342   // run 2
+Result: 158901   // run 3
+```
+
+`counter++` looks like one operation but the CPU actually does three separate steps:
+
+```
+1. read  counter from memory  (gets 5)
+2. add   1                    (gets 6)
+3. write 6 back to memory
+```
+
+When two threads do these three steps simultaneously they constantly overlap and overwrite each other:
+
+```
+thread A: read  counter → 5
+thread B: read  counter → 5   ← reads same value as A, before A wrote back
+thread A: write counter → 6
+thread B: write counter → 6   ← overwrites A's result, one increment is lost
+```
+
+Both threads incremented, but counter only went from 5 to 6 instead of 5 to 7. This is called a **lost update**.
+
+## std::atomic
+
+`std::atomic` does **not** prevent multiple threads from accessing a variable at the same time. Multiple threads can still all read and write concurrently.
+
+What it does guarantee is that no thread ever sees a **half-written value**. To understand why that matters, consider that a `double` is 8 bytes. Without atomic, the CPU may write those 8 bytes in two separate steps:
+
+```
+thread A writes 3.14 to a plain double:
+  step 1 → writes first  4 bytes  [3.14 first half | 0.0 second half]  ← broken state
+  step 2 → writes second 4 bytes  [3.14 first half | 3.14 second half] ← complete
+
+if thread B reads between step 1 and step 2, it gets garbage
+```
+
+`std::atomic<double>` makes the entire 8-byte write happen as one single step. Thread B will either see the old value or the new value — never something in between. This is what **indivisible** means: the operation either happened completely or not at all.
+
+```cpp
+std::atomic<int> a_counter = 0;
+
+void a_increment() {
+    for (int i = 0; i < 100000; i++)
+        a_counter++;  // safe — ++ is overloaded for atomics
+}
+
+int main() {
+    std::thread t1(a_increment);
+    std::thread t2(a_increment);
+    t1.join();
+    t2.join();
+    std::cout << a_counter << "\n";  // always 200000
+}
+```
+
+### When atomic is not enough
+
+If two variables must change together and be seen as a consistent pair, atomic cannot help — another thread may read the first store before the second one happens:
+
+```cpp
+std::atomic<bool> stopValue  = true;
+std::atomic<bool> warnValue  = true;
+
+// thread A writes:
+stopValue.store(false);   // thread B could read here...
+warnValue.store(false);   // ...and see stopValue=false, warnValue=true — inconsistent
+```
+
+For this case, use a mutex to protect both stores as a single operation.
+
+## Mutex
+
+A `std::mutex` is a lock. Only one thread can hold it at a time. The other waits. This is what actually enforces "only one thread at a time" — unlike atomic which only protects a single operation.
+
+```cpp
+int m_counter = 0;
+std::mutex mtx;
+
+void m_increment() {
+    for (int i = 0; i < 100000; i++) {
+        mtx.lock();
+        m_counter++;
+        mtx.unlock();
+    }
+}
+
+int main() {
+    std::thread t1(m_increment);
+    std::thread t2(m_increment);
+    t1.join();
+    t2.join();
+    std::cout << m_counter << "\n";  // always 200000
+}
+```
+
+## lock_guard
+
+`std::lock_guard` is a wrapper around a mutex. It locks on construction and unlocks automatically when it goes out of scope — even if an exception is thrown. This is the preferred way over calling `lock()` and `unlock()` manually.
+
+```cpp
+int lg_counter = 0;
+std::mutex lg_mtx;
+
+void lg_increment() {
+    for (int i = 0; i < 100000; i++) {
+        std::lock_guard<std::mutex> lock(lg_mtx);
+        lg_counter++;
+    }  // lock released automatically here
+}
+```
+
+| | `lock()`/`unlock()` | `lock_guard` |
+|---|---|---|
+| Unlocks automatically | No | Yes |
+| Safe if exception thrown | No — unlock never called | Yes |
+| Verbose | Yes | No |
+
+## join vs detach
+
+After creating a thread you **must** call either `join()` or `detach()` before the thread object is destroyed — otherwise the program crashes.
+
+```cpp
+void slow_task(std::string label) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::cout << "[" << label << "] finished\n";
+}
+
+int main() {
+    // -- join --
+    std::thread t1(slow_task, "join thread");
+    std::cout << "[main] waiting...\n";
+    t1.join();                               // main blocks here until t1 finishes
+    std::cout << "[main] continues\n";
+
+    // -- detach --
+    std::thread t2(slow_task, "detach thread");
+    t2.detach();                             // main does not wait
+    std::cout << "[main] already here\n";
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+}
+```
+
+```
+[main] waiting...
+[join thread] finished        ← main was blocked until this printed
+[main] continues
+[main] already here           ← main rushed past immediately
+[detach thread] finished
+```
+
+| | `join()` | `detach()` |
+|---|---|---|
+| What it does | Waits for the thread to finish | Lets the thread run independently |
+| When to use | You need the result before moving on | Fire-and-forget background work |
+| Risk | Blocks the caller | Thread may outlive the data it uses |
+
+## mutex vs atomic
+
+| | `std::mutex` | `std::atomic` |
+|---|---|---|
+| What it prevents | Any other thread entering the protected block | Torn/partial reads or writes on one variable |
+| Enforces "one thread at a time" | Yes | No |
+| Works across multiple variables | Yes | No — one variable only |
+| Performance | Slower (OS-level blocking) | Faster (single CPU instruction) |
+| Use when | Protecting a block of logic or multiple variables | Single variable with simple load/store/increment |
+
+## CMakeLists.txt
+
+Threads require linking against the system thread library. Use CMake's built-in `Threads` package:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(my_project)
+
+set(CMAKE_CXX_STANDARD 17)
+
+find_package(Threads REQUIRED)
+
+add_executable(my_app src/main.cpp)
+
+target_link_libraries(my_app PRIVATE Threads::Threads)
+```
+
+Without `target_link_libraries(... Threads::Threads)` you will get a linker error on Linux.
+
+## Summary
+
+| Concept | Purpose |
+|---|---|
+| `std::thread` | Create a new thread |
+| `join()` | Wait for thread to finish |
+| `detach()` | Let thread run independently |
+| `std::mutex` | Enforce one thread at a time over a block or multiple variables |
+| `std::lock_guard` | RAII wrapper — auto-unlocks the mutex |
+| `std::atomic<T>` | Safe load/store on a single variable without a mutex |
+
+---
+
+# `std::async` and `std::future` — Asynchronous Functions
+
+```cpp
+#include <iostream>
+#include <thread>
+#include <chrono>
+#include <future>
+#include <vector>
+#include <mutex>
+
+std::mutex sensor_mtx;
+double reading = 5.0;
+std::vector<double> sensor_readings;
+
+void load_mesh(){
+    std::cout << "load_mesh: started loading" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    std::cout << "load_mesh: loading completed" << std::endl;
+}
+
+int move_robot(){
+    std::cout << "move_robot: started moving" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    std::cout << "move_robot: moving completed" << std::endl;
+    return 0;
+}
+
+double read_sensor(){
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    std::lock_guard<std::mutex> lock(sensor_mtx);
+    reading = reading * 1.5;
+    sensor_readings.push_back(reading);
+
+    return reading;
+}
+
+
+template<typename T>
+void measure_time(T func, int loop_num){
+    std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
+
+    for(int i=0; i<loop_num; i++){
+        func();
+    }
+
+    std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
+    std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+    std::cout << "Elapsed Time: " << elapsed.count() << " ms" << std::endl;
+}
+
+template<typename T>
+void measure_time_with_asyn_func(T func, int loop_num){
+    std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
+    
+    // invoke_result_t<T>: give me the return type of called function
+    // std::future<XX>: holds the pending result with XX type
+    std::vector<std::future<std::invoke_result_t<T>>> futures; 
+    for(int i=0; i<loop_num; i++){
+        futures.push_back(std::async(std::launch::async, func));
+    }
+
+    for (auto& f : futures) {
+        f.get();  // wait for each task to finish
+    }
+
+    std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
+    std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+    std::cout << "Async Function Elapsed Time: " << elapsed.count() << " ms" << std::endl;
+}
+
+int main(){
+
+    measure_time(load_mesh, 4);
+    std::cout << "----------------------" << std::endl;
+    measure_time_with_asyn_func(load_mesh, 4);
+    std::cout << "----------------------" << std::endl;
+
+    measure_time(move_robot, 4);
+    std::cout << "----------------------" << std::endl;
+    measure_time_with_asyn_func(move_robot, 4);
+    std::cout << "----------------------" << std::endl;
+
+    measure_time(read_sensor, 5);
+    std::cout << "All sensor readings:" << std::endl;
+    for (double r : sensor_readings) {
+        std::cout << r << " ";
+    }
+    std::cout << "\n----------------------" << std::endl;
+    
+    sensor_readings = {};
+    reading = 5;
+    measure_time_with_asyn_func(read_sensor, 5);
+    std::cout << "All sensor readings:" << std::endl;
+    for (double r : sensor_readings) {
+        std::cout << r << " ";
+    }
+    std::cout << "\n";
+
+    return 0;
+}
+```
+
+```sh
+load_mesh: started loading
+load_mesh: loading completed
+load_mesh: started loading
+load_mesh: loading completed
+load_mesh: started loading
+load_mesh: loading completed
+load_mesh: started loading
+load_mesh: loading completed
+Elapsed Time: 8001 ms
+----------------------
+load_mesh: started loading
+load_mesh: started loading
+load_mesh: started loading
+load_mesh: started loading
+load_mesh: loading completed
+load_mesh: loading completed
+load_mesh: loading completed
+load_mesh: loading completed
+Async Function Elapsed Time: 2000 ms
+----------------------
+move_robot: started moving
+move_robot: moving completed
+move_robot: started moving
+move_robot: moving completed
+move_robot: started moving
+move_robot: moving completed
+move_robot: started moving
+move_robot: moving completed
+Elapsed Time: 12002 ms
+----------------------
+move_robot: started moving
+move_robot: started moving
+move_robot: started moving
+move_robot: started moving
+move_robot: moving completed
+move_robot: moving completed
+move_robot: moving completed
+move_robot: moving completed
+Async Function Elapsed Time: 3000 ms
+----------------------
+Elapsed Time: 2500 ms
+All sensor readings:
+7.5 11.25 16.875 25.3125 37.9688 
+----------------------
+Async Function Elapsed Time: 500 ms
+All sensor readings:
+7.5 11.25 16.875 25.3125 37.9688 
+```
+
+## The Problem — Sequential is Slow
+
+When tasks are independent, running them one after another wastes time:
+
+```cpp
+void load_mesh()  { sleep(2s); }  // 2 seconds
+void move_robot() { sleep(3s); }  // 3 seconds
+
+// sequential — 4 calls = 8 seconds total
+for (int i = 0; i < 4; i++) {
+    load_mesh();
+}
+```
+
+## std::async — Launch Work Concurrently
+
+`std::async` launches a function on a new thread and returns immediately:
+
+```cpp
+#include <future>
+
+std::future<void> f = std::async(std::launch::async, load_mesh);
+// load_mesh is now running in background — execution continues here
+```
+
+`std::launch::async` forces a new thread immediately. Without it, the runtime may defer execution.
+
+## std::future — Handle to a Pending Result
+
+`std::future<T>` holds **one** value that isn't ready yet. It will be produced by the async task.
+
+```cpp
+std::future<int>    // will hold one int when ready
+std::future<double> // will hold one double when ready
+std::future<void>   // holds nothing, but signals task completion
+```
+
+`.get()` blocks until the result is available:
+
+```cpp
+std::future<int> f = std::async(std::launch::async, move_robot);
+int result = f.get();  // blocks here until move_robot finishes
+```
+
+## Running Multiple Tasks Concurrently
+
+**Critical rule: launch ALL tasks first, then call `.get()`.**
+
+```cpp
+// CORRECT — all tasks launched before any .get()
+std::vector<std::future<void>> futures;
+for (int i = 0; i < 4; i++) {
+    futures.push_back(std::async(std::launch::async, load_mesh));
+}
+for (auto& f : futures) {
+    f.get();  // waits for each, but they're already all running
+}
+
+// WRONG — launches one, waits, launches next — sequential again
+for (int i = 0; i < 4; i++) {
+    std::future<void> f = std::async(std::launch::async, load_mesh);
+    f.get();  // blocks immediately, no concurrency
+}
+```
+
+**Also critical: never discard the future.**
+
+```cpp
+// WRONG — future destroyed immediately, destructor blocks until done
+for (int i = 0; i < 4; i++) {
+    std::async(std::launch::async, load_mesh);  // future discarded here
+}
+```
+
+When a `std::future` is destroyed without calling `.get()`, its destructor blocks until the task finishes — making it sequential.
+
+## Timeline Comparison
+
+```
+sequential load_mesh x4:
+t=0s  [task1]
+t=2s          [task2]
+t=4s                  [task3]
+t=6s                          [task4]
+t=8s  done                               → 8000 ms
+
+async load_mesh x4:
+t=0s  [task1][task2][task3][task4]       all running
+t=2s  done                               → 2000 ms
+```
+
+## Template Helper — measure_time_with_asyn_func
+
+```cpp
+template<typename T>
+void measure_time_with_asyn_func(T func, int loop_num) {
+    std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
+
+    // invoke_result_t<T>: deduces return type of T at compile time
+    // std::future<XX>:    holds one pending result of type XX
+    std::vector<std::future<std::invoke_result_t<T>>> futures;
+
+    for (int i = 0; i < loop_num; i++) {
+        futures.push_back(std::async(std::launch::async, func));
+    }
+
+    for (auto& f : futures) {
+        f.get();  // wait for all tasks to finish
+    }
+
+    std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
+    std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Elapsed Time: " << elapsed.count() << " ms" << std::endl;
+}
+```
+
+`std::invoke_result_t<T>` deduces the return type of `T` at compile time:
+
+```
+load_mesh  → void  → std::vector<std::future<void>>
+move_robot → int   → std::vector<std::future<int>>
+read_sensor→ double→ std::vector<std::future<double>>
+```
+
+## Mutex with Async — Shared State
+
+When async tasks share a resource, protect it with `std::mutex`:
+
+```cpp
+std::mutex sensor_mtx;
+double reading = 5.0;
+std::vector<double> sensor_readings;
+
+double read_sensor() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));  // heavy work — runs concurrently
+
+    std::lock_guard<std::mutex> lock(sensor_mtx);  // only the write is protected
+    reading = reading * 1.5;
+    sensor_readings.push_back(reading);
+
+    return reading;
+}
+```
+
+The mutex only wraps the **write** to shared state — not the heavy work. This way tasks run concurrently for the slow part and only serialize for the brief write.
+
+## When async Helps vs Hurts
+
+| Situation | async faster? | Reason |
+|---|---|---|
+| Long independent tasks (`load_mesh`, `move_robot`) | Yes | Concurrency benefit outweighs thread overhead |
+| Short tasks with mutex on entire body | No | Serialized by mutex + thread overhead added |
+| Short tasks, no shared state | Maybe | Thread creation overhead may dominate |
+| Shared resource, mutex on write only | Yes | Heavy work concurrent, only write serialized |
+
+## Results from This Code
+
+```
+load_mesh x4  sequential  →  8000 ms
+load_mesh x4  async       →  2000 ms  (4x faster)
+
+move_robot x4 sequential  →  12000 ms
+move_robot x4 async       →  3000 ms  (4x faster)
+
+read_sensor x5 sequential →  ~2500 ms
+read_sensor x5 async      →  ~500 ms  (mutex only on write, heavy work concurrent)
+```
+
+---
+

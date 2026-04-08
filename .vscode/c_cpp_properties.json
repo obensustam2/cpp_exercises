@@ -6,11 +6,7 @@
                 "${workspaceFolder}/**",
                 "/usr/include/c++/11",
                 "/usr/include/x86_64-linux-gnu/c++/11",
-                "/usr/include",
-                "/opt/ros/humble/include/**",
-                "/opt/ros/humble/include",
-                "/usr/include/x86_64-linux-gnu/qt5/QtWidgets",
-                "/home/oben/cpp_exercises/cherno/include"
+                "/usr/include"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",

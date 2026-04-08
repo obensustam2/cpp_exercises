@@ -1,0 +1,32 @@
+{
+    "otherData": {},
+    "traceEvents": [
+        {
+            "cat": "function",
+            "dur": 9853,
+            "name": "Function2",
+            "ph": "X",
+            "pid": 0,
+            "tid": 0,
+            "ts": 1775676275721653
+        },
+        {
+            "cat": "function",
+            "dur": 11194,
+            "name": "Function1",
+            "ph": "X",
+            "pid": 0,
+            "tid": 0,
+            "ts": 1775676275721501
+        },
+        {
+            "cat": "function",
+            "dur": 11554,
+            "name": "RunBenchmarks",
+            "ph": "X",
+            "pid": 0,
+            "tid": 0,
+            "ts": 1775676275721209
+        }
+    ]
+}
