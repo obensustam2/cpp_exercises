@@ -19,7 +19,7 @@ std::optional<std::string> read_file(const std::string& path){
 
 
 int main(){
-    std::optional<std::string> content = read_file("/home/oben/Projects/cpp_exercises/cherno/config/config.txt");
+    std::optional<std::string> content = read_file("/home/oben/Projects/cpp_exercises/cherno/config/input.txt");
 
     if(!content.has_value()){
         std::cerr << "File not found/opened" << std::endl;

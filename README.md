@@ -6,7 +6,6 @@
         - [Preprocessor in C++](#preprocessor-in-c)
         - [Variable](#variable)
         - [Namespaces in C++](#namespaces-in-c)
-        - [Local static in C++](#local-static-variables-in-c)
         - [Arguments](#arguments)
         - [User Input](#user-input)
         - [Constant Variable and Methods](#constant-variable--methods)
@@ -14,8 +13,6 @@
         - [Byte Size](#byte-size)
         - [Long Variable](#long-variable)
         - [Signed vs Unsigned](#signed-vs-unsigned)
-        - [Timing in C++](#timing-in-c)
-        - [C++ Exception Handling (try-catch)](#c-exception-handling-try-catch)
    - [Compiler Concepts in C++](#compiler-concepts-in-c)
         - [Compile Time vs Runtime](#compile-time-vs-runtime)
         - [Compilation Pipeline](#compilation-pipeline)
@@ -58,8 +55,10 @@
         - [Const usage for printing with reference inputs](#const-usage-for-printing-with-reference-inputs)
         - [Local Global - Scope Rules](#local-global---scope-rules)
         - [Function Calls - Memory Stack - Recursive Function](#function-calls---memory-stack---recursive-function)
-   - [Pointers](#pointers)
+   - [Memory](#memory)
+        - [Sample Memory Diagram](#sample-memory-diagram)
         - [Stack vs Heap Memory](#stack-vs-heap-memory)
+   - [Pointers](#pointers)
         - [Why Pointers Exist in C++](#why-pointers-exist-in-c)
         - [Stack and Raw Heap Pointers](#stack-and-raw-heap-pointers)
         - [Stack and Raw Heap Objects](#stack-and-raw-heap-objects)
@@ -80,20 +79,20 @@
         - [Inheritance](#inheritance)
    - [Polymorphism](#polymorphism)
         - [Compile-time Polymorphism](#compile-time-polymorphism)
+            - [Function Overloading](#function-overloading)
+            - [Templates](#templates)
+            - [Operator Overloading (from different chapter)](#operator-overloading)
         - [Runtime Polymorphism - Virtual Functions](#runtime-polymorphism---virtual-functions)
-            - [Interfaces](#interfaces)
-            - [Virtual Destructors](#virtual-destructors)
    - [Function Pointers & Lambdas](#function-pointers--lambdas)
         - [Raw Function Pointers](#raw-function-pointers)
         - [Lambdas](#lambdas)
+   - [`static` in C++](#static-in-c)
    - [C++ Visibility / Access Specifiers](#c-visibility--access-specifiers)
    - [Templates](#templates)
    - [Operator Overloading](#operator-overloading)
    - [explicit Keyword](#explicit-keyword-in-c)
    - [Structured Bindings](#structured-bindings)
    - [`std::sort` — C++ Sorting](#stdsort--c-sorting)
-   - [Memory](#memory)
-        - [Sample Memory Diagram](#sample-memory-diagram)
    - [Casting in C++](#casting-in-c)
    - [`std::optional` — Optional Data in C++](#stdoptional--optional-data-in-c)
    - [`std::variant` — Type-Safe Union](#stdvariant--type-safe-union)
@@ -101,6 +100,11 @@
    - [Enumeration](#enums)
    - [Threads](#threads)
    - [`std::async` and `std::future` — Asynchronous Functions](#stdasync-and-stdfuture--asynchronous-functions)
+   - [Timing in C++](#timing-in-c)
+   - [C++ Exception Handling (try-catch)](#c-exception-handling-try-catch)
+   - [Singleton in C++ (Design Pattern)](#singleton-in-c-design-pattern)
+   - [`<fstream>` in C++](#fstream-in-c)
+   - [`<iostream>` — C++ Standard I/O](#iostream--c-standard-io)
 
 
 
@@ -391,44 +395,6 @@ The `using` alias inside the namespace is also scoped — it won't leak out and 
 
 ---
 
-## Local Static Variables in C++
-A `static` variable inside a function is **initialized once** and keeps its value between calls.
-
-```cpp
-#include <iostream>
-
-void function(){
-    static int i = 0;  // initialized once, persists across calls
-    i++;
-    std::cout << i << std::endl;
-}
-
-int main(){
-    for(int j = 0; j < 5; j++){
-        function();
-    }
-    return 0;
-}
-```
-
-Output:
-```
-1
-2
-3
-4
-5
-```
-
-Without `static`, `i` resets to `0` every call and always prints `1`.
-| Property | Normal local | Local static |
-|---|---|---|
-| Initialized | Every call | Once |
-| Lifetime | Dies on return | Entire program |
-| Scope | Inside function | Inside function |
-
----
-
 ## Arguments
 ```cpp
 int main(int num_args, char *args[]){
@@ -517,234 +483,6 @@ long double large_amount = 2.7e120;
 | ----------------------- | --------- | ------------------------------- |
 | `int` (signed 32-bit)   | 32        | −2,147,483,648 → +2,147,483,647 |
 | `unsigned int` (32-bit) | 32        | 0 → 4,294,967,295               |
-
----
-
-## Timing in C++
-
-All timing utilities live in the `<chrono>` header. The library is built around three concepts: **clocks**, **time_points**, and **durations**.
-
-### Clocks
-
-A clock is the source of time. Each clock has a `now()` static method that returns the current `time_point`.
-
-| Clock | Monotonic | Use for |
-|---|---|---|
-| `steady_clock` | Yes | Measuring elapsed time, timeouts, sleep |
-| `system_clock` | No | Timestamps, logging, real wall time |
-| `high_resolution_clock` | Implementation-defined | Finest tick — often alias of `steady_clock` |
-
-`steady_clock` is guaranteed to never go backwards. `system_clock` tracks real wall time and can be adjusted by the OS (NTP sync, DST, manual changes), so it is not suitable for measuring elapsed time.
-
-### time_point
-
-A `time_point` represents a specific moment in time relative to a clock's epoch. Obtained via `now()`:
-
-```cpp
-std::chrono::time_point<std::chrono::steady_clock> t = std::chrono::steady_clock::now();
-```
-
-### duration
-
-A `duration` represents a span of time. Subtracting two `time_point`s yields a `duration`:
-
-```cpp
-std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
-// ... work ...
-std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
-std::chrono::duration<long, std::nano> elapsed = end - start;
-```
-
-Use `duration_cast` to convert to a specific unit, then `.count()` to extract the raw value:
-
-```cpp
-std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
-std::chrono::microseconds us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed);
-
-std::cout << ms.count() << " ms\n";
-std::cout << us.count() << " us\n";
-```
-
-#### Predefined duration types
-
-```cpp
-std::chrono::nanoseconds
-std::chrono::microseconds
-std::chrono::milliseconds
-std::chrono::seconds
-std::chrono::minutes
-std::chrono::hours
-```
-
-### Measuring elapsed time
-
-```cpp
-#include <iostream>
-#include <chrono>
-#include <thread>
-
-int main() {
-    std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-
-    std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
-    std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-    std::cout << "Elapsed: " << elapsed.count() << " ms\n";  // 200 ms
-}
-```
-
-### Sleeping
-
-```cpp
-#include <thread>
-#include <chrono>
-
-// sleep for a duration
-std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-// sleep until a specific time_point
-std::chrono::time_point<std::chrono::steady_clock> wake = std::chrono::steady_clock::now() + std::chrono::seconds(5);
-std::this_thread::sleep_until(wake);
-```
-
-### system_clock — wall time and timestamps
-
-`system_clock` is convertible to `std::time_t`, which allows formatting with standard C functions.
-
-```cpp
-#include <iostream>
-#include <chrono>
-#include <ctime>
-
-int main() {
-    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-    std::time_t t = std::chrono::system_clock::to_time_t(now);
-    std::cout << std::ctime(&t);  // Wed Apr  1 14:32:10 2026
-}
-```
-
-#### Formatted timestamp
-
-```cpp
-#include <chrono>
-#include <ctime>
-
-void print_current_time(){
-    std::chrono::time_point<std::chrono::system_clock> system_now = std::chrono::system_clock::now(); // time point
-
-    time_t system_now_t = std::chrono::system_clock::to_time_t(system_now); // integer value of time point in seconds
-
-    std::tm* local = std::localtime(&system_now_t); // breaks the total second count into calendar fields (hour, min, day, month, year...)
-
-    char buffer[64];
-    std::strftime(buffer, sizeof(buffer), "%H:%M - %d/%m/%Y", local); // formatting the local time
-    std::cout << "Current Time: " << buffer << std::endl;
-}
-```
-
-```
-struct tm {
-    int tm_sec;    // seconds       [0, 60]
-    int tm_min;    // minutes       [0, 59]
-    int tm_hour;   // hours         [0, 23]
-    int tm_mday;   // day of month  [1, 31]
-    int tm_mon;    // month         [0, 11]  ← 0 = January
-    int tm_year;   // years since 1900
-    int tm_wday;   // day of week   [0, 6]   ← 0 = Sunday
-    int tm_yday;   // day of year   [0, 365]
-    int tm_isdst;  // daylight saving time flag
-};
-```
-
-### Summary
-
-| Concept | Purpose |
-|---|---|
-| `steady_clock` | Monotonic clock — measuring elapsed time |
-| `system_clock` | Real wall clock — timestamps and logging |
-| `time_point` | A moment in time from a clock's perspective |
-| `duration` | A span of time between two time_points |
-| `duration_cast` | Convert duration to a specific unit |
-| `.count()` | Extract the raw numeric value from a duration |
-| `sleep_for` | Pause the current thread for a duration |
-| `sleep_until` | Pause the current thread until a time_point |
-| `to_time_t` | Convert system_clock time_point to std::time_t |
-| `std::put_time` | Format time using strftime-style tokens |
-
----
-
-## C++ Exception Handling (try-catch)
-
-```cpp
-#include <iostream>
-#include <stdexcept>
-
-int divide(int a, int b){
-    if (b == 0){
-        throw std::runtime_error("Division by zero");
-    }
-    return a / b;
-}
-
-int parse_and_divide(const std::string& a, const std::string& b){
-    if (!std::isdigit(a[0]) || !std::isdigit(b[0])){
-        throw std::invalid_argument("Arguments must be numeric");
-    }
-    return divide(std::stoi(a), std::stoi(b));
-}
-
-int main(){
-    try{
-        int result = divide(10, 0);
-        // int result = parse_and_divide("10", "abc");
-        std::cout << result << std::endl;
-    } catch (const std::runtime_error &e){
-        std::cout << "Caught: " << e.what() << std::endl;
-    } catch (const std::invalid_argument &e){
-        std::cout << "Caught: " << e.what() << std::endl;
-    }
-
-    return 0;
-}
-```
-
-### Standard Exception Types (`<stdexcept>`)
-
-| Exception | Inherits From | When to Use | Auto-thrown? |
-|---|---|---|---|
-| `std::runtime_error` | `std::exception` | General runtime failures | No — throw manually |
-| `std::invalid_argument` | `std::logic_error` | Bad input to a function | No — throw manually |
-| `std::out_of_range` | `std::logic_error` | Index or value out of valid range | By `std::vector::at()`, `std::string::at()` |
-| `std::overflow_error` | `std::runtime_error` | Arithmetic overflow | No — throw manually |
-| `std::logic_error` | `std::exception` | Violated logical precondition | No — throw manually |
-| `std::bad_alloc` | `std::exception` | Memory allocation failure | Yes — by `new` |
-| `std::bad_cast` | `std::exception` | Failed `dynamic_cast` to reference | Yes — by `dynamic_cast` |
-
-### Key Concepts
-
-**Exceptions don't throw themselves.**
-`std::invalid_argument`, `std::runtime_error`, etc. are just classes. They only fire when you explicitly `throw` them. The names are conventions to communicate intent.
-
-**Catch order matters.**
-Derived types must be caught before base types. Since most standard exceptions inherit from `std::exception`, catching `std::exception` first would swallow everything.
-
-```cpp
-// Wrong — std::exception catches everything before the specific handlers
-catch (const std::exception &e) { ... }
-catch (const std::runtime_error &e) { ... }  // never reached
-
-// Correct — specific first, general last
-catch (const std::runtime_error &e) { ... }
-catch (const std::exception &e) { ... }
-```
-
-**Catch-all.**
-`catch (...)` catches any thrown type, including non-standard ones. Use as a last resort.
-
-**No `finally` in C++.**
-Use RAII instead — destructors run automatically when objects go out of scope, even during stack unwinding from an exception.
 
 ---
 
@@ -1705,11 +1443,10 @@ int main(){
 #include <iostream>
 #include <string>
 
-uint32_t s_AllocCount = 0;
-void* operator new(size_t size){
-    s_AllocCount++;
+void* operator new(size_t size) {  // size = bytes requested, not the value
     std::cout << "Allocating " << size << " bytes\n";
-    return malloc(size);
+    void* ptr = malloc(size); // malloc: requests raw bytes from the heap
+    return ptr;  
 }
 
 void printName(std::string_view name){
@@ -1766,12 +1503,10 @@ std::string_view view = "Oben";  // points into existing memory, owns nothing
 To see which options allocate heap memory, `operator new` is overridden globally:
 
 ```cpp
-uint32_t s_AllocCount = 0;
-
-void* operator new(size_t size) {
-    s_AllocCount++;
+void* operator new(size_t size) {  // size = bytes requested, not the value
     std::cout << "Allocating " << size << " bytes\n";
-    return malloc(size);  // what the default new does internally
+    void* ptr = malloc(size); // malloc: requests raw bytes from the heap
+    return ptr;  
 }
 ```
 
@@ -2175,7 +1910,28 @@ unsigned long long factorial(unsigned long long val){
 }
 ```
 
-# Pointers
+---
+
+# Memory
+
+## Sample Memory Diagram
+
+![memory diagram](cherno/media/memory_diagram.png)
+
+```cpp
+int    a    = 175;          // 0x1000 — int,    4 bytes
+double b    = 255.0;        // 0x1008 — double, 8 bytes
+int    c    = 43;           // 0x1010 — int,    4 bytes
+int*   sp   = &a;           // 0x1018 — points to a on stack (0x1000)
+int*   val1 = new int;      // 0x1020 — points to heap (0x2018)
+int*   p    = new int;      // 0x1028 — points to heap (0x2040)
+
+*val1 = 300;                // heap @ 0x2018 → 2C 01 00 00
+*p    = 255;                // heap @ 0x2040 → FF 00 00 00
+
+delete val1;
+delete p;
+```
 
 ## Stack vs Heap Memory
 | Feature              | **Stack**                                                                 | **Heap**                                                                 |
@@ -2190,7 +1946,75 @@ unsigned long long factorial(unsigned long long val){
 | **Example**           | `int x = 10;`                                                           | `int* p = new int(10); delete p;`                                        |
 | **Analogy**           | Lunch tray (items stacked & removed in order)                           | Warehouse (flexible storage, but must clean up yourself)                  |
 
+
+## Heap Memory Tracker Software
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+
+struct AllocationMetrics{
+    uint32_t totalAllocatedMemory = 0;
+    uint32_t totalFreed = 0;
+
+    uint32_t currentUsage(){
+        return totalAllocatedMemory - totalFreed;
+    }
+};
+
+static AllocationMetrics s_AllocationMetrics;
+
+void* operator new(size_t size) {
+    s_AllocationMetrics.totalAllocatedMemory += size;
+
+    void* p = malloc(size);
+    return p;
+}
+
+void operator delete(void* memory, size_t size){
+    s_AllocationMetrics.totalFreed += size;
+
+    free(memory);
+}
+
+struct Object{
+    int x, y, z;
+};
+
+void printMemoryUsage(){
+    std::cout << "Memory Usage: " << s_AllocationMetrics.currentUsage() << std::endl;
+}
+
+int main() {
+    printMemoryUsage();
+    int* i_ptr = new int(77);
+    printMemoryUsage();
+
+    {
+        std::unique_ptr<Object> obj_p = std::make_unique<Object>();
+        printMemoryUsage();
+    }
+    
+    printMemoryUsage();
+    delete i_ptr;
+    printMemoryUsage();
+
+    return 0;
+}
+```
+
+```sh
+Memory Usage: 0
+Memory Usage: 4
+Memory Usage: 16
+Memory Usage: 4
+Memory Usage: 0
+```
+
 ---
+
+# Pointers
 
 ## Why Pointers Exist in C++
 ### The Problem: Copying is Expensive
@@ -3589,6 +3413,113 @@ int main(){
 
 --- 
 
+# `static` in C++
+
+## 1. Local static variable
+
+Initialized once, persists across calls. Scope stays limited to the function.
+
+```cpp
+void function() {
+    static int i = 0;  // initialized once, persists across calls
+    i++;
+    std::cout << i << std::endl;
+}
+
+int main() {
+    for (int j = 0; j < 5; j++) {
+        function();  // prints 1, 2, 3, 4, 5
+    }
+}
+```
+
+Without `static`, `i` resets to `0` every call and always prints `1`.
+
+| Property | Normal local | Local static |
+|---|---|---|
+| Initialized | Every call | Once |
+| Lifetime | Dies on return | Entire program |
+| Scope | Inside function | Inside function |
+
+## 2. Static function outside a class
+
+Limits the function's visibility to the current translation unit (`.cpp` file). Other `.cpp` files cannot see or call it — useful for internal helpers.
+
+```cpp
+// utils.cpp
+static void helper() {
+    std::cout << "internal helper" << std::endl;
+}
+
+void publicFunction() {
+    helper();  // fine — same file
+}
+```
+
+```cpp
+// main.cpp
+helper();  // ERROR — not visible here
+```
+
+## 3. Static member function inside a class
+
+Belongs to the class itself, not to any instance. Can be called via `::` without creating an object. Has no `this` pointer — cannot access non-static member variables.
+
+```cpp
+class Instrumentor {
+private:
+    int m_ProfileCount;  // belongs to an instance
+
+public:
+    static Instrumentor& get() {
+        static Instrumentor* instance = new Instrumentor();
+        return *instance;
+    }
+
+    static void printLabel() {
+        std::cout << "Instrumentor" << std::endl;
+        // m_ProfileCount++;  ERROR — no instance, no this pointer
+    }
+};
+
+Instrumentor::get();       // no object needed
+Instrumentor::printLabel();
+```
+
+Common uses: singleton `get()`, factory functions, utility functions that are logically related to the class but don't need instance data.
+
+## 4. Static member variable inside a class
+
+Shared across all instances — one copy exists regardless of how many objects are created. Must be defined outside the class.
+
+```cpp
+class Instrumentor {
+public:
+    static int instanceCount;
+
+    Instrumentor() { instanceCount++; }
+};
+
+int Instrumentor::instanceCount = 0;  // definition outside the class
+
+int main() {
+    Instrumentor a;
+    Instrumentor b;
+    std::cout << Instrumentor::instanceCount << std::endl;  // 2
+}
+```
+
+## Summary
+
+| Usage | Effect |
+|---|---|
+| Local variable | Initialized once, persists for program lifetime, scope stays local |
+| Free function | Visible only in current `.cpp` file |
+| Member function | Belongs to class, callable without an instance, no `this` pointer |
+| Member variable | Shared across all instances, one copy for the whole class |
+
+---
+
 # C++ Visibility / Access Specifiers
 
 | Specifier   | Accessible From Class Itself | Accessible from Derived Classes | Accessible from Outside | Typical Use |
@@ -3695,11 +3626,10 @@ struct Vector2{
 };
 
 
-uint32_t s_AllocCount = 0;
-void* operator new(size_t size){
-    s_AllocCount++;
+void* operator new(size_t size) {  // size = bytes requested, not the value
     std::cout << "Allocating " << size << " bytes\n";
-    return malloc(size); // what default new function do
+    void* ptr = malloc(size); // malloc: requests raw bytes from the heap
+    return ptr;  
 }
 
 
@@ -3753,12 +3683,10 @@ The distinction:
 `operator new` can also be overloaded — every heap allocation in the program goes through it:
 
 ```cpp
-uint32_t s_AllocCount = 0;  // s_ prefix = static/file-scope variable
-
 void* operator new(size_t size) {  // size = bytes requested, not the value
-    s_AllocCount++;
     std::cout << "Allocating " << size << " bytes\n";
-    return malloc(size);  // malloc: requests raw bytes from the heap
+    void* ptr = malloc(size); // malloc: requests raw bytes from the heap
+    return ptr;  
 }
 ```
 
@@ -4051,51 +3979,6 @@ if (std::is_sorted(v.begin(), v.end())) {
 
 ---
 
-# Memory
-
-## Sample Memory Diagram
-
-![memory diagram](media/memory_diagram.png)
-
-```cpp
-int    a    = 175;          // 0x1000 — int,    4 bytes
-double b    = 255.0;        // 0x1008 — double, 8 bytes
-int    c    = 43;           // 0x1010 — int,    4 bytes
-int*   sp   = &a;           // 0x1018 — points to a on stack (0x1000)
-int*   val1 = new int;      // 0x1020 — points to heap (0x2018)
-int*   p    = new int;      // 0x1028 — points to heap (0x2040)
-
-*val1 = 300;                // heap @ 0x2018 → 2C 01 00 00
-*p    = 255;                // heap @ 0x2040 → FF 00 00 00
-
-delete val1;
-delete p;
-```
-
----
-
-## Unions
-
-Multiple variables sharing the same memory. Size = largest member. Only one is valid at a time.
-
-```cpp
-union Data {
-    int   i;
-    float f;
-    char  c;
-};  // 4 bytes total, not 9
-
-Data d;
-d.i = 42;     // valid
-d.f = 3.14f;  // now only d.f is valid — d.i is garbage
-```
-
-The union doesn't track which member is active — you do. Pair with an enum if you need safety, or just use `std::variant` (C++17).
-
-**Still useful for:** embedded systems, protocol parsing, type punning (inspecting raw bytes).
-
----
-
 # Casting in C++
 
 > C++ provides four named cast operators. Unlike C-style casts, they make your intent explicit and are easier to search in code.
@@ -4351,7 +4234,7 @@ std::optional<std::string> read_file(const std::string& path) {
 }
 
 int main() {
-    std::optional<std::string> content = read_file("config.txt");
+    std::optional<std::string> content = read_file("input.txt");
 
     if (!content) {
         std::cerr << "File not found\n";
@@ -4467,6 +4350,26 @@ Compare with raw `union` — same storage, but no index tracking:
 union U { int i; double d; std::string s; };
 sizeof(U)  // 32 — no overhead, but unsafe
 ```
+
+## Unions
+
+Multiple variables sharing the same memory. Size = largest member. Only one is valid at a time.
+
+```cpp
+union Data {
+    int   i;
+    float f;
+    char  c;
+};  // 4 bytes total, not 9
+
+Data d;
+d.i = 42;     // valid
+d.f = 3.14f;  // now only d.f is valid — d.i is garbage
+```
+
+The union doesn't track which member is active — you do. Pair with an enum if you need safety, or just use `std::variant` (C++17).
+
+**Still useful for:** embedded systems, protocol parsing, type punning (inspecting raw bytes).
 
 ## `std::variant` vs Raw `union`
 
@@ -5278,3 +5181,816 @@ read_sensor x5 async      →  ~500 ms  (mutex only on write, heavy work concurr
 
 ---
 
+# Timing in C++
+
+All timing utilities live in the `<chrono>` header. The library is built around three concepts: **clocks**, **time_points**, and **durations**.
+
+## Clocks
+
+A clock is the source of time. Each clock has a `now()` static method that returns the current `time_point`.
+
+| Clock | Monotonic | Use for |
+|---|---|---|
+| `steady_clock` | Yes | Measuring elapsed time, timeouts, sleep |
+| `system_clock` | No | Timestamps, logging, real wall time |
+| `high_resolution_clock` | Implementation-defined | Finest tick — often alias of `steady_clock` |
+
+`steady_clock` is guaranteed to never go backwards. `system_clock` tracks real wall time and can be adjusted by the OS (NTP sync, DST, manual changes), so it is not suitable for measuring elapsed time.
+
+## time_point
+
+A `time_point` represents a specific moment in time relative to a clock's epoch. Obtained via `now()`:
+
+```cpp
+std::chrono::time_point<std::chrono::steady_clock> t = std::chrono::steady_clock::now();
+```
+
+## duration
+
+A `duration` represents a span of time. Subtracting two `time_point`s yields a `duration`:
+
+```cpp
+std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
+// ... work ...
+std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
+std::chrono::duration<long, std::nano> elapsed = end - start;
+```
+
+Use `duration_cast` to convert to a specific unit, then `.count()` to extract the raw value:
+
+```cpp
+std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
+std::chrono::microseconds us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed);
+
+std::cout << ms.count() << " ms\n";
+std::cout << us.count() << " us\n";
+```
+
+### Predefined duration types
+
+```cpp
+std::chrono::nanoseconds
+std::chrono::microseconds
+std::chrono::milliseconds
+std::chrono::seconds
+std::chrono::minutes
+std::chrono::hours
+```
+
+## Measuring elapsed time
+
+```cpp
+#include <iostream>
+#include <chrono>
+#include <thread>
+
+int main() {
+    std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+
+    std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
+    std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    std::cout << "Elapsed: " << elapsed.count() << " ms\n";  // 200 ms
+}
+```
+
+## Sleeping
+
+```cpp
+#include <thread>
+#include <chrono>
+
+// sleep for a duration
+std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+// sleep until a specific time_point
+std::chrono::time_point<std::chrono::steady_clock> wake = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+std::this_thread::sleep_until(wake);
+```
+
+## system_clock — wall time and timestamps
+
+`system_clock` is convertible to `std::time_t`, which allows formatting with standard C functions.
+
+```cpp
+#include <iostream>
+#include <chrono>
+#include <ctime>
+
+int main() {
+    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+    std::time_t t = std::chrono::system_clock::to_time_t(now);
+    std::cout << std::ctime(&t);  // Wed Apr  1 14:32:10 2026
+}
+```
+
+### Formatted timestamp
+
+```cpp
+#include <chrono>
+#include <ctime>
+
+void print_current_time(){
+    std::chrono::time_point<std::chrono::system_clock> system_now = std::chrono::system_clock::now(); // time point
+
+    time_t system_now_t = std::chrono::system_clock::to_time_t(system_now); // integer value of time point in seconds
+
+    std::tm* local = std::localtime(&system_now_t); // breaks the total second count into calendar fields (hour, min, day, month, year...)
+
+    char buffer[64];
+    std::strftime(buffer, sizeof(buffer), "%H:%M - %d/%m/%Y", local); // formatting the local time
+    std::cout << "Current Time: " << buffer << std::endl;
+}
+```
+
+```
+struct tm {
+    int tm_sec;    // seconds       [0, 60]
+    int tm_min;    // minutes       [0, 59]
+    int tm_hour;   // hours         [0, 23]
+    int tm_mday;   // day of month  [1, 31]
+    int tm_mon;    // month         [0, 11]  ← 0 = January
+    int tm_year;   // years since 1900
+    int tm_wday;   // day of week   [0, 6]   ← 0 = Sunday
+    int tm_yday;   // day of year   [0, 365]
+    int tm_isdst;  // daylight saving time flag
+};
+```
+
+## Summary
+
+| Concept | Purpose |
+|---|---|
+| `steady_clock` | Monotonic clock — measuring elapsed time |
+| `system_clock` | Real wall clock — timestamps and logging |
+| `time_point` | A moment in time from a clock's perspective |
+| `duration` | A span of time between two time_points |
+| `duration_cast` | Convert duration to a specific unit |
+| `.count()` | Extract the raw numeric value from a duration |
+| `sleep_for` | Pause the current thread for a duration |
+| `sleep_until` | Pause the current thread until a time_point |
+| `to_time_t` | Convert system_clock time_point to std::time_t |
+| `std::put_time` | Format time using strftime-style tokens |
+
+---
+
+# C++ Exception Handling (try-catch)
+
+```cpp
+#include <iostream>
+#include <stdexcept>
+
+int divide(int a, int b){
+    if (b == 0){
+        throw std::runtime_error("Division by zero");
+    }
+    return a / b;
+}
+
+int parse_and_divide(const std::string& a, const std::string& b){
+    if (!std::isdigit(a[0]) || !std::isdigit(b[0])){
+        throw std::invalid_argument("Arguments must be numeric");
+    }
+    return divide(std::stoi(a), std::stoi(b));
+}
+
+int main(){
+    try{
+        int result = divide(10, 0);
+        // int result = parse_and_divide("10", "abc");
+        std::cout << result << std::endl;
+    } catch (const std::runtime_error &e){
+        std::cout << "Caught: " << e.what() << std::endl;
+    } catch (const std::invalid_argument &e){
+        std::cout << "Caught: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
+```
+
+## Standard Exception Types (`<stdexcept>`)
+
+| Exception | Inherits From | When to Use | Auto-thrown? |
+|---|---|---|---|
+| `std::runtime_error` | `std::exception` | General runtime failures | No — throw manually |
+| `std::invalid_argument` | `std::logic_error` | Bad input to a function | No — throw manually |
+| `std::out_of_range` | `std::logic_error` | Index or value out of valid range | By `std::vector::at()`, `std::string::at()` |
+| `std::overflow_error` | `std::runtime_error` | Arithmetic overflow | No — throw manually |
+| `std::logic_error` | `std::exception` | Violated logical precondition | No — throw manually |
+| `std::bad_alloc` | `std::exception` | Memory allocation failure | Yes — by `new` |
+| `std::bad_cast` | `std::exception` | Failed `dynamic_cast` to reference | Yes — by `dynamic_cast` |
+
+## Key Concepts
+
+**Exceptions don't throw themselves.**
+`std::invalid_argument`, `std::runtime_error`, etc. are just classes. They only fire when you explicitly `throw` them. The names are conventions to communicate intent.
+
+**Catch order matters.**
+Derived types must be caught before base types. Since most standard exceptions inherit from `std::exception`, catching `std::exception` first would swallow everything.
+
+```cpp
+// Wrong — std::exception catches everything before the specific handlers
+catch (const std::exception &e) { ... }
+catch (const std::runtime_error &e) { ... }  // never reached
+
+// Correct — specific first, general last
+catch (const std::runtime_error &e) { ... }
+catch (const std::exception &e) { ... }
+```
+
+**Catch-all.**
+`catch (...)` catches any thrown type, including non-standard ones. Use as a last resort.
+
+**No `finally` in C++.**
+Use RAII instead — destructors run automatically when objects go out of scope, even during stack unwinding from an exception.
+
+---
+
+# Singleton in C++ (Design Pattern)
+
+A singleton ensures only one instance of a class ever exists, accessible globally without passing an object around.
+
+## Structure
+
+```cpp
+class Database {
+private:
+    std::string m_Name;
+
+    Database(const std::string& name) : m_Name(name) {}  // private — blocks direct construction
+
+public:
+    static Database& get() {
+        static Database* instance = new Database("MyDB");  // created once
+        return *instance;
+    }
+
+    void query(const std::string& sql) {
+        std::cout << "[" << m_Name << "] Running: " << sql << std::endl;
+    }
+};
+
+int main() {
+    Database::get().query("SELECT * FROM users");
+    Database::get().query("SELECT * FROM orders");
+}
+```
+
+## How it works
+
+**Private constructor** — prevents creating an object directly. Forces all access through `get()`.
+```cpp
+Database db("MyDB");        // ERROR — constructor is private
+Database::get().query(...); // only allowed way
+```
+
+**`static Database* instance`** — local static variable, initialized once on the first call to `get()`. Every subsequent call skips the line and reuses the same pointer.
+
+**`static Database& get()`** — static member function, callable without an existing object via `::`. Breaks the chicken-and-egg problem: you need `get()` to get the object, but you can't call a non-static function without one.
+
+```cpp
+// non-static would require an object first:
+Database db;           // can't — constructor is private
+db.get();              // can't reach here
+
+// static breaks the cycle:
+Database::get();       // no object needed
+```
+
+**`return *instance`** — dereferences the pointer to return a reference, so callers use `.` instead of `->`.
+
+## Why the pointer is never deleted
+
+```cpp
+static Database* instance = new Database("MyDB");  // intentional leak
+```
+
+If `instance` were a value instead of a pointer, its destructor would run at program exit. At that point other static objects may already be destroyed, causing undefined behavior. The pointer is intentionally leaked — the OS reclaims memory when the process exits anyway.
+
+## Singleton vs passing an object
+
+```cpp
+// singleton — no passing needed
+void function1() { Database::get().query("SELECT * FROM users"); }
+void function2() { Database::get().query("SELECT * FROM orders"); }
+
+// passing by reference — every function needs an extra parameter
+void function1(Database& db) { db.query("SELECT * FROM users"); }
+void function2(Database& db) { db.query("SELECT * FROM orders"); }
+```
+
+| | Singleton | Passing by reference |
+|---|---|---|
+| Convenience | No parameters needed | Extra parameter everywhere |
+| Explicitness | Dependency hidden | Dependency visible |
+| Testability | Hard to swap out | Easy to swap out |
+
+## `::` scope resolution operator
+
+`::` means "look inside this scope for that name." It works identically for namespaces and classes.
+
+```cpp
+std::string        // look inside std namespace for string
+Database::get()    // look inside Database class for get()
+```
+
+Use `::` for anything that belongs to the **class itself** — static functions, static variables, nested types. For anything that belongs to an **instance**, use `.` or `->` instead.
+
+```cpp
+Database::get()             // belongs to the class — ::
+Database::instanceCount     // static variable — ::
+
+Database& db = Database::get();
+db.query("SELECT...");      // belongs to the instance — .
+```
+
+The private constructor in a singleton has nothing to do with `::`. Any class with a public constructor works the same way:
+
+```cpp
+class Dog {
+public:
+    Dog(const std::string& name) {}
+    static void bark() { std::cout << "Woof!" << std::endl; }
+};
+
+Dog::bark();     // :: on a class with public constructor — fine
+Dog dog("Rex");  // instance creation still works normally
+```
+
+## When to use
+
+Singletons are a good fit when there is genuinely one shared resource for the whole program — a logger, a profiler, a configuration manager, a database connection. Avoid using them just for convenience when passing an object would be clearer.
+
+---
+
+# `<fstream>` in C++
+
+## Main Code
+```cpp
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+
+
+enum class FSTREAM_OP{
+    READ_BY_WORD,
+    READ_BY_LINE,
+    READ_ENTIRE,
+    WRITE,
+    APPEND,
+    READ_WRITE
+};
+
+int main(){
+    
+    FSTREAM_OP selection = FSTREAM_OP::READ_WRITE;
+
+    switch (selection){
+
+        // Reading word by word
+        case (FSTREAM_OP::READ_BY_WORD): {
+            std::ifstream file("/home/oben/Projects/cpp_exercises/cherno/config/input.txt");
+            std::string word;
+            if (file.is_open()) {
+                while (file >> word) {
+                    std::cout << word << std::endl;
+                }
+            } else {
+                std::cout << "File not opened" << std::endl;
+            }
+            break;
+        }
+
+        // Reading line by line
+        case (FSTREAM_OP::READ_BY_LINE): { 
+            std::ifstream file("/home/oben/Projects/cpp_exercises/cherno/config/input.txt");
+            std::string line;
+            if(file.is_open()){
+                while(std::getline(file, line)){
+                    std::cout << line << std::endl;
+                }
+            }
+            else{
+                std::cout << "File not opened" << std::endl;
+            }
+            break;
+        }
+
+        // Reading entire file into a string
+        case (FSTREAM_OP::READ_ENTIRE): { 
+            std::ifstream file("/home/oben/Projects/cpp_exercises/cherno/config/input.txt");
+            std::ostringstream buffer; //sstream definition
+            if(file.is_open()){
+                buffer << file.rdbuf();
+                std::string content = buffer.str();
+                std::cout << content << std::endl;
+            }
+            else{
+                std::cout << "File not opened" << std::endl;
+            }
+            break;
+        }
+
+        // Writing into a new file
+        case (FSTREAM_OP::WRITE): {
+            std::ofstream outFile("/home/oben/Projects/cpp_exercises/cherno/config/output.txt");
+            if(outFile.is_open()){
+                outFile << "Hello World\n";
+                outFile << "Second Line\n";
+                std::cout << "File written succesfully" << std::endl;
+            }
+            else{
+                std::cout << "File not opened" << std::endl;
+            }
+            break;
+        }
+
+        // Appending to a file
+        case (FSTREAM_OP::APPEND): {
+            std::ofstream appendFile("/home/oben/Projects/cpp_exercises/cherno/config/output.txt", std::ios::app);
+            if(appendFile.is_open()){
+                appendFile << "Appended Line\n";
+                std::cout << "File appended successfully" << std::endl;
+            }
+            else{
+                std::cout << "File not opened" << std::endl;
+            }
+            break;
+        }
+
+        // Reading and writing the same file
+        case (FSTREAM_OP::READ_WRITE): {
+            std::fstream rwFile("/home/oben/Projects/cpp_exercises/cherno/config/output.txt", 
+                std::ios::in | std::ios::out | std::ios::app);
+            if(rwFile.is_open()){
+                rwFile << "Read/Write Line\n";
+                rwFile.seekg(0); // seek back to beginning for reading
+                std::string line;
+                while(std::getline(rwFile, line)){
+                    std::cout << line << std::endl;
+                }
+            }
+            else{
+                std::cout << "File not opened" << std::endl;
+            }
+            break;
+        }
+
+        default:
+            std::cout << "Default" << std::endl;
+            break;
+    }
+
+    return 0;
+}
+```
+
+## Types
+
+| Type | Default mode | Use |
+|---|---|---|
+| `std::ifstream` | `std::ios::in` | Reading from a file |
+| `std::ofstream` | `std::ios::out` | Writing to a file |
+| `std::fstream` | none — must specify | Reading and writing the same file |
+
+`ifstream` and `ofstream` have their modes baked in — no need to specify them explicitly. `fstream` is a blank slate so both must be specified.
+
+## Open modes
+
+| Mode | Effect |
+|---|---|
+| `std::ios::in` | Enable reading |
+| `std::ios::out` | Enable writing |
+| `std::ios::app` | Writes go to end of file |
+| `std::ios::trunc` | Wipe file on open (default with `out`) |
+| `std::ios::binary` | Binary mode — no newline translation |
+
+Combine with `|`:
+```cpp
+std::fstream file("data.txt", std::ios::in | std::ios::out | std::ios::app);
+```
+
+## Reading word by word
+
+```cpp
+std::ifstream file("input.txt");
+std::string word;
+if (file.is_open()) {
+    while (file >> word) {
+        std::cout << word << std::endl;
+    }
+}
+```
+
+`>>` extracts one whitespace-separated token at a time.
+
+## Reading line by line
+
+```cpp
+std::ifstream file("input.txt");
+std::string line;
+if (file.is_open()) {
+    while (std::getline(file, line)) {
+        std::cout << line << std::endl;
+    }
+}
+```
+
+`std::getline` reads until `\n`, stripping the newline character.
+
+## Reading entire file into a string
+
+```cpp
+#include <sstream>
+
+std::ifstream file("input.txt");
+std::ostringstream buffer;
+if (file.is_open()) {
+    buffer << file.rdbuf();
+    std::string content = buffer.str();
+    std::cout << content << std::endl;
+}
+```
+
+`file.rdbuf()` dumps the entire file buffer into the `ostringstream` at once. The string already contains all `\n` characters so it prints naturally line by line.
+
+## Writing to a file
+
+```cpp
+std::ofstream file("output.txt");  // truncates existing content
+if (file.is_open()) {
+    file << "Hello World\n";
+    file << "Second Line\n";
+}
+```
+
+File is closed automatically when `file` goes out of scope — RAII.
+
+## Appending to a file
+
+```cpp
+std::ofstream file("output.txt", std::ios::app);
+if (file.is_open()) {
+    file << "Appended Line\n";
+}
+```
+
+Without `std::ios::app`, `ofstream` truncates the file on open by default.
+
+## Reading and writing the same file
+
+```cpp
+std::fstream file("output.txt", std::ios::in | std::ios::out | std::ios::app);
+if (file.is_open()) {
+    file << "New Line\n";   // appended to end
+    file.seekg(0);          // rewind read position to beginning
+    std::string line;
+    while (std::getline(file, line)) {
+        std::cout << line << std::endl;
+    }
+}
+```
+
+`seekg(0)` rewinds the read position. `app` ensures writes go to the end. Both `in` and `out` must be specified explicitly since `fstream` has no defaults.
+
+## Checking stream state
+
+```cpp
+file.is_open()  // opened successfully
+file.good()     // no errors
+file.eof()      // end of file reached
+file.fail()     // operation failed
+file.bad()      // unrecoverable error
+file.clear()    // reset error flags
+```
+
+Or check as bool directly:
+```cpp
+if (!file) {
+    std::cerr << "Something went wrong" << std::endl;
+}
+```
+
+## seekg vs seekp
+
+| Function | Moves |
+|---|---|
+| `seekg(0)` | Read position |
+| `seekp(0)` | Write position |
+
+Used with `fstream` when you need to reposition after reading or writing.
+
+---
+
+# `<iostream>` — C++ Standard I/O
+
+## Stream objects
+
+| Object | Direction | Buffered | Target |
+|---|---|---|---|
+| `std::cin` | input | yes | stdin (keyboard) |
+| `std::cout` | output | yes | stdout (terminal) |
+| `std::cerr` | output | **no** | stderr (immediate) |
+| `std::clog` | output | yes | stderr (diagnostic) |
+
+```cpp
+#include <iostream>
+
+std::cout << "Hello\n";          // output
+std::cerr << "Fatal error\n";    // unbuffered — written immediately
+std::clog << "Debug info\n";     // buffered diagnostic
+```
+
+---
+
+## Basic output
+
+```cpp
+int x = 42;
+double pi = 3.14;
+std::string s = "world";
+
+std::cout << "x=" << x << "  pi=" << pi << "  s=" << s << '\n';
+// x=42  pi=3.14  s=world
+```
+
+### `'\n'` vs `std::endl`
+
+```cpp
+std::cout << "line\n";              // fast — newline only
+std::cout << "line" << std::endl;   // newline + flush (expensive syscall)
+```
+
+Prefer `'\n'` in loops. Use `std::endl` (or `std::flush`) only when you need output to appear immediately.
+
+### `std::flush` vs `std::endl`
+
+`std::endl` = `'\n'` + `std::flush`. The difference is only visible when something slow follows:
+
+```cpp
+std::cout << "Computing... " << std::flush;          // appears immediately
+std::this_thread::sleep_for(std::chrono::seconds(2));
+std::cout << "done\n";
+
+std::cout << "Computing... ";                        // may not appear until after sleep
+std::this_thread::sleep_for(std::chrono::seconds(2));
+std::cout << "done\n";
+```
+
+---
+
+## Basic input
+
+```cpp
+// Single value — stops at whitespace
+int age;
+std::cin >> age;
+
+// Multiple values on one line
+int x, y;
+std::cin >> x >> y;
+
+// Whole line — reads until '\n'
+std::string fullName;
+std::getline(std::cin, fullName);
+```
+
+### The `>>` + `getline` trap
+
+`>>` leaves a `'\n'` in the buffer. `getline` sees it immediately and returns empty.
+
+```cpp
+int age;
+std::cin >> age;               // buffer still has '\n'
+
+// BAD — getline returns "" immediately
+std::getline(std::cin, name);
+
+// GOOD — consume leftover whitespace first
+std::getline(std::cin >> std::ws, name);
+```
+
+### Input validation
+
+```cpp
+int x;
+while (!(std::cin >> x)) {
+    std::cin.clear();            // clear error flags
+    std::cin.ignore(1000, '\n'); // discard bad input
+    std::cout << "Invalid, try again: ";
+}
+```
+
+---
+
+## Formatting — `<iomanip>`
+
+```cpp
+#include <iomanip>
+```
+
+### `std::fixed` vs default
+
+```cpp
+constexpr double pi = 3.14159265;
+
+std::cout << std::setprecision(4) << pi << '\n';               // 3.142  (4 significant digits)
+std::cout << std::fixed << std::setprecision(4) << pi << '\n'; // 3.1416 (4 after decimal)
+```
+
+`std::fixed` makes `setprecision` control digits *after* the decimal point.
+Without it, `setprecision` controls total significant digits.
+
+### Numeric bases
+
+```cpp
+int val = 255;
+std::cout << std::hex << val << '\n';   // ff
+std::cout << std::oct << val << '\n';   // 377
+std::cout << std::dec << val << '\n';   // 255  (reset to decimal)
+```
+
+### Boolean text
+
+```cpp
+std::cout << std::boolalpha   << true << '\n';  // true
+std::cout << std::noboolalpha << true << '\n';  // 1
+```
+
+---
+
+## Column alignment
+
+```cpp
+// std::left  — pad on the right (text columns)
+// std::right — pad on the left  (number columns, default)
+// std::setw(n) — field width, resets after each use (non-sticky)
+
+std::cout << std::left
+          << std::setw(12) << "Item"
+          << std::setw(8)  << "Qty"
+          << std::setw(10) << "Price" << '\n';
+
+std::cout << std::setw(12) << "Widget"
+          << std::setw(8)  << 42
+          << std::setw(10) << 9.99 << '\n';
+```
+
+```
+Item        Qty     Price
+Widget      42      9.99
+```
+
+### Fill character
+
+```cpp
+std::cout << std::setfill('0') << std::setw(6) << 42 << '\n';  // 000042
+std::cout << std::setfill('-') << std::setw(10) << "hi" << '\n'; // --------hi
+```
+
+---
+
+## Sticky vs non-sticky flags
+
+Most format flags persist until you explicitly reset them. `std::setw` is the exception.
+
+| Flag | Sticky |
+|---|---|
+| `std::fixed`, `std::hex`, `std::left` | yes |
+| `std::boolalpha` | yes |
+| `std::setprecision` | yes |
+| `std::setfill` | yes |
+| `std::setw` | **no** — resets after one use |
+
+```cpp
+std::cout << std::fixed << std::setprecision(2);
+
+std::cout << 3.14159 << '\n';   // 3.14  (fixed still active)
+std::cout << 2.71828 << '\n';   // 2.72  (fixed still active)
+
+// Reset
+std::cout << std::defaultfloat << std::setprecision(6);
+```
+
+---
+
+## Quick reference — manipulators
+
+| Manipulator | Effect |
+|---|---|
+| `std::endl` | `'\n'` + flush |
+| `std::flush` | flush buffer only |
+| `std::ws` | skip leading whitespace (input) |
+| `std::fixed` | decimal notation |
+| `std::scientific` | scientific notation |
+| `std::defaultfloat` | reset to default |
+| `std::setprecision(n)` | precision / decimal places |
+| `std::setw(n)` | field width (non-sticky) |
+| `std::setfill(c)` | padding character |
+| `std::left` / `std::right` | alignment |
+| `std::hex` / `std::oct` / `std::dec` | numeric base |
+| `std::boolalpha` / `std::noboolalpha` | bool as text |

@@ -57,10 +57,20 @@ add_executable(64_multidimensional_arrays src/64_multidimensional_arrays.cpp)
 add_executable(65_sorting src/65_sorting.cpp)
 add_executable(68_virtual_destructors src/68_virtual_destructors.cpp)
 add_executable(69_casting src/69_casting.cpp)
-add_executable(try_catch src/try_catch.cpp)
+
 add_executable(76_std_optional src/76_std_optional.cpp)
 add_executable(77_std_variant src/77_std_variant.cpp)
 add_executable(78_std_any src/78_std_any.cpp)
 add_executable(79_std_async src/79_std_async.cpp)
 add_executable(80_string_vs_string_view src/80_string_vs_string_view.cpp)
 add_executable(81_visual_bencmarking src/81_visual_bencmarking.cpp)
+add_executable(82_singleton src/82_singleton.cpp)
+add_executable(84_track_memory src/84_track_memory.cpp)
+
+
+add_executable(try_catch src/try_catch.cpp)
+add_executable(std_optional_variant_any src/std_optional_variant_any.cpp)
+add_executable(fstream src/fstream.cpp)
+add_executable(iostream src/iostream.cpp)
+
+

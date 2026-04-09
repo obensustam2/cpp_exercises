@@ -2,10 +2,7 @@
 #include <string>
 
 
-
-uint32_t s_AllocCount = 0;
 void* operator new(size_t size){
-    s_AllocCount++;
     std::cout << "Allocating " << size << " bytes\n";
     return malloc(size); // what default new function do
 }

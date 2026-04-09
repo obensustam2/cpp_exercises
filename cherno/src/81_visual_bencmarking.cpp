@@ -36,24 +36,10 @@ public:
         m_CurrentSession = new InstrumentationSession{name};
     }
 
-    void endSession(){
-        writeFooter();
-        m_OutputStream.close();
-        delete m_CurrentSession;
-        m_CurrentSession = nullptr;
-        m_ProfileCount = 0;
-    }
-
     void writeHeader(){
         m_OutputStream << "{\n";
         m_OutputStream << "    \"otherData\": {},\n";
         m_OutputStream << "    \"traceEvents\": [\n";
-        m_OutputStream.flush();
-    }
-
-    void writeFooter(){
-        m_OutputStream << "\n    ]\n";
-        m_OutputStream << "}\n";
         m_OutputStream.flush();
     }
 
@@ -75,6 +61,20 @@ public:
         m_OutputStream << "            \"ts\": " << result.Start << "\n";
         m_OutputStream << "        }";
 
+        m_OutputStream.flush();
+    }
+
+    void endSession(){
+        writeFooter();
+        m_OutputStream.close();
+        delete m_CurrentSession;
+        m_CurrentSession = nullptr;
+        m_ProfileCount = 0;
+    }
+
+    void writeFooter(){
+        m_OutputStream << "\n    ]\n";
+        m_OutputStream << "}\n";
         m_OutputStream.flush();
     }
 
