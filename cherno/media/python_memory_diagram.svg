@@ -1,0 +1,296 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1060" width="960" height="1060" font-family="monospace" font-size="12">
+  <rect width="960" height="1060" fill="#FAFAF8"/>
+
+  <!-- ─────────────── helpers ─────────────── -->
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M1 1L9 5L1 9" fill="none" stroke="#888" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- ══════════════════════════════════════
+       STACK
+  ══════════════════════════════════════ -->
+  <text x="82" y="22" font-size="11" fill="#888" font-family="sans-serif" font-weight="600" letter-spacing="1">STACK</text>
+
+  <!-- row macro: 8 cells wide=34 gap=1, start x=80, row y=top -->
+  <!-- 0x1000  'a' → 0x2040 -->
+  <text x="10" y="58" fill="#666" font-size="11">0x1000</text>
+  <rect x="80"  y="42" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="97"  y="59" text-anchor="middle" fill="#534AB7" font-size="11">40</text>
+  <rect x="115" y="42" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="132" y="59" text-anchor="middle" fill="#534AB7" font-size="11">20</text>
+  <rect x="150" y="42" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="167" y="59" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <rect x="185" y="42" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="202" y="59" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <rect x="220" y="42" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="237" y="59" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <rect x="255" y="42" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="272" y="59" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <rect x="290" y="42" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="307" y="59" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <rect x="325" y="42" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="342" y="59" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <text x="372" y="59" fill="#333" font-size="12">PyObject*  <tspan fill="#534AB7" font-weight="bold">a</tspan></text>
+
+  <!-- 0x1008  'b' → 0x2040 -->
+  <text x="10" y="98" fill="#666" font-size="11">0x1008</text>
+  <rect x="80"  y="82" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="97"  y="99" text-anchor="middle" fill="#534AB7" font-size="11">40</text>
+  <rect x="115" y="82" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="132" y="99" text-anchor="middle" fill="#534AB7" font-size="11">20</text>
+  <rect x="150" y="82" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="167" y="99" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <rect x="185" y="82" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="202" y="99" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <rect x="220" y="82" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="237" y="99" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <rect x="255" y="82" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="272" y="99" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <rect x="290" y="82" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="307" y="99" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <rect x="325" y="82" width="34" height="26" rx="3" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/><text x="342" y="99" text-anchor="middle" fill="#534AB7" font-size="11">00</text>
+  <text x="372" y="99" fill="#333" font-size="12">PyObject*  <tspan fill="#534AB7" font-weight="bold">b</tspan></text>
+
+  <!-- arrows: a → 0x2040 and b → 0x2040 -->
+  <!-- both exit right of cell row, go right then down to list ob_refcnt row center -->
+  <path d="M 420 55 L 450 55 L 450 175 L 432 175" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr)"/>
+  <path d="M 420 95 L 440 95 L 440 175 L 432 175" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr)"/>
+
+  <line x1="10" y1="118" x2="950" y2="118" stroke="#CCC" stroke-width="0.5" stroke-dasharray="4,3"/>
+
+  <!-- ══════════════════════════════════════
+       HEAP — PyListObject @ 0x2040
+  ══════════════════════════════════════ -->
+  <text x="82" y="140" font-size="11" fill="#888" font-family="sans-serif" font-weight="600" letter-spacing="1">HEAP</text>
+
+  <!-- 0x2040  ob_refcnt = 2 -->
+  <text x="10" y="178" fill="#666" font-size="11">0x2040</text>
+  <rect x="80"  y="162" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="97"  y="179" text-anchor="middle" fill="#0C447C" font-size="11">02</text>
+  <rect x="115" y="162" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="132" y="179" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="150" y="162" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="167" y="179" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="185" y="162" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="202" y="179" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="220" y="162" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="237" y="179" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="255" y="162" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="272" y="179" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="290" y="162" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="307" y="179" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="325" y="162" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="342" y="179" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <text x="372" y="179" fill="#333" font-size="12">ob_refcnt = <tspan fill="#0C447C" font-weight="bold">2</tspan>   (PyListObject @ 0x2040)</text>
+
+  <!-- 0x2048  ob_type -->
+  <text x="10" y="218" fill="#666" font-size="11">0x2048</text>
+  <rect x="80"  y="202" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="97"  y="219" text-anchor="middle" fill="#0C447C" font-size="11">C0</text>
+  <rect x="115" y="202" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="132" y="219" text-anchor="middle" fill="#0C447C" font-size="11">8A</text>
+  <rect x="150" y="202" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="167" y="219" text-anchor="middle" fill="#0C447C" font-size="11">4F</text>
+  <rect x="185" y="202" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="202" y="219" text-anchor="middle" fill="#0C447C" font-size="11">B2</text>
+  <rect x="220" y="202" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="237" y="219" text-anchor="middle" fill="#0C447C" font-size="11">7F</text>
+  <rect x="255" y="202" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="272" y="219" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="290" y="202" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="307" y="219" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="325" y="202" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="342" y="219" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <text x="372" y="219" fill="#333" font-size="12">ob_type  →  &amp;PyList_Type</text>
+
+  <!-- 0x2050  ob_size = 3 -->
+  <text x="10" y="258" fill="#666" font-size="11">0x2050</text>
+  <rect x="80"  y="242" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="97"  y="259" text-anchor="middle" fill="#0C447C" font-size="11">03</text>
+  <rect x="115" y="242" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="132" y="259" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="150" y="242" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="167" y="259" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="185" y="242" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="202" y="259" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="220" y="242" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="237" y="259" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="255" y="242" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="272" y="259" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="290" y="242" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="307" y="259" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="325" y="242" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="342" y="259" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <text x="372" y="259" fill="#333" font-size="12">ob_size  =  <tspan fill="#0C447C" font-weight="bold">3</tspan></text>
+
+  <!-- 0x2058  ob_item → 0x3080 -->
+  <text x="10" y="298" fill="#666" font-size="11">0x2058</text>
+  <rect x="80"  y="282" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="97"  y="299" text-anchor="middle" fill="#0C447C" font-size="11">80</text>
+  <rect x="115" y="282" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="132" y="299" text-anchor="middle" fill="#0C447C" font-size="11">30</text>
+  <rect x="150" y="282" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="167" y="299" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="185" y="282" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="202" y="299" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="220" y="282" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="237" y="299" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="255" y="282" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="272" y="299" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="290" y="282" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="307" y="299" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <rect x="325" y="282" width="34" height="26" rx="3" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/><text x="342" y="299" text-anchor="middle" fill="#0C447C" font-size="11">00</text>
+  <text x="372" y="299" fill="#333" font-size="12">ob_item  →  0x3080  (item pointer array)</text>
+  <!-- arrow ob_item → item array -->
+  <path d="M 630 295 L 660 295 L 660 348 L 432 348" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr)"/>
+
+  <line x1="10" y1="316" x2="950" y2="316" stroke="#DDD" stroke-width="0.5" stroke-dasharray="2,3"/>
+
+  <!-- ══════════════════════════════════════
+       Item pointer array @ 0x3080
+  ══════════════════════════════════════ -->
+
+  <!-- 0x3080  items[0] → 0x4000 -->
+  <text x="10" y="358" fill="#666" font-size="11">0x3080</text>
+  <rect x="80"  y="342" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="97"  y="359" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="115" y="342" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="132" y="359" text-anchor="middle" fill="#633806" font-size="11">40</text>
+  <rect x="150" y="342" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="167" y="359" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="185" y="342" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="202" y="359" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="220" y="342" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="237" y="359" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="255" y="342" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="272" y="359" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="290" y="342" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="307" y="359" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="325" y="342" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="342" y="359" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <text x="372" y="359" fill="#333" font-size="12">items[0]  →  0x4000  (int(1))</text>
+  <!-- arrow → int(1) ob_refcnt row center y=488 -->
+  <path d="M 560 355 L 680 355 L 680 488 L 432 488" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr)"/>
+
+  <!-- 0x3088  items[1] → 0x4020 -->
+  <text x="10" y="398" fill="#666" font-size="11">0x3088</text>
+  <rect x="80"  y="382" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="97"  y="399" text-anchor="middle" fill="#633806" font-size="11">20</text>
+  <rect x="115" y="382" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="132" y="399" text-anchor="middle" fill="#633806" font-size="11">40</text>
+  <rect x="150" y="382" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="167" y="399" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="185" y="382" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="202" y="399" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="220" y="382" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="237" y="399" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="255" y="382" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="272" y="399" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="290" y="382" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="307" y="399" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="325" y="382" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="342" y="399" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <text x="372" y="399" fill="#333" font-size="12">items[1]  →  0x4020  (int(2))</text>
+  <!-- arrow → int(2) ob_refcnt row center y=648 -->
+  <path d="M 560 395 L 700 395 L 700 648 L 432 648" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr)"/>
+
+  <!-- 0x3090  items[2] → 0x4040 -->
+  <text x="10" y="438" fill="#666" font-size="11">0x3090</text>
+  <rect x="80"  y="422" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="97"  y="439" text-anchor="middle" fill="#633806" font-size="11">40</text>
+  <rect x="115" y="422" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="132" y="439" text-anchor="middle" fill="#633806" font-size="11">40</text>
+  <rect x="150" y="422" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="167" y="439" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="185" y="422" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="202" y="439" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="220" y="422" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="237" y="439" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="255" y="422" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="272" y="439" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="290" y="422" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="307" y="439" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <rect x="325" y="422" width="34" height="26" rx="3" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/><text x="342" y="439" text-anchor="middle" fill="#633806" font-size="11">00</text>
+  <text x="372" y="439" fill="#333" font-size="12">items[2]  →  0x4040  (int(3))</text>
+  <!-- arrow → int(3) ob_refcnt row center y=808 -->
+  <path d="M 560 435 L 720 435 L 720 808 L 432 808" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr)"/>
+
+  <line x1="10" y1="456" x2="950" y2="456" stroke="#DDD" stroke-width="0.5" stroke-dasharray="2,3"/>
+
+  <!-- ══════════════════════════════════════
+       PyLongObject int(1) @ 0x4000
+  ══════════════════════════════════════ -->
+
+  <!-- 0x4000  ob_refcnt -->
+  <text x="10" y="498" fill="#666" font-size="11">0x4000</text>
+  <rect x="80"  y="472" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="97"  y="489" text-anchor="middle" fill="#04342C" font-size="11">63</text>
+  <rect x="115" y="472" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="132" y="489" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="150" y="472" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="167" y="489" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="185" y="472" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="202" y="489" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="220" y="472" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="237" y="489" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="255" y="472" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="272" y="489" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="290" y="472" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="307" y="489" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="325" y="472" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="342" y="489" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <text x="372" y="489" fill="#333" font-size="12">ob_refcnt =  99+  (cached, never freed)</text>
+
+  <!-- 0x4008  ob_type -->
+  <text x="10" y="538" fill="#666" font-size="11">0x4008</text>
+  <rect x="80"  y="512" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="97"  y="529" text-anchor="middle" fill="#04342C" font-size="11">A0</text>
+  <rect x="115" y="512" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="132" y="529" text-anchor="middle" fill="#04342C" font-size="11">6B</text>
+  <rect x="150" y="512" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="167" y="529" text-anchor="middle" fill="#04342C" font-size="11">3C</text>
+  <rect x="185" y="512" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="202" y="529" text-anchor="middle" fill="#04342C" font-size="11">9D</text>
+  <rect x="220" y="512" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="237" y="529" text-anchor="middle" fill="#04342C" font-size="11">7F</text>
+  <rect x="255" y="512" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="272" y="529" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="290" y="512" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="307" y="529" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="325" y="512" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="342" y="529" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <text x="372" y="529" fill="#333" font-size="12">ob_type  →  &amp;PyLong_Type</text>
+
+  <!-- 0x4010  ob_digit = 1 -->
+  <text x="10" y="578" fill="#666" font-size="11">0x4010</text>
+  <rect x="80"  y="552" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="97"  y="569" text-anchor="middle" fill="#085041" font-weight="bold" font-size="11">01</text>
+  <rect x="115" y="552" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="132" y="569" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="150" y="552" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="167" y="569" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="185" y="552" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="202" y="569" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="220" y="552" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="237" y="569" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="255" y="552" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="272" y="569" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="290" y="552" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="307" y="569" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="325" y="552" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="342" y="569" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <text x="372" y="569" fill="#333" font-size="12">ob_digit  = <tspan fill="#085041" font-weight="bold">1</tspan>   ← actual value</text>
+
+  <line x1="10" y1="588" x2="950" y2="588" stroke="#DDD" stroke-width="0.5" stroke-dasharray="2,3"/>
+
+  <!-- ══════════════════════════════════════
+       PyLongObject int(2) @ 0x4020
+  ══════════════════════════════════════ -->
+
+  <!-- 0x4020  ob_refcnt -->
+  <text x="10" y="638" fill="#666" font-size="11">0x4020</text>
+  <rect x="80"  y="632" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="97"  y="649" text-anchor="middle" fill="#04342C" font-size="11">63</text>
+  <rect x="115" y="632" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="132" y="649" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="150" y="632" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="167" y="649" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="185" y="632" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="202" y="649" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="220" y="632" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="237" y="649" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="255" y="632" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="272" y="649" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="290" y="632" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="307" y="649" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="325" y="632" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="342" y="649" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <text x="372" y="649" fill="#333" font-size="12">ob_refcnt =  99+  (cached, never freed)</text>
+
+  <!-- 0x4028  ob_type -->
+  <text x="10" y="678" fill="#666" font-size="11">0x4028</text>
+  <rect x="80"  y="662" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="97"  y="679" text-anchor="middle" fill="#04342C" font-size="11">A0</text>
+  <rect x="115" y="662" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="132" y="679" text-anchor="middle" fill="#04342C" font-size="11">6B</text>
+  <rect x="150" y="662" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="167" y="679" text-anchor="middle" fill="#04342C" font-size="11">3C</text>
+  <rect x="185" y="662" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="202" y="679" text-anchor="middle" fill="#04342C" font-size="11">9D</text>
+  <rect x="220" y="662" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="237" y="679" text-anchor="middle" fill="#04342C" font-size="11">7F</text>
+  <rect x="255" y="662" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="272" y="679" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="290" y="662" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="307" y="679" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="325" y="662" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="342" y="679" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <text x="372" y="679" fill="#333" font-size="12">ob_type  →  &amp;PyLong_Type</text>
+
+  <!-- 0x4030  ob_digit = 2 -->
+  <text x="10" y="718" fill="#666" font-size="11">0x4030</text>
+  <rect x="80"  y="702" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="97"  y="719" text-anchor="middle" fill="#085041" font-weight="bold" font-size="11">02</text>
+  <rect x="115" y="702" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="132" y="719" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="150" y="702" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="167" y="719" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="185" y="702" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="202" y="719" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="220" y="702" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="237" y="719" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="255" y="702" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="272" y="719" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="290" y="702" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="307" y="719" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="325" y="702" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="342" y="719" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <text x="372" y="719" fill="#333" font-size="12">ob_digit  = <tspan fill="#085041" font-weight="bold">2</tspan>   ← actual value</text>
+
+  <line x1="10" y1="736" x2="950" y2="736" stroke="#DDD" stroke-width="0.5" stroke-dasharray="2,3"/>
+
+  <!-- ══════════════════════════════════════
+       PyLongObject int(3) @ 0x4040
+  ══════════════════════════════════════ -->
+
+  <!-- 0x4040  ob_refcnt -->
+  <text x="10" y="798" fill="#666" font-size="11">0x4040</text>
+  <rect x="80"  y="792" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="97"  y="809" text-anchor="middle" fill="#04342C" font-size="11">63</text>
+  <rect x="115" y="792" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="132" y="809" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="150" y="792" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="167" y="809" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="185" y="792" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="202" y="809" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="220" y="792" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="237" y="809" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="255" y="792" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="272" y="809" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="290" y="792" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="307" y="809" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="325" y="792" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="342" y="809" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <text x="372" y="809" fill="#333" font-size="12">ob_refcnt =  99+  (cached, never freed)</text>
+
+  <!-- 0x4048  ob_type -->
+  <text x="10" y="838" fill="#666" font-size="11">0x4048</text>
+  <rect x="80"  y="832" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="97"  y="849" text-anchor="middle" fill="#04342C" font-size="11">A0</text>
+  <rect x="115" y="832" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="132" y="849" text-anchor="middle" fill="#04342C" font-size="11">6B</text>
+  <rect x="150" y="832" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="167" y="849" text-anchor="middle" fill="#04342C" font-size="11">3C</text>
+  <rect x="185" y="832" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="202" y="849" text-anchor="middle" fill="#04342C" font-size="11">9D</text>
+  <rect x="220" y="832" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="237" y="849" text-anchor="middle" fill="#04342C" font-size="11">7F</text>
+  <rect x="255" y="832" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="272" y="849" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="290" y="832" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="307" y="849" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="325" y="832" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="342" y="849" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <text x="372" y="849" fill="#333" font-size="12">ob_type  →  &amp;PyLong_Type</text>
+
+  <!-- 0x4050  ob_digit = 3 -->
+  <text x="10" y="878" fill="#666" font-size="11">0x4050</text>
+  <rect x="80"  y="872" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="97"  y="889" text-anchor="middle" fill="#085041" font-weight="bold" font-size="11">03</text>
+  <rect x="115" y="872" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="132" y="889" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="150" y="872" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="167" y="889" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="185" y="872" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="202" y="889" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="220" y="872" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="237" y="889" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="255" y="872" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="272" y="889" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="290" y="872" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="307" y="889" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <rect x="325" y="872" width="34" height="26" rx="3" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/><text x="342" y="889" text-anchor="middle" fill="#04342C" font-size="11">00</text>
+  <text x="372" y="889" fill="#333" font-size="12">ob_digit  = <tspan fill="#085041" font-weight="bold">3</tspan>   ← actual value</text>
+
+  <!-- ══════════════════════════════════════
+       LEGEND
+  ══════════════════════════════════════ -->
+  <rect x="80"  y="928" width="14" height="14" rx="2" fill="#EDE8FB" stroke="#B5AEE8" stroke-width="1"/>
+  <text x="99"  y="940" fill="#555" font-size="11" font-family="sans-serif">stack reference  (PyObject*, 8 bytes)</text>
+
+  <rect x="380" y="928" width="14" height="14" rx="2" fill="#D8ECF8" stroke="#8BBCD8" stroke-width="1"/>
+  <text x="399" y="940" fill="#555" font-size="11" font-family="sans-serif">PyListObject field  (ob_refcnt / ob_type / ob_size / ob_item)</text>
+
+  <rect x="80"  y="956" width="14" height="14" rx="2" fill="#FFF0D0" stroke="#E8C97A" stroke-width="1"/>
+  <text x="99"  y="968" fill="#555" font-size="11" font-family="sans-serif">item pointer array  (raw PyObject* slots pointing to int objects)</text>
+
+  <rect x="380" y="956" width="14" height="14" rx="2" fill="#E1F5EE" stroke="#5DCAA5" stroke-width="1"/>
+  <text x="399" y="968" fill="#555" font-size="11" font-family="sans-serif">PyLongObject field  (ob_refcnt / ob_type / ob_digit)</text>
+
+  <!-- code annotation -->
+  <text x="760" y="44" fill="#AAA" font-size="11" font-family="sans-serif">a = [1, 2, 3]</text>
+  <text x="760" y="62" fill="#AAA" font-size="11" font-family="sans-serif">b = a</text>
+
+</svg>

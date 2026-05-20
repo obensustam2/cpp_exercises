@@ -61,6 +61,7 @@
    - [Pointers](#pointers)
         - [Why Pointers Exist in C++](#why-pointers-exist-in-c)
         - [Stack and Raw Heap Pointers](#stack-and-raw-heap-pointers)
+        - [C++ Pointer Memory Addresses](#c-pointer-memory-addresses)
         - [Stack and Raw Heap Objects](#stack-and-raw-heap-objects)
         - [Some Raw Pointer Problems](#some-raw-pointer-problems)
         - [Smart Pointers](#smart-pointers)
@@ -1916,8 +1917,6 @@ unsigned long long factorial(unsigned long long val){
 
 ## Sample Memory Diagram
 
-![memory diagram](cherno/media/memory_diagram.png)
-
 ```cpp
 int    a    = 175;          // 0x1000 — int,    4 bytes
 double b    = 255.0;        // 0x1008 — double, 8 bytes
@@ -1931,7 +1930,10 @@ int*   p    = new int;      // 0x1028 — points to heap (0x2040)
 
 delete val1;
 delete p;
+
 ```
+![memory diagram](cherno/media/memory_diagram.png)
+
 
 ## Stack vs Heap Memory
 | Feature              | **Stack**                                                                 | **Heap**                                                                 |
@@ -2199,6 +2201,128 @@ Heap variable updated value: 123
 
 ---
 
+## C++ Pointer Memory Addresses
+
+```cpp
+char* buffer = new char[1000000000]
+char* buffer = new char[1024 * 1024]
+int* data = new int[100]
+```
+
+<img src="cherno/media/cpp_pointer_memory_addresses.svg" width="60%"/>
+
+The formula is always:
+
+```
+address of element[i] = base address + i × sizeof(type)
+```
+
+| Type | Size |
+|---|---|
+| `char` | 1 byte |
+| `int` | 4 bytes |
+| `pointer` (`char*`, `int*`) | 8 bytes (on 64-bit systems) |
+
+---
+
+### Case 1 — `char* buffer = new char[1000000000]`
+
+```
+Stack
+─────────────────────────────────
+0x0100  │ buffer │  8 bytes  │  value: 0x20000000
+                       │
+                       └──────────────────────────────►
+Heap
+─────────────────────────────────────────────────────────
+0x20000000  buffer[0]         1 byte
+0x20000001  buffer[1]         1 byte
+...
+0x23B9AC9F  buffer[999999999] 1 byte
+```
+
+**Address calculation:**
+```
+last element = 0x20000000 + 999,999,999 × 1 = 0x23B9AC9F
+```
+
+`char` is 1 byte, so the number of elements maps directly to bytes:
+```
+1,000,000,000 × 1 byte = 1,000,000,000 bytes ≈ 1 GB
+```
+
+---
+
+### Case 2 — `char* buffer = new char[1024 * 1024]`
+
+```
+Stack
+─────────────────────────────────
+0x0108  │ buffer │  8 bytes  │  value: 0x30000000
+                       │
+                       └──────────────────────────────►
+Heap
+─────────────────────────────────────────────────────────
+0x30000000  buffer[0]       1 byte
+0x30000001  buffer[1]       1 byte
+...
+0x300FFFFF  buffer[1048575] 1 byte
+```
+
+**Address calculation:**
+```
+1024 × 1024 = 1,048,576 elements
+last element = 0x30000000 + 1,048,575 × 1 = 0x300FFFFF
+```
+
+Total heap:
+```
+1,048,576 × 1 byte = 1,048,576 bytes = 1 MiB
+```
+
+---
+
+### Case 3 — `int* data = new int[100]`
+
+```
+Stack
+─────────────────────────────────
+0x0110  │  data  │  8 bytes  │  value: 0x40000000
+                       │
+                       └──────────────────────────────►
+Heap
+─────────────────────────────────────────────────────────
+0x40000000  data[0]   4 bytes
+0x40000004  data[1]   4 bytes
+0x40000008  data[2]   4 bytes
+...
+0x4000018C  data[99]  4 bytes
+```
+
+**Address calculation:**
+```
+each int = 4 bytes, so elements are spaced 4 bytes apart
+last element = 0x40000000 + 99 × 4 = 0x4000018C
+```
+
+Total heap:
+```
+100 × 4 bytes = 400 bytes
+```
+
+---
+
+### Summary
+
+| Declaration | Pointer address | Pointer size | Heap base | Total heap |
+|---|---|---|---|---|
+| `new char[1000000000]` | `0x0100` | 8 bytes | `0x20000000` | ~1 GB |
+| `new char[1024 * 1024]` | `0x0108` | 8 bytes | `0x30000000` | 1 MiB |
+| `new int[100]` | `0x0110` | 8 bytes | `0x40000000` | 400 bytes |
+
+The pointer itself is always 8 bytes on a 64-bit system regardless of what it points to or how large the heap allocation is — it is just an address. Stack pointers are spaced 8 bytes apart from each other because each pointer takes 8 bytes on the stack. All the real weight is in the heap allocation.
+
+
 ## Stack and Raw Heap Objects
 ```cpp
 #include <iostream>
@@ -2254,19 +2378,111 @@ int main()
 ## Some Raw Pointer Problems
 
 ### Stack Overflow (Stack Memory)
-**int** stores 4 bytes. BigStackArray has 4.000.000 elements -> 4.000.000 x 4 = 16.000.000 Byte = 16 MB. 
-Which is higher than stack memory size (8 MB). Code will give error.
+`int` stores 4 bytes. `BigStackArray` has 4,000,000 elements → 4,000,000 × 4 = 16,000,000 bytes = **16 MB**, which exceeds the default stack size (~8 MB on most systems). The OS will terminate the program with a stack overflow.
+
 ```cpp
 #include <iostream>
 
-int main(){
-
-    // stack memory
-    int bigStackArray[4000000]; 
+int main() {
+    // ❌ Stack allocation — 16 MB array blows the ~8 MB stack limit
+    int bigStackArray[4000000];
     bigStackArray[0] = 0;
-    std::cout << "First Element: " << bigStackArray[0] << std::endl; 
+    std::cout << "First Element: " << bigStackArray[0] << std::endl;
 }
 ```
+
+**Why it crashes:** Local variables live on the stack. The stack is a fixed, small region (typically 1–8 MB). Declaring a large array as a local variable tries to reserve all of it at once — before a single line of the function body runs.
+
+**Fix — allocate on the heap instead:**
+```cpp
+#include <iostream>
+
+int main() {
+    // ✅ Heap allocation — no size limit (only system RAM)
+    int* bigHeapArray = new int[4000000];
+    bigHeapArray[0] = 0;
+    std::cout << "First Element: " << bigHeapArray[0] << std::endl;
+
+    delete[] bigHeapArray; // always free heap memory manually
+}
+```
+
+**Or use a vector (RAII — memory freed automatically):**
+```cpp
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> bigVec(4000000, 0); // heap-allocated, auto-managed
+    std::cout << "First Element: " << bigVec[0] << std::endl;
+} // bigVec destructor frees memory here
+```
+
+| Approach | Where | Size limit | Manual `delete`? |
+|---|---|---|---|
+| `int arr[N]` (local) | Stack | ~8 MB | No |
+| `new int[N]` | Heap | System RAM | Yes — `delete[]` |
+| `std::vector<int>` | Heap | System RAM | No (RAII) |
+
+---
+
+### Stack Overflow (Deep Recursion)
+Every function call pushes a **stack frame** (local variables + return address). With no base case — or a very deep one — frames pile up until the stack is exhausted.
+
+```cpp
+#include <iostream>
+
+// ❌ Infinite recursion — never reaches a base case
+long long factorial(int n) {
+    return n * factorial(n - 1); // missing base case!
+}
+
+int main() {
+    std::cout << factorial(5) << std::endl; // crashes immediately
+}
+```
+
+**With a base case but a very large `n`:**
+```cpp
+// ❌ Correct logic, but deep enough to overflow the stack
+long long factorial(int n) {
+    if (n <= 1) return 1;       // base case present
+    return n * factorial(n - 1); // still pushes ~n frames
+}
+
+int main() {
+    std::cout << factorial(100000) << std::endl; // stack overflow
+}
+```
+
+Each call to `factorial` adds a frame (~dozens of bytes) before the previous one returns. At `n = 100,000` that's ~100,000 frames sitting on the stack simultaneously.
+
+**Fix — use iteration (O(1) stack space):**
+```cpp
+#include <iostream>
+
+// ✅ Iterative — only one stack frame regardless of n
+long long factorial(int n){
+    long long result = 1;
+    for(int i = n; i>0; i--){
+        result = result * i;
+    }    
+    return result;
+}
+
+int main() {
+    std::cout << factorial(20) << std::endl; // 2432902008176640000
+}
+```
+
+| Approach | Stack frames | Safe for large `n`? |
+|---|---|---|
+| Recursive (no base case) | ∞ — instant crash | ❌ |
+| Recursive (with base case) | O(n) — grows with input | ⚠️ risky |
+| Iterative | O(1) — always 1 frame | ✅ |
+
+> **Note:** C++ has no built-in recursion limit like Python's `RecursionError`. The stack just silently overflows and the OS kills the process — often with a segmentation fault.
+
 
 ### Memory Leak (Heap Memory)
 ```cpp

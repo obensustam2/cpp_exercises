@@ -72,5 +72,6 @@ add_executable(try_catch src/try_catch.cpp)
 add_executable(std_optional_variant_any src/std_optional_variant_any.cpp)
 add_executable(fstream src/fstream.cpp)
 add_executable(iostream src/iostream.cpp)
+add_executable(interview_preperation src/interview_preperation.cpp)
 
 
