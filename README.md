@@ -1,8 +1,11 @@
 # C++ Learning Handbook
 
 # Table of Content
+   - [RAII in C++](#raii-in-c)
+   - [Literal Types in C++](#literal-types-in-c)
+   - [`const` and `constexpr` in C++](#const-and-constexpr-in-c)
+
    - [Getting Started](#getting-started)
-        - [RAII](#raii) 
         - [Preprocessor in C++](#preprocessor-in-c)
         - [Variable](#variable)
         - [Namespaces in C++](#namespaces-in-c)
@@ -13,6 +16,8 @@
         - [Byte Size](#byte-size)
         - [Long Variable](#long-variable)
         - [Signed vs Unsigned](#signed-vs-unsigned)
+
+   - [Templates in C++](#templates-in-c)
    - [Compiler Concepts in C++](#compiler-concepts-in-c)
         - [Compile Time vs Runtime](#compile-time-vs-runtime)
         - [Compilation Pipeline](#compilation-pipeline)
@@ -58,15 +63,17 @@
    - [Memory](#memory)
         - [Sample Memory Diagram](#sample-memory-diagram)
         - [Stack vs Heap Memory](#stack-vs-heap-memory)
+        - [Heap Memory Tracker Software](#heap-memory-tracker-software)
    - [Pointers](#pointers)
         - [Why Pointers Exist in C++](#why-pointers-exist-in-c)
+        - [Why Do We Need Pointers If We Have References](#why-do-we-need-pointers-if-we-have-references)
         - [Stack and Raw Heap Pointers](#stack-and-raw-heap-pointers)
-        - [C++ Pointer Memory Addresses](#c-pointer-memory-addresses)
-        - [Stack and Raw Heap Objects](#stack-and-raw-heap-objects)
+        - [Heap Pointer Memory Addresses](#heap-pointer-memory-addresses)
         - [Some Raw Pointer Problems](#some-raw-pointer-problems)
-        - [Smart Pointers](#smart-pointers)
-            - [unique_ptr](#unique_ptr)
-            - [shared_ptr](#shared_ptr)
+        - [Smart Pointers in C++](#smart-pointers-in-c)
+            - [`unique_ptr` — Single Owner](#1-unique_ptr--single-owner)
+            - [`shared_ptr` — Shared Ownership](#2-shared_ptr--shared-ownership)
+            - [`weak_ptr` — Non-Owning Observer](#3-weak_ptr--non-owning-observer)
         - [this Pointer](#this-pointer)
    - [Classes and Objects](#classes-and-objects)
         - [Accessing class members](#accessing-class-members)
@@ -89,7 +96,6 @@
         - [Lambdas](#lambdas)
    - [`static` in C++](#static-in-c)
    - [C++ Visibility / Access Specifiers](#c-visibility--access-specifiers)
-   - [Templates](#templates)
    - [Operator Overloading](#operator-overloading)
    - [explicit Keyword](#explicit-keyword-in-c)
    - [Structured Bindings](#structured-bindings)
@@ -98,7 +104,7 @@
    - [`std::optional` — Optional Data in C++](#stdoptional--optional-data-in-c)
    - [`std::variant` — Type-Safe Union](#stdvariant--type-safe-union)
    - [`std::any` — Type-Erased Single Value](#stdany--type-erased-single-value)
-   - [Enumeration](#enums)
+   - [Enums in C++](#enums-in-c)
    - [Threads](#threads)
    - [`std::async` and `std::future` — Asynchronous Functions](#stdasync-and-stdfuture--asynchronous-functions)
    - [Timing in C++](#timing-in-c)
@@ -109,51 +115,464 @@
 
 
 
+# RAII in C++
 
+**Resource Acquisition Is Initialization** — a C++ idiom where a resource is tied to an object's lifetime:
+- **Acquired** in the constructor
+- **Released** in the destructor — guaranteed, even if an exception is thrown
 
+## 1. The Problem Without RAII
 
-
-# Getting Started
-
-## RAII
-**RAII** (Resource Acquisition Is Initialization) is a C++ programming technique that binds the life cycle of a resource (like heap memory, file handles, or network sockets) to the life cycle of a local object.
-
-Instead of manually managing "start" and "stop" actions (like `new` and `delete`), you wrap the resource in a class. The resource is "acquired" when the object is created and "released" automatically when the object is destroyed.
-
----
-
-### The Two Pillars of RAII
-
-1.  **Constructor (Acquisition):** You allocate the resource (e.g., `new int[10]`) inside the class constructor.
-2.  **Destructor (Release):** You free the resource (e.g., `delete[]`) inside the class destructor.
-
-Because C++ guarantees that local (stack) objects are destroyed the moment they go out of scope, the resource is **guaranteed** to be released—even if your code crashes, returns early, or throws an exception.
-
-### A Simple Comparison
-
-**Without RAII (Manual):**
 ```cpp
-void manual_process() {
-    int* data = new int[100]; // Acquire
-    delete[] data;            // Release
+void foo() {
+    int* p = new int(42);
+
+    doSomething();  // if this throws → delete never runs → memory leak ❌
+
+    delete p;       // only reached if no exception
 }
 ```
 
-**With RAII (Automatic):**
+Manual cleanup is fragile — exceptions, early returns, and forgotten `delete` all cause leaks.
+
+## 2. With RAII
+
 ```cpp
-void raii_process() {
-    std::vector<int> data(100); // Resource bound to object 'data'
-} // SAFE! 'data' destructor runs here normally
+void foo() {
+    auto p = std::make_unique<int>(42);
+
+    doSomething();  // throws? no problem — destructor runs automatically ✅
+
+}                   // p destroyed here → memory freed
 ```
 
-### Why it Matters
-RAII turns "manual management" into "automatic cleanup." It is the reason why modern C++ developers rarely use `new` and `delete`. Common RAII wrappers include:
-* **`std::vector`** (manages heap memory)
-* **`std::unique_ptr`** (manages a single pointer)
-* **`std::lock_guard`** (manages mutex locks)
-* **`std::fstream`** (manages file access)
+Cleanup is **automatic and guaranteed** — the destructor always runs when the object goes out of scope.
+
+## 3. How It Works — The Destructor Guarantee
+
+C++ guarantees destructors run when objects go out of scope. RAII exploits this:
+
+```cpp
+struct ScopedLock {
+    std::mutex& mtx;
+    ScopedLock(std::mutex& m) : mtx(m) { mtx.lock();   }  // acquire
+    ~ScopedLock() { mtx.unlock(); }  // release — always runs
+};
+
+void foo() {
+    ScopedLock lock(mtx);  // acquired here
+    doSomething();         // exception? early return? no problem
+}                          // lock destroyed → mutex released ✅
+```
+
+## 4. What Counts as a Resource
+
+Anything with a matching **acquire / release** pair:
+
+| Resource | Acquire | Release |
+|---|---|---|
+| Heap memory | `new` | `delete` |
+| File | `open` | `close` |
+| Mutex | `lock` | `unlock` |
+| Network socket | `socket()` | `close()` |
+| Database connection | `connect()` | `disconnect()` |
+| Thread | `create` | `join` |
+| GPU texture (OpenGL) | `glGenTextures` | `glDeleteTextures` |
+| OS handle (Windows) | `CreateHandle` | `CloseHandle` |
+
+## 5. RAII in the Standard Library
+
+Everything in the stdlib follows RAII:
+
+```cpp
+// memory — freed automatically
+{
+    auto p = std::make_unique<int>(42);
+}  // deleted here ✅
+
+// mutex — unlocked automatically
+{
+    std::lock_guard<std::mutex> lock(mtx);
+    counter++;
+}  // unlocked here ✅
+
+// file — closed automatically
+{
+    std::fstream file("data.txt");
+    file << "hello";
+}  // closed here ✅
+```
+
+## 7. RAII and Smart Pointers
+
+Smart pointers are RAII applied to heap memory:
+
+```cpp
+// unique_ptr constructor → acquires (new)
+// unique_ptr destructor  → releases (delete)
+
+// shared_ptr constructor → acquires (new + control block)
+// shared_ptr destructor  → decrements count, releases if count == 0
+
+// lock_guard constructor → lock()
+// lock_guard destructor  → unlock()
+```
+
+They all follow the same pattern — different resources, same idiom.
+
+## Summary
+
+| Without RAII | With RAII |
+|---|---|
+| Manual `acquire` + `release` | Automatic via constructor/destructor |
+| Leaks on exception | Exception safe — destructor always runs |
+| Easy to forget cleanup | Impossible to forget — tied to object lifetime |
+| Fragile with multiple return paths | Safe regardless of how scope exits |
+
+**Rule:** Any time you write a matching acquire/release pair manually, ask if it should be wrapped in a RAII class instead. If the answer is yes — wrap it.
 
 ---
+
+# Literal Types in C++
+
+A **literal type** is a type that can be fully constructed and known at **compile time**. It is the requirement for anything used in a `constexpr` context.
+
+## 1. Rules — What Makes a Type Literal
+
+A type is literal if:
+- All constructors are `constexpr` (or it is trivially constructible)
+- All data members are also literal types
+- Trivial destructor (or `constexpr` destructor in C++20)
+
+## 2. Built-in Literal Types
+
+All fundamental types are literal:
+
+```cpp
+int, float, double, bool, char   // ✅ all fundamental types
+int*, float*                     // ✅ pointers to literal types
+int&                             // ✅ references to literal types
+void                             // ✅
+```
+
+## 3. Structs and Classes — Literal if All Members Are
+
+```cpp
+struct Point {
+    int x, y;
+    constexpr Point(int x, int y) : x(x), y(y) {}
+};
+
+constexpr Point p(3, 4);              // ✅ Point is a literal type
+constexpr int dist = p.x + p.y;      // ✅ usable at compile time
+```
+
+All members (`x`, `y`) are `int` — a literal type. Constructor is `constexpr`. So `Point` is literal.
+
+```cpp
+struct Bad {
+    std::string name;   // ❌ std::string is not a literal type
+};
+
+constexpr Bad b;        // ❌ compile error
+```
+
+One non-literal member makes the whole struct non-literal.
+
+## 4. Non-Literal Types
+
+These all involve runtime resources — heap, OS handles, dynamic allocation:
+
+```cpp
+std::string     // ❌ manages heap memory, non-trivial destructor
+std::vector     // ❌ dynamic allocation
+std::map        // ❌ dynamic allocation
+std::thread     // ❌ OS resource
+std::mutex      // ❌ OS resource
+std::fstream    // ❌ file handle
+```
+
+Cannot be used in `constexpr` context pre-C++20.
+
+## 5. Literal Types and `constexpr`
+
+`constexpr` variables and functions can only work with literal types:
+
+```cpp
+constexpr int x = 42;              // ✅ int is literal
+constexpr Point p(1, 2);           // ✅ Point is literal
+
+constexpr std::string s = "hello"; // ❌ std::string not literal (pre-C++20)
+constexpr std::vector<int> v;      // ❌ std::vector not literal (pre-C++20)
+
+// alternatives:
+constexpr const char* s = "hello"; // ✅ raw pointer is literal
+constexpr std::array<int, 3> v = {1, 2, 3}; // ✅ std::array is literal
+```
+
+## 6. `std::array` vs `std::vector`
+
+A common point of confusion:
+
+```cpp
+constexpr std::array<int, 3> a = {1, 2, 3};  // ✅ literal — fixed size, no heap
+constexpr std::vector<int>   v = {1, 2, 3};  // ❌ not literal — heap allocation
+```
+
+`std::array` is just a fixed-size wrapper around a raw array — no dynamic allocation, no destructor work. Fully literal.
+
+## 7. How to Check
+
+```cpp
+#include <type_traits>
+
+static_assert(std::is_trivially_destructible_v<int>);    // ✅
+static_assert(std::is_trivially_destructible_v<Point>);  // ✅
+static_assert(std::is_trivially_destructible_v<std::string>); // ❌ fails
+```
+
+Note: `std::is_literal_type` was deprecated in C++17 and removed in C++20.
+
+## Summary
+
+| Type | Literal? | Reason |
+|---|---|---|
+| `int`, `float`, `bool`, `char` | Yes | Fundamental types |
+| Raw pointers (`int*`) | Yes | Just an address |
+| References | Yes | Just an alias |
+| `std::array` | Yes | Fixed size, no heap |
+| Custom struct (all `constexpr`) | Yes | If all members are literal |
+| `std::string` | No | Heap memory, non-trivial destructor |
+| `std::vector` | No | Dynamic allocation |
+| `std::map` | No | Dynamic allocation |
+| `std::thread` / `std::mutex` | No | OS resources |
+
+## Mental Model
+
+> A literal type is one the compiler can **fully understand and construct without running any code**.
+> No heap, no OS calls, no side effects — just pure compile-time data.
+
+If a type needs runtime resources to be constructed, it cannot be literal.
+
+---
+
+# `const` and `constexpr` in C++
+
+## 1. `const` — Immutable at Runtime
+
+> "This value won't change after initialization."
+
+Evaluated at **compile time or runtime** — the compiler just promises it won't be modified.
+
+```cpp
+// runtime const — value not known until program runs
+int n = getUserInput();
+const int x = n;        // ✅ immutable, but only known at runtime
+
+// compile-time const — value known at compile time, but not guaranteed
+const int y = 42;       // ✅ could be optimized by compiler, but no guarantee
+```
+
+### `const` on pointers
+
+```cpp
+const int* p  = &x;   // pointer to const — can't modify value, can move pointer
+int* const p  = &x;   // const pointer    — can modify value, can't move pointer
+const int* const p = &x; // both immutable
+```
+
+### `const` on member functions
+
+Promises the function won't modify the object:
+```cpp
+struct Sensor {
+    int value;
+    int read() const { return value; }  // ✅ won't modify *this
+    void set(int v)  { value = v; }     // non-const — modifies *this
+};
+```
+
+---
+
+## 2. `constexpr` — Guaranteed Compile Time
+
+> "This value must be computable at compile time."
+
+Stronger than `const` — forces evaluation at compile time when used in a constant expression context.
+
+```cpp
+constexpr int x = 42;             // ✅ must be known at compile time
+constexpr int y = getUserInput();  // ❌ compile error — not a constant expression
+```
+
+### `constexpr` variables
+
+```cpp
+constexpr int MAX = 100;
+constexpr double PI = 3.14159;
+
+std::array<int, MAX> arr;   // ✅ template argument — requires compile-time constant
+int buffer[MAX];            // ✅ array size    — requires compile-time constant
+```
+
+`const` alone is not always sufficient for template arguments and array sizes.
+
+### `constexpr` functions — dual mode
+
+Can run at **compile time or runtime** depending on how they are called:
+
+```cpp
+constexpr int square(int x) { return x * x; }
+
+constexpr int a = square(5);   // compile time — result baked into binary
+int n = getUserInput();
+int b = square(n);             // runtime — n not known at compile time, falls back
+```
+
+The context decides which mode runs — not the function itself.
+
+### `constexpr` on member functions
+
+```cpp
+struct Point {
+    int x, y;
+    constexpr Point(int x, int y) : x(x), y(y) {}
+    constexpr int distSquared() const { return x*x + y*y; }
+};
+
+constexpr Point p(3, 4);
+constexpr int d = p.distSquared();  // ✅ evaluated at compile time — result is 25
+```
+
+---
+
+## 3. What `constexpr` Cannot Do
+
+```cpp
+// runtime input
+int n = getUserInput();
+constexpr int x = n;               // ❌ not a constant expression
+
+// dynamic memory (pre-C++20)
+constexpr int* p = new int(5);     // ❌ C++17 and earlier
+
+// throwing exceptions
+constexpr int divide(int a, int b) {
+    if (b == 0) throw std::runtime_error("div by 0"); // ❌ can't throw
+    return a / b;
+}
+
+// I/O
+constexpr void print() {
+    std::cout << "hello";          // ❌ I/O is runtime
+}
+
+// static local variables
+constexpr int foo() {
+    static int x = 0;             // ❌ not allowed in constexpr
+    return x;
+}
+
+// reinterpret_cast
+constexpr int* p = reinterpret_cast<int*>(42); // ❌ not allowed
+
+// non-literal types (pre-C++20)
+constexpr std::string s = "hello";  // ❌ std::string not a literal type
+constexpr std::vector<int> v = {1}; // ❌ same reason
+
+// use instead:
+constexpr const char* s = "hello";
+constexpr std::array<int, 3> v = {1, 2, 3};
+```
+
+---
+
+## 4. `consteval` — Compile Time Only (C++20)
+
+Stricter than `constexpr` — function **must** be called at compile time, never runtime:
+
+```cpp
+consteval int square(int x) { return x * x; }
+
+constexpr int a = square(5);   // ✅ compile time
+int n = getUserInput();
+int b = square(n);             // ❌ compile error — n not a constant
+```
+
+Use when a runtime fallback is never acceptable.
+
+---
+
+## 5. `constinit` — Safe Static Initialization (C++20)
+
+Guarantees a variable is **initialized at compile time** but still allows runtime mutation:
+
+```cpp
+constinit int counter = 0;  // ✅ initialized at compile time
+counter++;                   // ✅ can still be modified at runtime
+```
+
+Prevents the **static initialization order fiasco** — globals initialized in undefined order across translation units.
+
+```cpp
+// without constinit — order not guaranteed across .cpp files
+int a = computeA();
+int b = a + 1;       // b might initialize before a ❌
+
+// with constinit — guaranteed safe
+constinit int a = 42;
+```
+
+---
+
+## Comparison
+
+| | `const` | `constexpr` | `consteval` | `constinit` |
+|---|---|---|---|---|
+| Immutable | Yes | Yes | Yes | No |
+| Compile-time guaranteed | No | Yes (in CE context) | Always | Init only |
+| Runtime fallback | Yes | Yes | No | — |
+| Usable in templates / array sizes | Sometimes | Yes | Yes | No |
+| Functions | Yes (member only) | Yes | Yes | No |
+| C++ version | C++98 | C++11 | C++20 | C++20 |
+
+---
+
+## Benefits of Compile-Time Evaluation
+
+| Benefit | Why |
+|---|---|
+| **Performance** | Result baked into binary — zero cost at runtime |
+| **Earlier errors** | Divide by zero, out of range caught at compile time |
+| **Enables templates** | Array sizes and template args must be compile-time constants |
+| **Dead code elimination** | Compiler removes branches it knows are never taken |
+| **Smaller binary** | Less instructions, less stack usage |
+
+---
+
+## When to Use What
+
+```cpp
+// const — value may only be known at runtime, or just needs to be immutable
+const int userLimit = getUserInput();
+const int MAX = 100;              // works, but constexpr is better here
+
+// constexpr — value can be computed at compile time
+constexpr int MAX = 100;          // preferred over const for true constants
+constexpr int square(int x) { return x * x; }
+
+// consteval — must only ever run at compile time, no exceptions
+consteval int makeFlag(int bit) { return 1 << bit; }
+
+// constinit — global/static that must be safely initialized
+constinit int globalCounter = 0;
+```
+
+**Rule:** Prefer `constexpr` over `const` for all true constants — same or better, never worse.
+
+---
+
+# Getting Started
 
 ## Preprocessor in C++
 
@@ -412,45 +831,7 @@ std::cout << "How many rooms do you want to be cleaned? ";
 std::cin >> num_rooms;
 ```
 
-## Constant Variable & Methods
-```cpp
-const int age = 30;
-// age = 31; // ❌ Error! Cannot modify
-```
-
-```cpp
-class Person {
-    std::string name;
-public:
-    Person(std::string n) : name(n) {}
-
-    void printName() const {   // ✅ const member function
-        // name += "!"; // ❌ Error
-        std::cout << name << std::endl;
-    }
-
-    void changeName(std::string n) {  // Non-const
-        name = n;
-    }
-};
-```
-
-## Mutable Keyword
-```cpp
-class Example {
-    mutable int counter;  // can be changed even in const objects
-public:
-    Example() : counter(0) {}
-
-    void increment() const {  // const member function
-        counter++;  // allowed because counter is mutable
-    }
-
-    int getCounter() const {
-        return counter;
-    }
-};
-```
+---
 
 ## Byte Size
 ```cpp
@@ -714,6 +1095,228 @@ Without protection, including the same header twice in one `.cpp` causes redefin
 ```
 
 `#pragma once` protects within a single translation unit — it does not prevent the same header from being parsed in other `.cpp` files. That is what PCH solves.
+
+---
+
+# Templates in C++
+
+Templates allow writing code once that works for any type. The compiler generates a **specific version** for each type used — resolved entirely at compile time.
+
+## 1. Function Templates
+
+```cpp
+template<typename T>
+void print(T value) {
+    std::cout << "Value: " << value << std::endl;
+}
+
+print(29);        // T = int
+print(3.14f);     // T = float
+print("Oben");    // T = const char*
+```
+
+No runtime overhead — the compiler generates a separate function for each type.
+
+## 2. Each Instantiation is a Distinct Function
+
+This is the core of how templates work. When the compiler sees `print(29)` and `print("Oben")`, it generates **two completely separate functions**:
+
+```cpp
+// what the compiler actually generates:
+
+void print_int(int value) {
+    std::cout << "Value: " << value << std::endl;
+}
+
+void print_constcharptr(const char* value) {
+    std::cout << "Value: " << value << std::endl;
+}
+```
+
+These are **not the same function** — they are independent pieces of code in the binary. Each type instantiation adds a new function to your compiled output.
+
+```cpp
+print(29);      // calls print<int>    — distinct function #1
+print(3.14f);   // calls print<float>  — distinct function #2
+print("Oben");  // calls print<const char*> — distinct function #3
+```
+
+You can verify this — each instantiation has a unique mangled name in the binary:
+```
+_Z5printIiEvT_      →  print<int>
+_Z5printIfEvT_      →  print<float>
+_Z5printIPKcEvT_    →  print<const char*>
+```
+
+## 3. Type Deduction — Compiler Infers `T`
+
+You don't need to specify the type explicitly — the compiler deduces it from the argument:
+
+```cpp
+print(29);          // deduced: T = int
+print<int>(29);     // explicit: T = int — same result
+
+print(3.14f);       // deduced: T = float
+print<float>(3.14f); // explicit — same result
+```
+
+Explicit specification is only needed when deduction is ambiguous or impossible.
+
+## 4. Class Templates
+
+Templates work on classes too — the same instantiation rules apply:
+
+```cpp
+template<typename T>
+struct Box {
+    T value;
+
+    Box(T v) : value(v) {}
+
+    void print() const {
+        std::cout << "Box contains: " << value << std::endl;
+    }
+};
+
+// pre-C++17 — explicit type required
+Box<int>         b1(42);
+Box<std::string> b2("hello");
+Box<float>       b3(3.14f);
+
+// C++17 CTAD — type deduced from constructor argument
+Box b4(42);      // deduces T = int
+Box b5(3.14f);   // deduces T = float
+```
+
+Each `Box<T>` is a **distinct class** — `Box<int>` and `Box<float>` share no code at runtime.
+
+### CTAD — Class Template Argument Deduction (C++17)
+
+The compiler deduces `T` from the constructor argument — same as function template deduction:
+
+```cpp
+Box b1(42);                    // T = int
+Box b2(3.14f);                 // T = float
+Box b3(std::string("hello"));  // T = std::string
+Box b4("hello");               // T = const char* — not std::string!
+```
+
+`"hello"` is a string literal — its type is `const char*`, not `std::string`. Use `std::string("hello")` to get `T = std::string`.
+
+### Deduction Guides — steer CTAD when needed
+
+If the default deduction isn't what you want, you can guide it:
+
+```cpp
+// tell compiler: const char* constructor → treat T as std::string
+Box(const char*) -> Box<std::string>;
+
+Box b("hello");  // now T = std::string ✅
+```
+
+This is how stdlib CTAD works internally — `std::vector`, `std::pair`, and others define deduction guides to handle edge cases.
+
+## 5. Multiple Template Parameters
+
+```cpp
+template<typename K, typename V>
+struct Pair {
+    K key;
+    V value;
+
+    Pair(K k, V v) : key(k), value(v) {}
+};
+
+// pre-C++17 — explicit types
+Pair<int, std::string>   p1(1, "one");
+Pair<std::string, float> p2("pi", 3.14f);
+
+// C++17 CTAD — both types deduced from constructor
+Pair p3(1, "one");       // K = int,         V = const char*
+Pair p4("pi", 3.14f);    // K = const char*, V = float
+```
+
+## 6. Non-Type Template Parameters
+
+Templates can also take values, not just types:
+
+```cpp
+template<typename T, int N>
+struct FixedArray {
+    T data[N];
+    int size() const { return N; }
+};
+
+FixedArray<int, 4>   a1;  // array of 4 ints
+FixedArray<float, 8> a2;  // array of 8 floats
+```
+
+`N` is baked in at compile time — `size()` returns a compile-time constant. This is exactly how `std::array<T, N>` works internally.
+
+## 7. Template Specialization
+
+You can provide a custom implementation for a specific type:
+
+```cpp
+template<typename T>
+void print(T value) {
+    std::cout << "Value: " << value << std::endl;
+}
+
+// specialization for bool
+template<>
+void print<bool>(bool value) {
+    std::cout << "Value: " << (value ? "true" : "false") << std::endl;
+}
+
+print(42);     // uses generic version → "Value: 42"
+print(true);   // uses specialization  → "Value: true"
+```
+
+## 8. `typename` vs `class`
+
+Both are identical for template type parameters — purely stylistic:
+
+```cpp
+template<typename T>  // ✅
+template<class T>     // ✅ same thing
+```
+
+`typename` is preferred in modern C++ as it's clearer that any type is accepted, not just classes.
+
+## 9. Templates and Compile Time
+
+Because each instantiation is a distinct function generated at compile time:
+
+- **No runtime overhead** — type resolution is zero cost at runtime
+- **Errors caught early** — type mismatches are compile errors, not runtime crashes
+- **Binary size grows** — one function per type instantiation; too many types = larger binary (called **code bloat**)
+
+```cpp
+// generates 3 distinct functions in the binary:
+print(1);       // print<int>
+print(1.0f);    // print<float>
+print("hello"); // print<const char*>
+
+// generates 0 extra functions — same type reused:
+print(1);
+print(2);
+print(3);       // all three call the same print<int>
+```
+## Summary
+
+| Feature | Behavior |
+|---|---|
+| Resolved at | Compile time |
+| Each new type | Generates a distinct function/class |
+| Same type reused | Reuses the same instantiation |
+| Type specification | Deduced automatically or explicit |
+| Specialization | Custom implementation for a specific type |
+| `typename` vs `class` | Identical — prefer `typename` |
+| Runtime overhead | None |
+| Downside | Binary grows with each new type instantiation |
+
+**Rule:** Templates trade **binary size** for **zero runtime overhead and type safety**. Each type you use with a template adds a new instantiation — but that instantiation is resolved entirely at compile time.
 
 ---
 
@@ -2127,6 +2730,7 @@ void callback(const sensor_msgs::msg::LaserScan& msg) {
 > **Rule of thumb:** prefer references for function parameters. Use pointers
 > when the object might not exist (nullable) or you need to manage its lifetime.
 
+
 ### In Modern C++: Smart Pointers
 Raw pointers work, but you have to manually free the memory — easy to forget and crash. Modern C++ uses **smart pointers** that clean up automatically:
 
@@ -2151,6 +2755,128 @@ Same efficiency as raw pointers, no manual memory management.
 | `const` reference | Read-only alias — no copy, no modification (ROS2 callbacks) |
 | Raw pointer (`*`) | Manual memory management — error prone |
 | Smart pointer | Automatic cleanup — use these in modern C++ and ROS2 |
+
+---
+
+## Why Do We Need Pointers If We Have References?
+
+There are specific situations where references cannot do the job and you need a pointer.
+
+### 1. References cannot be null
+
+A reference must always point to something valid. A pointer can be `nullptr` — meaning "nothing here yet" or "optional":
+
+```cpp
+// reference — MUST point to something, always
+void process(int& x) { }      // caller must pass a real int
+
+// pointer — can be nullptr, meaning "no value"
+void process(int* x) {
+    if (x == nullptr) {
+        std::cout << "nothing to process\n";
+        return;
+    }
+    std::cout << *x << std::endl;
+}
+
+int main() {
+    process(nullptr);  // ✅ valid with pointer — "skip this"
+    // process(???)    // ❌ no way to pass "nothing" with a reference
+}
+```
+
+Real world example — a sensor that may or may not be connected:
+
+```cpp
+void readSensor(Sensor* s) {
+    if (s == nullptr) return;  // sensor not plugged in — skip
+    s->read();
+}
+```
+
+### 2. References cannot be reassigned
+
+A reference is locked to one variable forever. A pointer can be redirected:
+
+```cpp
+int a = 5;
+int b = 10;
+
+int& ref = a;   // ref is permanently a
+ref = b;        // this does NOT make ref point to b
+                // it copies b's VALUE into a
+
+int* p = &a;    // p points to a
+p = &b;         // now p points to b ✅ — pointer reassigned
+```
+
+Real world example — scanning through a buffer:
+
+```cpp
+char* cursor = buffer;          // start at beginning
+while (*cursor != '\0') {
+    cursor++;                   // move pointer forward — impossible with reference
+}
+```
+
+### 3. Arrays and pointer arithmetic
+
+References don't support arithmetic. Pointers do:
+
+```cpp
+int arr[5] = {10, 20, 30, 40, 50};
+int* p = arr;           // p points to arr[0]
+
+std::cout << *p;        // 10
+p++;                    // move to next element
+std::cout << *p;        // 20
+p++;
+std::cout << *p;        // 30
+```
+
+This is how C-style strings, memory buffers, and hardware registers are traversed. A reference has no equivalent.
+
+### 4. Heap allocation — dynamic lifetime
+
+References are tied to a scope — they die when the scope ends. Pointers can own heap memory that lives beyond any scope:
+
+```cpp
+int* createArray(int size) {
+    return new int[size];   // ✅ heap memory survives after function returns
+}
+
+int& createRef() {
+    int x = 5;
+    return x;               // ❌ x dies here — dangling reference, undefined behavior
+}
+```
+
+This is why `new` returns a pointer and not a reference — heap objects have no natural scope to tie a reference to.
+
+### 5. Data structures — nodes pointing to nodes
+
+A linked list, tree, or graph node needs to point to the next node. References can't do this because they can't be null (no "end of list") and can't be reassigned (can't rewire the structure):
+
+```cpp
+struct Node {
+    int value;
+    Node* next;     // ✅ can be nullptr (end of list), can be reassigned
+    // Node& next;  // ❌ must point to something, can never change
+};
+```
+
+### Summary
+
+| Situation | Reference | Pointer |
+|---|---|---|
+| Value always exists | ✅ cleaner | ✅ works |
+| Value might not exist (optional) | ❌ can't be null | ✅ use nullptr |
+| Need to reassign to different variable | ❌ locked forever | ✅ reassignable |
+| Pointer arithmetic / array traversal | ❌ not supported | ✅ |
+| Heap allocation with dynamic lifetime | ❌ scope-bound | ✅ |
+| Linked list / tree nodes | ❌ can't be null or rewired | ✅ |
+
+The modern C++ rule of thumb: **use references by default, reach for pointers only when you need one of the five things above.** And when you do need a pointer for heap memory, use `unique_ptr` or `shared_ptr` instead of raw pointers.
 
 ---
 
@@ -2201,7 +2927,7 @@ Heap variable updated value: 123
 
 ---
 
-## C++ Pointer Memory Addresses
+## Heap Pointer Memory Addresses
 
 ```cpp
 char* buffer = new char[1000000000]
@@ -2322,58 +3048,6 @@ Total heap:
 
 The pointer itself is always 8 bytes on a 64-bit system regardless of what it points to or how large the heap allocation is — it is just an address. Stack pointers are spaced 8 bytes apart from each other because each pointer takes 8 bytes on the stack. All the real weight is in the heap allocation.
 
-
-## Stack and Raw Heap Objects
-```cpp
-#include <iostream>
-#include <string>
-
-class Entity{
-private:
-    std::string m_Name;
-public:
-    Entity() : 
-        m_Name("Unknown") {
-    }
-
-    Entity(const std::string &name) : 
-        m_Name(name){
-    }
-    
-    const std::string &get_name() const{
-        return m_Name;
-    } 
-};
-
-
-int main()
-{
-    Entity entity;
-    std::cout << entity.get_name() << std::endl;
-
-    Entity entity2("Oben");
-    std::cout << entity2.get_name() << std::endl;
-
-    // stack memory
-    Entity *entity_ptr = nullptr;
-    {
-        Entity entity3("Orbay");
-        entity_ptr = &entity3;
-        std::cout << entity3.get_name() << std::endl;
-        std::cout << entity_ptr->get_name() << std::endl;
-    }
-
-    // heap memory
-    Entity *entity_ptr2 = nullptr;
-    {
-        entity_ptr2 = new Entity("Orcun");
-        std::cout << entity_ptr2->get_name() << std::endl;
-        delete entity_ptr2;
-    }
-
-    return 0;
-}
-```
 
 ## Some Raw Pointer Problems
 
@@ -2521,173 +3195,231 @@ int main(){
 
 ---
 
-## Smart Pointers
-### Pointer Comparison: Normal vs Smart Pointers
+## Smart Pointers in C++
 
-| Feature | Raw Pointer (`T*`) | `unique_ptr<T>` | `shared_ptr<T>` | `weak_ptr<T>` |
-|---|---|---|---|---|
-| **Ownership** | Manual / unclear | Exclusive | Shared (ref-counted) | Non-owning observer |
-| **Memory management** | Manual (`delete`) | Automatic (RAII) | Automatic (RAII) | None (doesn't own) |
-| **Copyable** | Yes | No | Yes (increments ref count) | Yes |
-| **Movable** | Yes | Yes | Yes | Yes |
-| **Overhead** | None | None | Ref-count + control block | Same as `shared_ptr` |
-| **Null-safe** | No | No | No | Via `.lock()` check |
-| **Access syntax** | `->`, `*` | `->`, `*` | `->`, `*` | Must call `.lock()` first |
-| **Risk of dangling pointer** | High | None | None | Yes (if owner is gone) |
-| **Risk of double free** | High | None | None | N/A |
-| **Cyclic reference safe** | N/A | N/A | No (causes memory leak) | Yes (breaks cycles) |
-| **Use case** | Legacy C code, low-level APIs | Single owner, factory returns | Shared ownership across components | Cache, observer, breaking cycles |
-| **Header** | Built-in | `<memory>` | `<memory>` | `<memory>` |
-| **C++ standard** | All | C++11 | C++11 | C++11 |
+| | `unique_ptr` | `shared_ptr` | `weak_ptr` |
+|---|---|---|---|
+| Ownership | Single | Shared | None |
+| Reference count | No | Yes | Observes only |
+| Copyable | No | Yes | Yes |
+| Moveable | Yes | Yes | Yes |
+| Auto cleanup | Yes | Yes (count = 0) | — |
+| `get()` | Yes | Yes | No — use `lock()` |
+| Overhead | None | Small (control block) | Small |
+| Solves circular ref | — | No | Yes |
 
-### unique_ptr
+**Rules:**
+- Default to `unique_ptr` — zero cost, single owner
+- Use `shared_ptr` when ownership is genuinely shared
+- Use `weak_ptr` to break cycles or observe without owning
+- Raw pointers are fine for non-owning references — just never `delete` them
+
+### 1. `unique_ptr` — Single Owner
+
+Only one pointer can own the object at a time. Zero overhead vs raw pointer.
+
+#### Creation & `get()`
 ```cpp
-#include <iostream>
-#include <memory>
+std::unique_ptr<Sensor> s1 = std::make_unique<Sensor>("IMU");
+s1.get();   // address of heap object
+&s1;        // address of pointer itself (stack)
+s1->read(); // access like a raw pointer
+```
 
+#### `reset()`
+```cpp
+s2.reset(new Sensor("LIDAR")); // deletes GPS, takes ownership of LIDAR
+s2.reset();                    // deletes LIDAR, s2 becomes nullptr
+```
 
-struct Robot{
-    int id;
-    int distance;
+#### Move — transfers ownership
+```cpp
+std::unique_ptr<Sensor> s4 = std::move(s3);
+// s3 is now nullptr — ownership transferred to s4
+```
+Copying is disabled. `std::move` is required to transfer.
 
-    Robot(int id) : id(id), distance(0){
-        std::cout << "Robot created with id: " << id << std::endl;
+#### Pass by value — transfers ownership into function
+```cpp
+void take_sensor(std::unique_ptr<Sensor> s) { s->read(); }
+
+take_sensor(std::move(s5)); // s5 is nullptr after this call
+```
+
+#### Pass by reference — borrow without transferring
+```cpp
+void borrow_sensor(const std::unique_ptr<Sensor>& s) { s->read(); }
+
+borrow_sensor(s6); // s6 still alive after call
+```
+
+#### Return from function — ownership transferred to caller
+```cpp
+std::unique_ptr<Sensor> return_from_function(std::string name) {
+    return std::make_unique<Sensor>(name);
+}
+
+std::unique_ptr<Sensor> s7 = return_from_function("Magnetometer");
+```
+
+---
+
+### 2. `shared_ptr` — Shared Ownership
+
+Multiple pointers own the same object. A reference count tracks how many are alive. Object is deleted when count hits 0.
+
+#### Creation & use count
+```cpp
+std::shared_ptr<Sensor> s1 = std::make_shared<Sensor>("IMU");
+s1.use_count(); // 1
+s1.get();       // heap address
+&s1;            // stack address of pointer
+```
+
+#### Multiple owners
+```cpp
+std::shared_ptr<Sensor> s2 = std::make_shared<Sensor>("GPS");  // count = 1
+{
+    std::shared_ptr<Sensor> s3 = s2;  // count = 2
+    std::shared_ptr<Sensor> s4 = s3;  // count = 3
+    // s3, s4 go out of scope → count = 1
+}
+// s2 still alive, count = 1
+```
+All copies point to the **same heap object** at the same address.
+
+#### Pass by value — increments use count
+```cpp
+void take_sensor(std::shared_ptr<Sensor> s) {
+    s.use_count(); // 2 — caller + this copy
+}
+// count drops back to 1 after call
+```
+
+#### Pass by reference — does NOT increment use count
+```cpp
+void borrow_sensor(std::shared_ptr<Sensor>& s) {
+    s.use_count(); // still 1 — no new owner created
+}
+```
+
+#### Return from function
+```cpp
+std::shared_ptr<Sensor> return_from_function(std::string name) {
+    return std::make_shared<Sensor>(name);
+}
+
+std::shared_ptr s7 = return_from_function("Magnetometer"); // count = 1
+```
+
+#### Container
+```cpp
+std::vector<std::shared_ptr<Sensor>> sensorList;
+sensorList.push_back(s8); // count = 2
+sensorList.push_back(s8); // count = 3
+sensorList.clear();        // count = 1 — s8 still alive
+```
+
+#### `reset()`
+```cpp
+s10.reset(); // s10 becomes nullptr, count drops by 1
+s9.reset();  // count → 0 → Sensor deleted
+```
+
+---
+
+### 3. `weak_ptr` — Non-Owning Observer
+
+Observes a `shared_ptr` without affecting the use count. Must `lock()` before use.
+
+#### Creation — does not affect use count
+```cpp
+std::shared_ptr<Sensor> s1 = std::make_shared<Sensor>("IMU"); // count = 1
+std::weak_ptr<Sensor> w1 = s1;                                 // count still = 1
+w1.expired(); // false — object still alive
+```
+
+#### `lock()` — safe access
+```cpp
+if (std::shared_ptr<Sensor> locked = w2.lock()) {
+    locked.use_count(); // 2 — s2 + locked
+    locked->read();     // safe to use
+}
+// locked out of scope → count drops back to 1
+```
+`lock()` returns a `shared_ptr` if alive, empty `shared_ptr` if expired. **Atomic** — no race condition between check and use.
+
+#### `expired()` — check without locking
+```cpp
+{
+    std::shared_ptr<Sensor> s3 = std::make_shared<Sensor>("LIDAR");
+    w3 = s3;
+    w3.expired(); // false
+}
+// s3 out of scope → deleted
+w3.expired(); // true
+w3.lock();    // returns empty shared_ptr
+```
+
+#### Pass to function
+```cpp
+void observe_sensor(std::weak_ptr<Sensor> w) {
+    if (std::shared_ptr<Sensor> locked = w.lock()) {
+        locked->read(); // object still alive
+    } else {
+        // object already deleted
     }
+}
+```
 
-    ~Robot(){
-        std::cout << "Robot destroyed with id: " << id <<  std::endl;
-    }
+#### Why `weak_ptr` has no `get()`
+`get()` is intentionally absent — it would return a raw pointer with no ownership guarantee. The object could be deleted between `get()` and use. `lock()` forces you to handle the expired case safely.
 
-    void move(int meter){
-        distance += meter;
-        std::cout << "Robot moved to distance: " << distance << std::endl;
-    }
+```cpp
+w1.get();            // ❌ compile error — by design
+w1.lock().get();     // ✅ correct — lock first, then get raw pointer if needed
+```
+
+---
+
+### 4. Circular Reference Problem & Fix
+
+#### Problem — `shared_ptr` cycle causes memory leak
+```cpp
+struct BadNode {
+    std::shared_ptr<BadNode> next; // strong — causes cycle
 };
 
+auto a = std::make_shared<BadNode>("Node A"); // a count = 1
+auto b = std::make_shared<BadNode>("Node B"); // b count = 1
 
-void move(Robot& r, int val){
-    r.move(val);
-}
+a->next = b; // b count = 2
+b->next = a; // a count = 2
 
-void move2(Robot* ptr, int val){
-    ptr->move(val);
-}
-
-
-int main(){
-    std::unique_ptr<Robot> rbt_ptr1 = std::make_unique<Robot>(7);
-    rbt_ptr1->move(7);
-    move(*rbt_ptr1, 7);
-
-    std::unique_ptr<Robot> rbt_ptr2 = std::move(rbt_ptr1);
-    rbt_ptr2->id = 5;
-
-    if (rbt_ptr1 == nullptr) {
-        std::cout << "rbt_ptr1 gave up ownership" << std::endl;
-    }
-    else{
-        std::cout << "rbt_ptr1 still owns it" << std::endl;
-    }
-    
-    move(*rbt_ptr2, 5);
-    move2(rbt_ptr2.get(), 5);
-
-    return 0;
-}
+// a and b go out of scope
+// a count → 1 (b still holds it) — never deleted ❌
+// b count → 1 (a still holds it) — never deleted ❌
 ```
 
-```sh
-Robot created with id: 7
-Robot moved to distance: 7
-Robot moved to distance: 14
-rbt_ptr1 gave up ownership
-Robot moved to distance: 19
-Robot moved to distance: 24
-Robot destroyed with id: 5
-```
-
-### shared_ptr
+#### Fix — break cycle with `weak_ptr`
 ```cpp
-#include <iostream>
-#include <memory>
-
-
-struct Robot{
-    int id;
-    int distance;
-
-    Robot(int id) : id(id), distance(0){
-        std::cout << "Robot created with id: " << id << std::endl;
-    }
-
-    ~Robot(){
-        std::cout << "Robot destroyed with id: " << id <<  std::endl;
-    }
-
-    void move(int meter){
-        distance += meter;
-        std::cout << "Robot moved to distance: " << distance << std::endl;
-    }
+struct GoodNode {
+    std::shared_ptr<GoodNode> next; // strong — forward link
+    std::weak_ptr<GoodNode>   prev; // weak  — back link ✅
 };
 
+auto a = std::make_shared<GoodNode>("Node A"); // a count = 1
+auto b = std::make_shared<GoodNode>("Node B"); // b count = 1
 
-void move(Robot& r, int val){
-    r.move(val);
-}
+a->next = b; // b count = 2
+b->prev = a; // a count still = 1 (weak doesn't increment)
 
-void move2(Robot* ptr, int val){
-    ptr->move(val);
-}
-
-
-int main(){
-    std::shared_ptr<Robot> rbt_ptr1 = std::make_shared<Robot>(7);
-    std::cout << "refs to robot: " << rbt_ptr1.use_count() << std::endl;
-    rbt_ptr1->move(7);
-    move(*rbt_ptr1, 7);
-
-    std::shared_ptr<Robot> rbt_ptr2 = rbt_ptr1;
-
-    if (rbt_ptr1 == nullptr) {
-        std::cout << "rbt_ptr1 gave up ownership" << std::endl;
-    }
-    else{
-        std::cout << "rbt_ptr1 still owns it" << std::endl;
-    }
-    
-    std::cout << "refs to robot: " << rbt_ptr2.use_count() << std::endl;
-    rbt_ptr2->id = 5;
-
-    move(*rbt_ptr2, 5);
-    move2(rbt_ptr2.get(), 5);
-
-    {
-        std::shared_ptr<Robot> rbt_ptr3 = rbt_ptr1;
-        rbt_ptr3->id = 9;
-        std::cout << "refs to robot: " << rbt_ptr3.use_count() << std::endl;
-        move(*rbt_ptr3, 9);
-    }
-
-    std::cout << "refs to robot: " << rbt_ptr1.use_count() << std::endl;
-
-    return 0;
-}
+// a goes out of scope → count 1→0 → Node A deleted ✅
+// b goes out of scope → count 2→1→0 → Node B deleted ✅
 ```
+One direction is `shared_ptr` (owner), the other is `weak_ptr` (observer).
 
-```sh
-Robot created with id: 7
-refs to robot: 1
-Robot moved to distance: 7
-Robot moved to distance: 14
-rbt_ptr1 still owns it
-refs to robot: 2
-Robot moved to distance: 19
-Robot moved to distance: 24
-refs to robot: 3
-Robot moved to distance: 33
-refs to robot: 2
-Robot destroyed with id: 9
-```
+---
 
 ## this Pointer
 **this** is always a pointer to the object itself, but it does not know whether the object is on the stack or heap.
@@ -3750,46 +4482,6 @@ int main() {
   - `struct` → `public`
 - Inheritance can also change visibility (public / protected / private inheritance).
 
-
-# Templates
-Templates avoid code duplication.
-
-They are resolved at *compile time*, which means the compiler generates a specific function/class for each type used.
-
-```cpp
-template<typename T>
-void print(T value){
-    std::cout << "Value: " << value << std::endl;
-}
-
-int main(){ 
-
-    std::vector<float> v = {20.4, 89.7, 66.0};
-    for(float vi: v){
-        print(vi);
-    }
-
-    std::tuple<bool, std::string> t = {false, "true"};
-    print(std::get<0>(t));
-    print(std::get<1>(t));
-
-    print("Oben");
-    print(29);
-    return 0;
-}
-```
-
-Output
-```sh
-Value: 20.4
-Value: 89.7
-Value: 66
-Value: 0
-Value: true
-Value: Oben
-Value: 29
-```
-
 ---
 
 # Operator Overloading
@@ -4748,66 +5440,120 @@ std::any
 
 ---
 
-# Enums
-An **enum** (short for *enumeration*) is a user-defined type that assigns names to a set of integer constants.  
-It makes code more readable and easier to maintain.
+# Enums in C++
+
+## 1. Plain `enum`
 
 ```cpp
-#include <iostream>
-
-enum Direction {
-    North,   // 0
-    East,    // 1
-    South,   // 2
-    West     // 3
-};
-
-int main() {
-    Direction dir = South;
-
-    if (dir == South)
-        std::cout << "Going South!" << std::endl;
-
-    std::cout << "Direction value: " << dir << std::endl; 
-}
+enum Color { Red, Green, Blue };
 ```
 
-```sh
-Going South
-Direction Value: 2
+Values start at `0` by default and increment:
+```cpp
+Red   == 0
+Green == 1
+Blue  == 2
 ```
+
+Custom values:
+```cpp
+enum Direction { North = 1, South = 2, East = 4, West = 8 };
+```
+
+### Problems with plain `enum`
+
+**Pollutes the enclosing scope:**
+```cpp
+enum Color { Red, Green, Blue };
+enum Fruit { Apple, Red, Cherry }; // ❌ compile error — Red already defined
+```
+
+**Implicit conversion to `int`:**
+```cpp
+enum Color { Red, Green, Blue };
+int x = Red;  // ✅ compiles silently — may not be intended
+```
+
+**Cross-enum comparison — compiles silently:**
+```cpp
+enum Color { Red, Green, Blue };
+enum Fruit { Apple, Banana, Cherry };
+
+if (Red == Apple) { ... } // ✅ compiles — both are 0, but meaningless comparison
+```
+
+## 2. `enum class` — Scoped Enum (C++11)
 
 ```cpp
-#include <iostream>
-
-enum class Season { 
-    Spring, 
-    Summer, 
-    Autumn, 
-    Winter 
-};
-
-std::string seasonMessage(Season s) {
-    switch (s) {
-        case Season::Spring: 
-            return "Flowers blooming";
-        case Season::Summer: 
-            return "Hot and sunny";
-        case Season::Autumn: 
-            return "Leaves falling";
-        case Season::Winter: 
-            return "Cold and snowy";
-    }
-    return "Unknown";
-}
-
-int main() {
-    Season current = Season::Autumn;
-    std::cout << seasonMessage(current) << std::endl;
-
-    return 0;
-}
+enum class Color { Red, Green, Blue };
 ```
+
+### Fixes all problems of plain `enum`
+
+**Scoped — must use `ClassName::`:**
+```cpp
+Color c = Color::Red;  // ✅
+Color c = Red;         // ❌ compile error
+```
+
+**No implicit conversion to `int`:**
+```cpp
+int x = Color::Red;                      // ❌ compile error
+int x = static_cast<int>(Color::Red);    // ✅ explicit cast required
+```
+
+**No cross-enum comparison:**
+```cpp
+enum class Color { Red, Green, Blue };
+enum class Fruit { Apple, Banana, Cherry };
+
+if (Color::Red == Fruit::Apple) { ... }  // ❌ compile error
+```
+
+## 3. Underlying Type
+
+Both `enum` and `enum class` support specifying the underlying integer type.
+
+```cpp
+enum Color : uint8_t { Red, Green, Blue };           // plain enum
+enum class Status : uint32_t { OK, Fail, Retry };    // enum class
+```
+
+Default underlying type is `int` if not specified.
+
+Useful for:
+- Controlling memory size (e.g. `uint8_t` instead of `int`)
+- Serialization / network protocols
+- ABI compatibility
+
+
+## Comparison
+
+| Feature | `enum` | `enum class` |
+|---|---|---|
+| Scoped | No — pollutes namespace | Yes — must use `Color::Red` |
+| Implicit `int` conversion | Yes — silent | No — must `static_cast` |
+| Cross-enum comparison | Yes — dangerous | No — compile error |
+| Forward declarable | Only with explicit type | Always |
+| Underlying type control | Yes | Yes |
+| C++ version | C++98 | C++11 |
+
+## When to Use What
+
+```cpp
+// enum class — default choice
+enum class Direction { North, South, East, West };
+enum class Status    { OK, Fail, Retry };
+
+// plain enum — only when implicit int conversion is specifically needed
+// e.g. legacy APIs, C interop
+enum CError { E_OK = 0, E_FAIL = 1 };
+
+// plain enum with explicit type — for size control in C interop
+enum CStatus : uint8_t { S_OK, S_FAIL };
+```
+
+**Rule:** Always prefer `enum class`. The `ClassName::` prefix is a small cost for strong type safety.
 
 ---
 
@@ -6210,3 +6956,6 @@ std::cout << std::defaultfloat << std::setprecision(6);
 | `std::left` / `std::right` | alignment |
 | `std::hex` / `std::oct` / `std::dec` | numeric base |
 | `std::boolalpha` / `std::noboolalpha` | bool as text |
+
+---
+
