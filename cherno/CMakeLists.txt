@@ -66,6 +66,7 @@ add_executable(80_string_vs_string_view src/80_string_vs_string_view.cpp)
 add_executable(81_visual_bencmarking src/81_visual_bencmarking.cpp)
 add_executable(82_singleton src/82_singleton.cpp)
 add_executable(84_track_memory src/84_track_memory.cpp)
+add_executable(85_l_values_and_r_values src/85_l_values_and_r_values.cpp)
 
 
 add_executable(try_catch src/try_catch.cpp)

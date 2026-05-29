@@ -1,0 +1,26 @@
+name: CD - cpp-exercises
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    only-build:
+        runs-on: ubuntu-latest
+
+        steps: 
+          - name: checkout code
+            uses: actions/checkout@v4
+          
+          - name: install dependecies
+            run: |
+                sudo apt-get update
+                sudo apt-get install -y cmake make g++
+
+          - name: build
+            run: | 
+                cd cherno
+                mkdir build && cd build
+                cmake ..
+                make
+

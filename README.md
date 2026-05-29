@@ -4,6 +4,8 @@
    - [RAII in C++](#raii-in-c)
    - [Literal Types in C++](#literal-types-in-c)
    - [`const` and `constexpr` in C++](#const-and-constexpr-in-c)
+   - [Enums in C++](#enums-in-c)
+   - [C++ Visibility / Access Specifiers](#c-visibility--access-specifiers)
 
    - [Getting Started](#getting-started)
         - [Preprocessor in C++](#preprocessor-in-c)
@@ -29,7 +31,6 @@
         - [std::vector](#stdvector)
    - [Statements and Operators](#statements-and-operators)
         - [Operator](#operator)
-        - [static_cast](#static_cast)
         - [Comparision](#comparision)
         - [Compound Assignment](#compound-assignment)
         - [Operator Precedence](#operator-precedence)
@@ -95,7 +96,10 @@
         - [Raw Function Pointers](#raw-function-pointers)
         - [Lambdas](#lambdas)
    - [`static` in C++](#static-in-c)
-   - [C++ Visibility / Access Specifiers](#c-visibility--access-specifiers)
+   - [`<fstream>` in C++](#fstream-in-c)
+   - [Threads](#threads)
+   - [`<iostream>` — C++ Standard I/O](#iostream--c-standard-io)
+
    - [Operator Overloading](#operator-overloading)
    - [explicit Keyword](#explicit-keyword-in-c)
    - [Structured Bindings](#structured-bindings)
@@ -104,14 +108,14 @@
    - [`std::optional` — Optional Data in C++](#stdoptional--optional-data-in-c)
    - [`std::variant` — Type-Safe Union](#stdvariant--type-safe-union)
    - [`std::any` — Type-Erased Single Value](#stdany--type-erased-single-value)
-   - [Enums in C++](#enums-in-c)
-   - [Threads](#threads)
    - [`std::async` and `std::future` — Asynchronous Functions](#stdasync-and-stdfuture--asynchronous-functions)
    - [Timing in C++](#timing-in-c)
+        - [steady_clock — elapsed time](#steady_clock--elapsed-time)
+        - [system_clock — wall time and timestamps](#system_clock--wall-time-and-timestamps)
    - [C++ Exception Handling (try-catch)](#c-exception-handling-try-catch)
    - [Singleton in C++ (Design Pattern)](#singleton-in-c-design-pattern)
-   - [`<fstream>` in C++](#fstream-in-c)
-   - [`<iostream>` — C++ Standard I/O](#iostream--c-standard-io)
+   - [lvalues, rvalues & Move Semantics](#lvalues-rvalues--move-semantics)
+
 
 
 
@@ -1556,11 +1560,6 @@ int c = a + b;
 - "+" is the operator
 - a and b are the operands
 - The operator + adds the two operands
-
-## static_cast
-```cpp
-std::cout << "Precise average is: " << static_cast<double>(total) / count << std::endl;
-```
 
 ## Comparision
 11.99999999999999999999999 and 12.0 could be equal for C++ code so be careful with the library usage
@@ -6147,45 +6146,31 @@ read_sensor x5 async      →  ~500 ms  (mutex only on write, heavy work concurr
 
 All timing utilities live in the `<chrono>` header. The library is built around three concepts: **clocks**, **time_points**, and **durations**.
 
-## Clocks
+A `time_point` represents a specific moment in time relative to a clock's epoch, obtained via `now()`. A `duration` is the span between two `time_point`s. Use `duration_cast` to convert to a specific unit and `.count()` to extract the raw value.
 
-A clock is the source of time. Each clock has a `now()` static method that returns the current `time_point`.
+## steady_clock — elapsed time
 
-| Clock | Monotonic | Use for |
-|---|---|---|
-| `steady_clock` | Yes | Measuring elapsed time, timeouts, sleep |
-| `system_clock` | No | Timestamps, logging, real wall time |
-| `high_resolution_clock` | Implementation-defined | Finest tick — often alias of `steady_clock` |
-
-`steady_clock` is guaranteed to never go backwards. `system_clock` tracks real wall time and can be adjusted by the OS (NTP sync, DST, manual changes), so it is not suitable for measuring elapsed time.
-
-## time_point
-
-A `time_point` represents a specific moment in time relative to a clock's epoch. Obtained via `now()`:
+`steady_clock` is monotonic — guaranteed to never go backwards. Use it for measuring elapsed time, timeouts, and sleeping.
 
 ```cpp
-std::chrono::time_point<std::chrono::steady_clock> t = std::chrono::steady_clock::now();
-```
+#include <iostream>
+#include <chrono>
+#include <thread>
 
-## duration
+int main() {
+    std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
 
-A `duration` represents a span of time. Subtracting two `time_point`s yields a `duration`:
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
-```cpp
-std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
-// ... work ...
-std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
-std::chrono::duration<long, std::nano> elapsed = end - start;
-```
+    std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
+    std::chrono::duration<long, std::nano> elapsed = end - start;
 
-Use `duration_cast` to convert to a specific unit, then `.count()` to extract the raw value:
+    std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
+    std::chrono::microseconds us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed);
 
-```cpp
-std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
-std::chrono::microseconds us = std::chrono::duration_cast<std::chrono::microseconds>(elapsed);
-
-std::cout << ms.count() << " ms\n";
-std::cout << us.count() << " us\n";
+    std::cout << ms.count() << " ms\n";
+    std::cout << us.count() << " us\n";
+}
 ```
 
 ### Predefined duration types
@@ -6199,26 +6184,7 @@ std::chrono::minutes
 std::chrono::hours
 ```
 
-## Measuring elapsed time
-
-```cpp
-#include <iostream>
-#include <chrono>
-#include <thread>
-
-int main() {
-    std::chrono::time_point<std::chrono::steady_clock> start = std::chrono::steady_clock::now();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-
-    std::chrono::time_point<std::chrono::steady_clock> end = std::chrono::steady_clock::now();
-    std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-    std::cout << "Elapsed: " << elapsed.count() << " ms\n";  // 200 ms
-}
-```
-
-## Sleeping
+### Sleeping
 
 ```cpp
 #include <thread>
@@ -6234,7 +6200,7 @@ std::this_thread::sleep_until(wake);
 
 ## system_clock — wall time and timestamps
 
-`system_clock` is convertible to `std::time_t`, which allows formatting with standard C functions.
+`system_clock` tracks real wall time. It can be adjusted by the OS (NTP sync, DST, manual changes) so it is **not** suitable for measuring elapsed time. It is convertible to `std::time_t` for formatting.
 
 ```cpp
 #include <iostream>
@@ -6255,19 +6221,19 @@ int main() {
 #include <ctime>
 
 void print_current_time(){
-    std::chrono::time_point<std::chrono::system_clock> system_now = std::chrono::system_clock::now(); // time point
-
-    time_t system_now_t = std::chrono::system_clock::to_time_t(system_now); // integer value of time point in seconds
-
-    std::tm* local = std::localtime(&system_now_t); // breaks the total second count into calendar fields (hour, min, day, month, year...)
+    std::chrono::time_point<std::chrono::system_clock> system_now = std::chrono::system_clock::now();
+    std::time_t system_now_t = std::chrono::system_clock::to_time_t(system_now);
+    std::tm* local = std::localtime(&system_now_t);
 
     char buffer[64];
-    std::strftime(buffer, sizeof(buffer), "%H:%M - %d/%m/%Y", local); // formatting the local time
+    std::strftime(buffer, sizeof(buffer), "%H:%M - %d/%m/%Y", local);
     std::cout << "Current Time: " << buffer << std::endl;
 }
 ```
 
-```
+`std::localtime` breaks the total second count into calendar fields via `std::tm`:
+
+```cpp
 struct tm {
     int tm_sec;    // seconds       [0, 60]
     int tm_min;    // minutes       [0, 59]
@@ -6294,7 +6260,6 @@ struct tm {
 | `sleep_for` | Pause the current thread for a duration |
 | `sleep_until` | Pause the current thread until a time_point |
 | `to_time_t` | Convert system_clock time_point to std::time_t |
-| `std::put_time` | Format time using strftime-style tokens |
 
 ---
 
@@ -6958,4 +6923,122 @@ std::cout << std::defaultfloat << std::setprecision(6);
 | `std::boolalpha` / `std::noboolalpha` | bool as text |
 
 ---
+
+# lvalues, rvalues & Move Semantics
+
+## 1. lvalue vs rvalue
+
+| | lvalue | rvalue |
+|---|---|---|
+| Has a name | yes | no |
+| Has a persistent address | yes | no |
+| Examples | variables, references | temporaries, literals, `operator+` results |
+
+```cpp
+#include <iostream>
+#include <string>
+
+void printName(std::string& name){
+    std::cout << "lvalue: " << name << std::endl;
+}
+
+void printName(std::string&& name){
+    std::cout << "rvalue: " << name << std::endl;
+}
+
+int main(){
+    std::string first_name = "Oben";
+    std::string last_name  = "Sustam";
+
+    printName(first_name);                      // lvalue — named variable
+    printName(first_name + " " + last_name);    // rvalue — temporary, no name
+}
+```
+
+```
+lvalue: Oben
+rvalue: Oben Sustam
+```
+
+## 2. References
+
+```cpp
+void printName(std::string& name)        // non-const lvalue ref  — named variables only
+void printName(const std::string& name)  // const lvalue ref      — everything, read-only
+void printName(std::string&& name)       // rvalue ref            — temporaries only, enables move
+```
+
+| Argument | `string&` | `const string&` | `string&&` |
+|---|---|---|---|
+| lvalue non-const | ✅ | ✅ | ❌ |
+| lvalue const | ❌ | ✅ | ❌ |
+| rvalue (temporary) | ❌ | ✅ | ✅ |
+
+`const string&` is the universal read-only parameter — accepts everything. Use it when you don't need to modify or move.
+
+## 3. const
+
+`const` and value category are independent — a value can be any combination:
+
+```cpp
+std::string a = "hello";        // lvalue, non-const
+const std::string b = "hello";  // lvalue, const
+std::string("hello")            // rvalue, non-const
+```
+
+Key rule: **you cannot move from a const object**. `&&` won't bind to a const lvalue because moving would modify the source:
+
+```cpp
+void printName(std::string& name)       { std::cout << "lvalue: "       << name << std::endl; }
+void printName(const std::string& name) { std::cout << "const lvalue: " << name << std::endl; }
+void printName(std::string&& name)      { std::cout << "rvalue: "       << name << std::endl; }
+
+int main(){
+    const std::string a = "hello";
+    printName(std::move(a));   // prints "const lvalue" — && won't bind to const, falls back to copy
+}
+```
+
+`const` also applies to pointers in two distinct ways:
+
+```cpp
+const int* p = &x;        // pointer to const — can't modify the value, can reseat p
+int* const p = &x;        // const pointer    — can modify the value, can't reseat p
+const int* const p = &x;  // both             — fully immutable
+```
+
+## 4. std::move
+
+`std::move` is just a cast — turns an lvalue into an rvalue so the `&&` overload gets called. Nothing is transferred at the call site; `&&` only means "allowed to steal":
+
+```cpp
+#include <iostream>
+#include <string>
+
+void printName(std::string& name){
+    std::cout << "lvalue: " << name << std::endl;
+}
+
+void printName(std::string&& name){
+    std::cout << "rvalue: " << name << std::endl;
+    // && means "allowed to steal" — but nothing is stolen here, just printed
+}
+
+int main(){
+    std::string first_name = "Oben";
+
+    printName(first_name);             // lvalue — calls &
+    printName(std::move(first_name));  // cast to rvalue — calls &&, first_name still intact
+    printName(first_name);             // still "Oben" — nothing was stolen
+}
+```
+
+```
+lvalue: Oben
+rvalue: Oben
+lvalue: Oben
+```
+
+---
+
 
