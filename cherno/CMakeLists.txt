@@ -35,8 +35,8 @@ add_executable(48_local_static src/48_local_static.cpp)
 
 # Point to the test_project's CMakeLists.txt to access print_lib
 add_subdirectory(
-    /home/oben/Projects/cpp_exercises/test_project
-    ${CMAKE_BINARY_DIR}/test_project)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../test_project   # where the source is
+    ${CMAKE_BINARY_DIR}/test_project)             # where to put the build output
 add_executable(49_external_project src/49_external_project.cpp)
 target_link_libraries(49_external_project PRIVATE print_lib)
 
