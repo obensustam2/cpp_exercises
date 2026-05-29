@@ -1,6 +1,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <cstdint>
 
 std::map<std::string, int> student_list = {
     {"ben", 9}, {"rbay", 8}, {"cun", 0}
@@ -102,13 +103,52 @@ namespace test_5 {
     }
 }
 
+
+void test_6_1D_loop() {
+    uint32_t width = 80, height = 3;
+
+    for (uint32_t h = 0; h < height; h++)
+    {
+        for (uint32_t w = 0; w < width; w++)
+        {
+            std::cout << "(" << w << "," << h << ") = " << w + h * width << "\n";
+        }
+    }
+}
+
+
+void test_7_static_cast(){
+    double x = 78.88;
+    int a = static_cast<int>(x);
+    std::cout << a << std::endl;
+}
+
+
+// ═══════════════════════════════════════
+// Test 8 — Argument Evaluation Order: Undefined behaviour
+// ═══════════════════════════════════════
+namespace test_8 {
+    void PrintSum(int a, int b){
+        std::cout << a << " + " << b << " = " << (a + b) << std::endl;
+    }
+
+    void run(){
+        int value = 0;
+        PrintSum(value++, value++);
+        std::cout << value << std::endl;
+    }
+}
+
 int main(){
 
     // test_1_map();
     // test_2_factorial();
     // test_3_increment();
     // test_4::run();
-    test_5::run();
+    // test_5::run();
+    // test_6_1D_loop();
+    // test_7_static_cast();
+    test_8::run();
 
     return 0;
 }

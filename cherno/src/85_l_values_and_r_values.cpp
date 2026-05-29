@@ -18,7 +18,6 @@ int main(){
     printName(last_name);
     printName(first_name + " " + last_name);
     printName(std::move(first_name));
-    printName(first_name);
 
     return 0;
 }

@@ -99,6 +99,7 @@
    - [`<fstream>` in C++](#fstream-in-c)
    - [Threads](#threads)
    - [`<iostream>` — C++ Standard I/O](#iostream--c-standard-io)
+   - [Static Analysis in C++](#static-analysis-in-c)
 
    - [Operator Overloading](#operator-overloading)
    - [explicit Keyword](#explicit-keyword-in-c)
@@ -115,6 +116,7 @@
    - [C++ Exception Handling (try-catch)](#c-exception-handling-try-catch)
    - [Singleton in C++ (Design Pattern)](#singleton-in-c-design-pattern)
    - [lvalues, rvalues & Move Semantics](#lvalues-rvalues--move-semantics)
+   - [Argument Evaluation Order: Undefined Behaviour](#argument-evaluation-order-undefined-behaviour)
 
 
 
@@ -6732,8 +6734,6 @@ std::cerr << "Fatal error\n";    // unbuffered — written immediately
 std::clog << "Debug info\n";     // buffered diagnostic
 ```
 
----
-
 ## Basic output
 
 ```cpp
@@ -6767,8 +6767,6 @@ std::cout << "Computing... ";                        // may not appear until aft
 std::this_thread::sleep_for(std::chrono::seconds(2));
 std::cout << "done\n";
 ```
-
----
 
 ## Basic input
 
@@ -6812,8 +6810,6 @@ while (!(std::cin >> x)) {
 }
 ```
 
----
-
 ## Formatting — `<iomanip>`
 
 ```cpp
@@ -6848,8 +6844,6 @@ std::cout << std::boolalpha   << true << '\n';  // true
 std::cout << std::noboolalpha << true << '\n';  // 1
 ```
 
----
-
 ## Column alignment
 
 ```cpp
@@ -6879,8 +6873,6 @@ std::cout << std::setfill('0') << std::setw(6) << 42 << '\n';  // 000042
 std::cout << std::setfill('-') << std::setw(10) << "hi" << '\n'; // --------hi
 ```
 
----
-
 ## Sticky vs non-sticky flags
 
 Most format flags persist until you explicitly reset them. `std::setw` is the exception.
@@ -6903,8 +6895,6 @@ std::cout << 2.71828 << '\n';   // 2.72  (fixed still active)
 std::cout << std::defaultfloat << std::setprecision(6);
 ```
 
----
-
 ## Quick reference — manipulators
 
 | Manipulator | Effect |
@@ -6921,6 +6911,59 @@ std::cout << std::defaultfloat << std::setprecision(6);
 | `std::left` / `std::right` | alignment |
 | `std::hex` / `std::oct` / `std::dec` | numeric base |
 | `std::boolalpha` / `std::noboolalpha` | bool as text |
+
+---
+
+# Static Analysis in C++
+
+Static analysis examines your code **without running it** — tools read your source and find bugs, undefined behavior, and bad practices before compilation.
+
+## cppcheck
+
+### Install
+
+```bash
+sudo apt-get install cppcheck
+```
+
+### Usage
+
+```bash
+# single file
+cppcheck --enable=all src/85_l_values_and_r_values.cpp
+
+# entire directory
+cppcheck --enable=all src/
+
+# fail with exit code 1 on errors (useful in CI)
+cppcheck --enable=all --error-exitcode=1 src/
+```
+
+### Suppress missing system headers noise
+
+```bash
+cppcheck --enable=all --suppress=missingIncludeSystem src/
+```
+
+### Common findings
+
+| ID | Type | Meaning |
+|---|---|---|
+| `constParameter` | style | Parameter can be declared `const` |
+| `accessMoved` | warning | Variable used after `std::move()` |
+| `memleak` | error | Heap memory allocated but never freed |
+| `nullPointer` | error | Pointer dereferenced before null check |
+| `uninitvar` | error | Variable used before initialization |
+| `missingIncludeSystem` | info | System headers not found — suppress safely |
+
+### In GitHub Actions
+
+```yaml
+- name: static analysis
+  run: |
+    sudo apt-get install -y cppcheck
+    cppcheck --enable=all --error-exitcode=1 --suppress=missingIncludeSystem cherno/src/
+```
 
 ---
 
@@ -7041,4 +7084,78 @@ lvalue: Oben
 
 ---
 
+# Argument Evaluation Order: Undefined Behaviour
+
+## 1. The Rule
+
+In C++, the order in which function arguments are evaluated is **unspecified**.
+The compiler is free to evaluate them in any order it chooses. If two arguments
+modify the same variable, the result is **undefined behaviour (UB)** — the
+standard makes no guarantee about the output.
+
+## 2. Example
+
+```cpp
+#include <iostream>
+
+void PrintSum(int a, int b)
+{
+    std::cout << a << " + " << b << " = " << (a + b) << std::endl;
+}
+
+int main()
+{
+    int value = 0;
+    PrintSum(value++, value++);  // ⚠️ Undefined behaviour
+}
+```
+
+`value++` is a post-increment: it returns the current value, then increments.
+Two `value++` calls in the same argument list modify `value` twice with no
+sequence point between them — this is UB.
+
+### Possible outputs (compiler-dependent)
+
+| Compiler / order evaluated | Output        |
+|---------------------------|---------------|
+| right-to-left (MSVC)      | `0 + 1 = 1`   |
+| left-to-right (some GCC)  | `1 + 0 = 1`   |
+| optimised build           | anything      |
+
+## 3. Why It's Undefined, Not Just Unspecified
+
+Two distinct concepts:
+
+- **Unspecified behaviour** — the standard allows multiple valid outcomes; you
+  can rely on the program not crashing, just not on which outcome occurs.
+- **Undefined behaviour** — the standard imposes *no* requirement at all. The
+  compiler may produce any output, optimise away the code, or crash.
+
+Modifying the same object twice without an intervening sequence point falls into
+**UB** territory (C++17: no two side effects on the same scalar may be
+unsequenced).
+
+## 4. The Fix
+
+Pass distinct variables, or perform increments before the call:
+
+```cpp
+int a = value++;
+int b = value++;
+PrintSum(a, b);  // Well-defined: 0 + 1 = 1
+```
+
+Or avoid mutation in the argument list entirely:
+
+```cpp
+PrintSum(value, value + 1);  // Well-defined, no side effects
+value += 2;
+```
+
+## 5. Key Takeaway
+
+Never modify the same variable more than once inside a single function call's
+argument list. The compiler will not warn you, but the behaviour is undefined.
+
+---
 

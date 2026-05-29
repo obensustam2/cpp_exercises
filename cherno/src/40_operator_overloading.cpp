@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdint> 
 
 
 struct Vector2{
